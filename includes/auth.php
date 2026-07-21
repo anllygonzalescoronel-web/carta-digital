@@ -14,6 +14,8 @@ function requerirLogin(): void {
     }
 }
 
+
+
 function intentarLogin(string $usuario, string $password): bool {
     require_once __DIR__ . '/db.php';
     $stmt = getDB()->prepare('SELECT * FROM admin_usuarios WHERE usuario = :usuario LIMIT 1');
