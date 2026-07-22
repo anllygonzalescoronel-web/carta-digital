@@ -1,8 +1,34 @@
+
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 requerirLogin();
 $paginaActual = $paginaActual ?? '';
+
+$hora = (int) date('H');
+if ($hora < 12) {
+    $saludo = 'Buenos días';
+} elseif ($hora < 19) {
+    $saludo = 'Buenas tardes';
+} else {
+    $saludo = 'Buenas noches';
+}
+?>
+<?php
+date_default_timezone_set('America/Lima');
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+requerirLogin();
+$paginaActual = $paginaActual ?? '';
+
+$hora = (int) date('H');
+if ($hora < 12) {
+    $saludo = 'Buenos días';
+} elseif ($hora < 19) {
+    $saludo = 'Buenas tardes';
+} else {
+    $saludo = 'Buenas noches';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -11,8 +37,18 @@ $paginaActual = $paginaActual ?? '';
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Panel Admin - <?= limpiar($tituloPagina ?? 'Dashboard') ?></title>
 <link rel="stylesheet" href="assets/admin.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="assets/dashboard-graficos.css">
+<script>
+    if (localStorage.getItem('tema-admin') === 'oscuro') {
+        document.documentElement.classList.add('precarga-oscura');
+    }
+</script>
+<style>
+    .precarga-oscura { background: #262a35; }
+</style>
 </head>
-<body>
+<body class="<?= (isset($_COOKIE['tema-admin']) && $_COOKIE['tema-admin'] === 'oscuro') ? '' : '' ?>">
 <div class="admin-wrap">
     <aside class="admin-sidebar">
         <h2 class="admin-logo">🍗 Panel Admin</h2>
@@ -26,10 +62,16 @@ $paginaActual = $paginaActual ?? '';
             <a href="../index.php" target="_blank">🌐 Ver carta pública</a>
             <a href="logout.php" class="salir">🚪 Cerrar sesión</a>
         </nav>
-    </aside>
+</aside>
+    <div class="overlay-menu" id="overlay-menu"></div>
     <main class="admin-content">
         <header class="admin-topbar">
-            <h1><?= limpiar($tituloPagina ?? '') ?></h1>
-            <span>Hola, <?= limpiar($_SESSION['admin_nombre'] ?? '') ?></span>
+<div style="display:flex;align-items:center;">
+    <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú">☰</button>
+    <h1><?= limpiar($tituloPagina ?? '') ?></h1>
+</div>            <div>
+                <span><?= $saludo ?>, <?= limpiar($_SESSION['admin_nombre'] ?? '') ?></span>
+                <button type="button" id="theme-toggle" class="theme-toggle" title="Cambiar tema" aria-label="Cambiar entre modo claro y oscuro">🌙</button>
+            </div>
         </header>
         <div class="admin-body">
