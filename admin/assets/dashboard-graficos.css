@@ -577,3 +577,217 @@ body.modo-oscuro .col-hover {
         display: flex;
     }
 }
+
+
+/* ===== Menú lateral: blanco en modo claro ===== */
+.admin-sidebar {
+    background: #ffffff !important;
+    color: #666d7a;
+    box-shadow: 10px 0 24px rgba(163,177,198,.4);
+    transition: background .2s ease, color .2s ease;
+}
+.admin-logo {
+    color: #444a5a;
+}
+.admin-sidebar nav a {
+    color: #666d7a;
+    transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.admin-sidebar nav a:hover,
+.admin-sidebar nav a.activo {
+    background: rgba(232, 89, 12, .12);
+    color: #E8590C;
+    border-left-color: #E8590C;
+}
+.admin-sidebar nav a.salir {
+    color: #d64545;
+}
+
+/* ===== Menú lateral: vuelve a oscuro en modo oscuro ===== */
+body.modo-oscuro .admin-sidebar {
+    background: #1f2430 !important;
+    color: #cfd3dc;
+    box-shadow: 10px 0 24px rgba(0,0,0,.5), -3px 0 8px rgba(255,255,255,.04);
+}
+body.modo-oscuro .admin-logo {
+    color: #fff;
+}
+body.modo-oscuro .admin-sidebar nav a {
+    color: #cfd3dc;
+}
+body.modo-oscuro .admin-sidebar nav a:hover,
+body.modo-oscuro .admin-sidebar nav a.activo {
+    background: #2b3142;
+    color: #fff;
+    border-left-color: #E8590C;
+}
+body.modo-oscuro .admin-sidebar nav a.salir {
+    color: #ff8a80;
+}
+
+/* ===== Iconos del menú lateral ===== */
+.admin-sidebar nav a i {
+    width: 18px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 15px;
+}
+
+.admin-logo i {
+    margin-right: 6px;
+}
+
+/* ===== Icono del botón de tema (sol/luna) ===== */
+.theme-toggle i {
+    font-size: 18px;
+    color: #444a5a;
+}
+
+body.modo-oscuro .theme-toggle i {
+    color: #f2c94c;
+}
+
+/* ===== Iconos de entrega y pago en la tabla ===== */
+table td i {
+    margin-right: 6px;
+    color: #E8590C;
+    font-size: 13px;
+}
+
+/* ==================================================================
+   SECCIÓN NUEVA: Gráficos del dashboard (debajo de las tarjetas)
+   ================================================================== */
+
+.grid-graficos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .grid-graficos {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cursor de "agarrar" en el gráfico de pedidos, que se puede arrastrar */
+#graficoPedidosTendencia {
+    cursor: grab;
+}
+#graficoPedidosTendencia:active {
+    cursor: grabbing;
+}
+
+.grafico-frame {
+    background: var(--neu-base);
+    border-radius: 26px;
+    padding: 12px;
+    box-shadow: inset 6px 6px 14px var(--neu-sombra-oscura), inset -6px -6px 14px var(--neu-sombra-clara);
+    animation: entradaSuave .5s ease both;
+}
+
+.grid-graficos .grafico-frame:nth-of-type(1) { animation-delay: .1s; }
+.grid-graficos .grafico-frame:nth-of-type(2) { animation-delay: .18s; }
+.grid-graficos .grafico-frame:nth-of-type(3) { animation-delay: .26s; }
+.grid-graficos .grafico-frame:nth-of-type(4) { animation-delay: .34s; }
+
+.grafico-box {
+    background: var(--neu-base);
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    box-shadow: 4px 4px 10px rgba(0,0,0,.12);
+    height: 100%;
+}
+
+.grafico-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.grafico-header h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666d7a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.grafico-header h4 i { color: #E8590C; }
+
+body.modo-oscuro .grafico-header h4 { color: #cfd3dc; }
+
+.grafico-tabs {
+    display: flex;
+    gap: 6px;
+}
+
+.grafico-tabs button {
+    border: none;
+    background: rgba(0,0,0,.05);
+    color: #888;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.grafico-tabs button:hover { background: rgba(232,89,12,.15); color: #E8590C; }
+
+.grafico-tabs button.tab-activa {
+    background: #E8590C;
+    color: #fff;
+}
+
+body.modo-oscuro .grafico-tabs button {
+    background: rgba(255,255,255,.06);
+    color: #9aa0ac;
+}
+
+body.modo-oscuro .grafico-tabs button.tab-activa {
+    background: #E8590C;
+    color: #fff;
+}
+
+.grafico-canvas-wrap {
+    position: relative;
+    height: 190px;
+}
+
+.grafico-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: 11px;
+    color: #888;
+}
+
+.grafico-leyenda .leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.grafico-leyenda .leyenda-item i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+body.modo-oscuro .grafico-leyenda { color: #9aa0ac; }
+
+@media (max-width: 640px) {
+    .grid-graficos { grid-template-columns: 1fr; gap: 14px; }
+    .grafico-canvas-wrap { height: 170px; }
+    .grafico-box { padding: 14px 14px 10px; }
+}

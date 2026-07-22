@@ -104,5 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function actualizarIconoTema(boton) {
-    boton.textContent = document.body.classList.contains('modo-oscuro') ? '☀️' : '🌙';
+    boton.innerHTML = document.body.classList.contains('modo-oscuro')
+        ? '<i class="ti ti-sun"></i>'
+        : '<i class="ti ti-moon"></i>';
 }

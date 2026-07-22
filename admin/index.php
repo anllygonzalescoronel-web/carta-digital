@@ -61,6 +61,113 @@ if ($modoPrueba) {
     $pctLlenadoProductos = 88;
 }
 
+// ==================================================================
+// DATOS PARA LOS 4 GRÁFICOS (debajo de las tarjetas)
+// ==================================================================
+
+// ----- 1. Pedidos hoy: tendencia de los últimos 7 días -----
+$tendenciaPedidosFilas = $db->query("
+    SELECT DATE(creado_en) fecha, COUNT(*) c
+    FROM pedidos
+    WHERE creado_en >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+    GROUP BY DATE(creado_en)
+")->fetchAll();
+
+$mapaTendencia = [];
+foreach ($tendenciaPedidosFilas as $fila) {
+    $mapaTendencia[$fila['fecha']] = (int) $fila['c'];
+}
+$etiquetasTendencia = [];
+$valoresTendencia = [];
+for ($i = 6; $i >= 0; $i--) {
+    $fechaClave = date('Y-m-d', strtotime("-$i day"));
+    $etiquetasTendencia[] = date('d/m', strtotime($fechaClave));
+    $valoresTendencia[] = $mapaTendencia[$fechaClave] ?? 0;
+}
+
+// ----- 2. Ventas hoy: vs ayer -----
+// (ya tenemos $ventasHoy y $ventasAyer calculados arriba)
+
+// ----- 3. Pedidos pendientes: vs total y desglose por estado -----
+$desglosoEstadosFilas = $db->query("SELECT estado, COUNT(*) c FROM pedidos GROUP BY estado")->fetchAll();
+$mapaEstados = [
+    'pendiente'       => 0,
+    'en_preparacion'  => 0,
+    'en_camino'       => 0,
+    'entregado'       => 0,
+    'cancelado'       => 0,
+];
+foreach ($desglosoEstadosFilas as $fila) {
+    if (array_key_exists($fila['estado'], $mapaEstados)) {
+        $mapaEstados[$fila['estado']] = (int) $fila['c'];
+    }
+}
+$etiquetasEstados = [];
+$valoresEstados = [];
+foreach ($mapaEstados as $clave => $valor) {
+    $etiquetasEstados[] = ucfirst(str_replace('_', ' ', $clave));
+    $valoresEstados[] = $valor;
+}
+
+// ----- 4. Productos activos: vs inactivos y por categoría -----
+$productosInactivos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 0")->fetch()['c'];
+
+// Si tu tabla de categorías o la columna de relación se llaman distinto,
+// ajusta el JOIN de abajo (categorias.nombre / productos.categoria_id).
+$etiquetasCategoria = [];
+$valoresCategoria = [];
+try {
+    $productosPorCategoriaFilas = $db->query("
+        SELECT c.nombre nombre, COUNT(p.id) c
+        FROM categorias c
+        LEFT JOIN productos p ON p.categoria_id = c.id AND p.disponible = 1
+        GROUP BY c.id, c.nombre
+        ORDER BY c.nombre
+    ")->fetchAll();
+    foreach ($productosPorCategoriaFilas as $fila) {
+        $etiquetasCategoria[] = $fila['nombre'];
+        $valoresCategoria[] = (int) $fila['c'];
+    }
+} catch (Exception $e) {
+    // Si la tabla/columnas no existen con esos nombres, esta vista queda vacía
+    // sin romper el resto del dashboard.
+    $etiquetasCategoria = [];
+    $valoresCategoria = [];
+}
+
+$datosGraficosDashboard = [
+    'tendencia' => [
+        'labels'  => $etiquetasTendencia,
+        'valores' => $valoresTendencia,
+    ],
+    'ventas' => [
+        'hoyVsAyer' => [
+            'labels'  => ['Hoy', 'Ayer'],
+            'valores' => [round((float) $ventasHoy, 2), round((float) $ventasAyer, 2)],
+        ],
+    ],
+    'pendientes' => [
+        'vsTotal' => [
+            'labels'  => ['Pendientes', 'Otros'],
+            'valores' => [(int) $pendientes, max((int) $totalPedidosGeneral - (int) $pendientes, 0)],
+        ],
+        'porEstado' => [
+            'labels'  => $etiquetasEstados,
+            'valores' => $valoresEstados,
+        ],
+    ],
+    'productos' => [
+        'vsInactivos' => [
+            'labels'  => ['Activos', 'Inactivos'],
+            'valores' => [(int) $totalProductos, (int) $productosInactivos],
+        ],
+        'porCategoria' => [
+            'labels'  => $etiquetasCategoria,
+            'valores' => $valoresCategoria,
+        ],
+    ],
+];
+
 function pintarIcono(string $clase): void
 {
     echo '<div style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.18);'
@@ -152,6 +259,69 @@ function pintarOlas(): void
 
 </div>
 
+<script>
+    window.datosGraficosDashboard = <?= json_encode($datosGraficosDashboard, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+</script>
+
+<div class="grid-graficos">
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-area"></i> Pedidos · últimos 7 días</h4>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <canvas id="graficoPedidosTendencia"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Ventas hoy vs Ayer</h4>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <canvas id="graficoVentas"></canvas>
+            </div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Pedidos pendientes</h4>
+                <div class="grafico-tabs" data-grafico="pendientes">
+                    <button type="button" class="tab-activa" data-vista="0">Pendientes vs Total</button>
+                    <button type="button" data-vista="1">Por estado</button>
+                </div>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <canvas id="graficoPendientes"></canvas>
+            </div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Productos activos</h4>
+                <div class="grafico-tabs" data-grafico="productos">
+                    <button type="button" class="tab-activa" data-vista="0">Activos vs Inactivos</button>
+                    <button type="button" data-vista="1">Por categoría</button>
+                </div>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <canvas id="graficoProductos"></canvas>
+            </div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+</div>
+
 <div class="card">
     <h3>Últimos pedidos</h3>
     <div class="tabla-controles">
@@ -173,8 +343,8 @@ function pintarOlas(): void
             <tr>
                 <td><a href="pedidos.php?ver=<?= $p['id'] ?>"><?= limpiar($p['codigo']) ?></a></td>
                 <td><?= limpiar($p['cliente_nombre']) ?></td>
-                <td><?= $p['tipo_entrega'] === 'delivery' ? '🛵 Delivery' : '🏠 Recojo' ?></td>
-                <td><?= ['efectivo'=>'💵 Efectivo','yape_plin'=>'📲 Yape (Culqi)','tarjeta'=>'💳 Tarjeta'][$p['metodo_pago']] ?></td>
+<td><?= $p['tipo_entrega'] === 'delivery' ? '<i class="ti ti-motorbike"></i> Delivery' : '<i class="ti ti-home"></i> Recojo' ?></td>
+<td><?= ['efectivo'=>'<i class="ti ti-cash"></i> Efectivo','yape_plin'=>'<i class="ti ti-device-mobile"></i> Yape (Culqi)','tarjeta'=>'<i class="ti ti-credit-card"></i> Tarjeta'][$p['metodo_pago']] ?></td>
                 <td><?= formatoPrecio($p['total']) ?></td>
                 <td><span class="badge badge-<?= $p['estado'] ?>"><?= $p['estado'] ?></span></td>
                 <td><?= date('d/m H:i', strtotime($p['creado_en'])) ?></td>
