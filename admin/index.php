@@ -10,7 +10,21 @@ $ventasHoy = $db->query("SELECT COALESCE(SUM(total),0) t FROM pedidos WHERE DATE
 $pendientes = $db->query("SELECT COUNT(*) c FROM pedidos WHERE estado = 'pendiente'")->fetch()['c'];
 $totalProductos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 1")->fetch()['c'];
 
-$ultimosPedidos = $db->query("SELECT * FROM pedidos ORDER BY creado_en DESC LIMIT 8")->fetchAll();
+// ----- Paginación de "Últimos pedidos" -----
+$pedidosPorPagina = 10;
+$paginaActual2 = max(1, (int) ($_GET['pagina'] ?? 1));
+$offsetPedidos = ($paginaActual2 - 1) * $pedidosPorPagina;
+
+$totalPedidosTabla = $db->query("SELECT COUNT(*) c FROM pedidos")->fetch()['c'];
+$totalPaginasPedidos = max(1, (int) ceil($totalPedidosTabla / $pedidosPorPagina));
+$paginaActual2 = min($paginaActual2, $totalPaginasPedidos);
+$offsetPedidos = ($paginaActual2 - 1) * $pedidosPorPagina;
+
+$stmtPedidos = $db->prepare("SELECT * FROM pedidos ORDER BY creado_en DESC LIMIT :limite OFFSET :offset");
+$stmtPedidos->bindValue(':limite', $pedidosPorPagina, PDO::PARAM_INT);
+$stmtPedidos->bindValue(':offset', $offsetPedidos, PDO::PARAM_INT);
+$stmtPedidos->execute();
+$ultimosPedidos = $stmtPedidos->fetchAll();
 
 // ------------------------------------------------------------------
 // MODO DE PRUEBA: pon esto en true para ver las tarjetas con datos
@@ -324,7 +338,7 @@ function pintarOlas(): void
     <button type="button" class="btn-scroll-tabla btn-scroll-der" aria-label="Desplazar tabla a la derecha"><i class="ti ti-chevron-right"></i></button>
 </div>
     <div class="tabla-scroll">
-    <table>
+    <table id="tabla-ultimos-pedidos">
 <thead><tr>
     <th><i class="ti ti-hash"></i>Código</th>
     <th><i class="ti ti-user"></i>Cliente</th>
@@ -333,7 +347,7 @@ function pintarOlas(): void
     <th><i class="ti ti-currency-dollar"></i>Total</th>
     <th><i class="ti ti-flag"></i>Estado</th>
     <th><i class="ti ti-calendar"></i>Fecha</th>
-</tr></thead>        <tbody>
+</tr></thead>        <tbody id="tbody-ultimos-pedidos">
         <?php foreach ($ultimosPedidos as $p): ?>
             <tr>
                 <td><a href="pedidos.php?ver=<?= $p['id'] ?>"><?= limpiar($p['codigo']) ?></a></td>
@@ -351,6 +365,21 @@ function pintarOlas(): void
         </tbody>
 </table>
     </div>
+
+    <?php if ($totalPaginasPedidos > 1): ?>
+    <div class="paginacion-pedidos" id="paginacion-pedidos"
+         data-pagina-actual="<?= $paginaActual2 ?>" data-total-paginas="<?= $totalPaginasPedidos ?>">
+        <button type="button" class="btn-scroll-tabla" id="btn-pag-prev" <?= $paginaActual2 <= 1 ? 'disabled' : '' ?>
+            aria-label="Ver pedidos más recientes">
+            <i class="ti ti-chevron-left"></i>
+        </button>
+        <span class="paginacion-texto" id="txt-pagina-actual">Página <?= $paginaActual2 ?> de <?= $totalPaginasPedidos ?></span>
+        <button type="button" class="btn-scroll-tabla" id="btn-pag-next" <?= $paginaActual2 >= $totalPaginasPedidos ? 'disabled' : '' ?>
+            aria-label="Ver pedidos anteriores">
+            <i class="ti ti-chevron-right"></i>
+        </button>
+    </div>
+    <?php endif; ?>
 </div>
 
 <?php require __DIR__ . '/_layout_bottom.php'; ?>

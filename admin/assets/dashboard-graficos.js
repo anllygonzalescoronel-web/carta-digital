@@ -5,7 +5,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     if (!window.datosGraficosDashboard) return;
     const datos = window.datosGraficosDashboard;
-    const coloresBase = ['#E8590C', '#4ade80', '#7ea8ff', '#c23b8a', '#f2c94c', '#5b4bd6', '#ff8a8a', '#1f9e6d', '#9b6bd6', '#3fb8af'];
+    const coloresBase = ['#f2c94c', '#4ade80', '#38d5fc', '#1769d3', '#ff843d', '#e44040', '#ff8a8a', '#1f9e6d', '#9b6bd6', '#3fb8af'];
+    const coloresProductos = ['#016bb3', '#40d7eb', '#7ea8ff', '#dd7835', '#f2c94c', '#5b4bd6', '#ff8a8a', '#e44040', '#9b6bd6', '#3fb8af'];
 
     function formatoSoles(valor) {
         return 'S/ ' + Number(valor).toFixed(2);
@@ -180,9 +181,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ---------- 3. Anillo de progreso continuo (usado por "Productos activos") ----------
-    function pintarAnilloProgreso(idContenedor, vistas, indiceInicial) {
+    function pintarAnilloProgreso(idContenedor, vistas, indiceInicial, coloresPropios) {
         const wrap = document.getElementById(idContenedor);
         if (!wrap) return;
+        const coloresUsar = coloresPropios || coloresBase;
 
         const contenedor = wrap.closest('.grafico-box');
         const tabsWrap = contenedor ? contenedor.querySelector('.grafico-tabs') : null;
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const lblEl = document.getElementById(idContenedor + '_lbl');
             if (!vista || !vista.labels.length || !grupoArcos) return;
 
-            const colores = coloresBase.slice(0, vista.labels.length);
+            const colores = coloresUsar.slice(0, vista.labels.length);
             const total = vista.valores.reduce(function (a, b) { return a + b; }, 0);
             const circun = 2 * Math.PI * rArco;
 
@@ -384,7 +386,44 @@ document.addEventListener('DOMContentLoaded', function () {
         pintarAnilloAspas('anilloPendientes', datos.pendientes.porEstado);
     }
     if (datos.productos) {
-        pintarAnilloProgreso('anilloProductos', [datos.productos.vsInactivos, datos.productos.porCategoria], 0);
+        pintarAnilloProgreso('anilloProductos', [datos.productos.vsInactivos, datos.productos.porCategoria], 0, coloresProductos);
+    }
+
+    // ---------- 5. Paginación de "Últimos pedidos" sin recargar la página ----------
+    const contPaginacion = document.getElementById('paginacion-pedidos');
+    if (contPaginacion) {
+        const tbody = document.getElementById('tbody-ultimos-pedidos');
+        const btnPrev = document.getElementById('btn-pag-prev');
+        const btnNext = document.getElementById('btn-pag-next');
+        const txtPagina = document.getElementById('txt-pagina-actual');
+
+        function irAPagina(pagina) {
+            btnPrev.disabled = true;
+            btnNext.disabled = true;
+            fetch('ajax-ultimos-pedidos.php?pagina=' + pagina)
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    tbody.innerHTML = data.filasHtml;
+                    txtPagina.textContent = 'Página ' + data.pagina + ' de ' + data.totalPaginas;
+                    contPaginacion.setAttribute('data-pagina-actual', data.pagina);
+                    btnPrev.disabled = data.pagina <= 1;
+                    btnNext.disabled = data.pagina >= data.totalPaginas;
+                })
+                .catch(function () {
+                    btnPrev.disabled = false;
+                    btnNext.disabled = false;
+                });
+        }
+
+        btnPrev.addEventListener('click', function () {
+            const actual = parseInt(contPaginacion.getAttribute('data-pagina-actual'), 10);
+            irAPagina(Math.max(actual - 1, 1));
+        });
+        btnNext.addEventListener('click', function () {
+            const actual = parseInt(contPaginacion.getAttribute('data-pagina-actual'), 10);
+            const total = parseInt(contPaginacion.getAttribute('data-total-paginas'), 10);
+            irAPagina(Math.min(actual + 1, total));
+        });
     }
 
 });

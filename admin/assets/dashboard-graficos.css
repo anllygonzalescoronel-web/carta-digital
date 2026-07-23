@@ -397,7 +397,7 @@ body.modo-oscuro table th {
 
 body.modo-oscuro table td {
     border-bottom-color: #33384485;
-    color: #d8d8dc;
+    color: #ececed;
 }
 
 body.modo-oscuro table tr:hover td {
@@ -422,11 +422,11 @@ body.modo-oscuro .admin-topbar h1 {
 
 /* ===== Encabezado de tabla: neumórfico + acento naranja ===== */
 table th {
-    background: var(--neu-base);
+    background: linear-gradient(rgba(232,89,12,.04), rgba(232,89,12,.04)), var(--neu-base);
     box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
-    color: #888;
+    color: #4a5160;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .6px;
     padding: 12px 10px;
@@ -441,7 +441,8 @@ table th i {
 }
 
 body.modo-oscuro table th {
-    color: #9aa0ac;
+    background: linear-gradient(rgba(232,89,12,.07), rgba(232,89,12,.07)), var(--neu-base);
+    color: #c7cbd4;
 }
 
 /* ===== Resaltado de columna al pasar el cursor ===== */
@@ -576,6 +577,25 @@ body.modo-oscuro .col-hover {
     .tabla-controles {
         display: flex;
     }
+}
+
+/* ===== Paginación de "Últimos pedidos" ===== */
+.paginacion-pedidos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.paginacion-texto {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+}
+
+body.modo-oscuro .paginacion-texto {
+    color: #9aa0ac;
 }
 
 
