@@ -792,88 +792,6 @@ body.modo-oscuro .grafico-leyenda { color: #9aa0ac; }
     .grafico-box { padding: 14px 14px 10px; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ===== Anillo de progreso estilo "reloj" con brillo ===== */
 .anillo-progreso-wrap {
     position: relative;
@@ -932,9 +850,6 @@ body.modo-oscuro .anillo-centro-num {
     animation: anilloPulso .6s cubic-bezier(.22,1,.36,1) both;
 }
 
-
-
-
 /* ===== Rayitas cargando una por una al aparecer ===== */
 @keyframes tickAparece {
     from { opacity: 0; }
@@ -946,11 +861,73 @@ body.modo-oscuro .anillo-centro-num {
     animation: tickAparece .15s ease-out forwards;
 }
 
-
-
 /* ===== Aspas fijas para "Pedidos pendientes por estado" ===== */
 .anillo-aspa {
-    transition: fill .3s ease;
+    transition: fill .3s ease, transform .25s cubic-bezier(.22,1,.36,1), filter .2s ease;
+    transform: translate(0, 0);
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: pointer;
     opacity: 0;
     animation: tickAparece .25s ease-out forwards;
+}
+
+.anillo-aspa:hover {
+    transform: translate(var(--dx), var(--dy));
+    filter: brightness(1.18) saturate(1.35);
+}
+
+/* ===== Dona "Ventas hoy vs Ayer": degradado + hover + centro ===== */
+.dona-ventas-segmento {
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+    transform: translate(0, 0);
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.dona-ventas-segmento:hover {
+    transform: translate(var(--dx), var(--dy));
+}
+
+.dona-ventas-centro-num {
+    font-size: 17px;
+    font-weight: 800;
+    fill: #444a5a;
+}
+
+body.modo-oscuro .dona-ventas-centro-num {
+    fill: #f2f2f4;
+}
+
+.dona-ventas-centro-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    fill: #999;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.dona-ventas-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #262a35;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -8px);
+    transition: opacity .15s ease;
+    z-index: 5;
+}
+
+#anilloVentas {
+    position: relative;
+}
+
+.dona-ventas-tooltip.visible {
+    opacity: 1;
 }

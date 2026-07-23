@@ -92,6 +92,7 @@ for ($i = 6; $i >= 0; $i--) {
 $desglosoEstadosFilas = $db->query("SELECT estado, COUNT(*) c FROM pedidos GROUP BY estado")->fetchAll();
 $mapaEstados = [
     'pendiente'       => 0,
+    'pagado'          => 0,
     'en_preparacion'  => 0,
     'en_camino'       => 0,
     'entregado'       => 0,
@@ -281,13 +282,11 @@ function pintarOlas(): void
             <div class="grafico-header">
                 <h4><i class="ti ti-chart-donut"></i> Ventas hoy vs Ayer</h4>
             </div>
-            <div class="grafico-canvas-wrap">
-                <canvas id="graficoVentas"></canvas>
-            </div>
+<div id="anilloVentas" class="anillo-progreso-wrap"></div>
             <div class="grafico-leyenda"></div>
         </div>
     </div>
-    
+
 <div class="grafico-frame">
         <div class="grafico-box">
             <div class="grafico-header">

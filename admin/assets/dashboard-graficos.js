@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const datos = window.datosGraficosDashboard;
     const coloresBase = ['#E8590C', '#4ade80', '#7ea8ff', '#c23b8a', '#f2c94c', '#5b4bd6', '#ff8a8a', '#1f9e6d', '#9b6bd6', '#3fb8af'];
 
+    function formatoSoles(valor) {
+        return 'S/ ' + Number(valor).toFixed(2);
+    }
+
     // ---------- 1. Pedidos: gráfico de área, últimos 7 días (Chart.js) ----------
     if (typeof Chart !== 'undefined') {
         Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
@@ -50,26 +54,129 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ---------- 2. Ventas hoy vs Ayer: se queda como dona normal de Chart.js ----------
-    function crearDonaSimple(idCanvas, vista) {
-        const canvas = document.getElementById(idCanvas);
-        if (!canvas || typeof Chart === 'undefined' || !vista || !vista.labels.length) return;
-        const colores = coloresBase.slice(0, vista.labels.length);
-        new Chart(canvas, {
-            type: 'doughnut',
-            data: { labels: vista.labels, datasets: [{ data: vista.valores, backgroundColor: colores, borderWidth: 0, hoverOffset: 6 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
-        });
-        const contenedor = canvas.closest('.grafico-box');
+    // ---------- 2. Ventas hoy vs Ayer: dona hecha a mano con degradados,
+    //              separación al pasar el cursor, tooltip y total en el centro ----------
+    function pintarDonaVentas(idContenedor, vista) {
+        const wrap = document.getElementById(idContenedor);
+        if (!wrap || !vista || vista.valores.length < 2) return;
+
+        const contenedor = wrap.closest('.grafico-box');
         const leyendaEl = contenedor ? contenedor.querySelector('.grafico-leyenda') : null;
+
+        const cx = 100, cy = 100, rIn = 58, rOut = 84;
+        const gapDeg = 6; // espacio entre los 2 arcos, a cada lado
+        const hoy = vista.valores[0] || 0;
+        const ayer = vista.valores[1] || 0;
+        const total = hoy + ayer;
+
+        // Degradados: naranja (Hoy) y verde (Ayer), 2 tonos cada uno = 4 tonos en total
+        const defsGrad =
+            '<defs>' +
+            '<linearGradient id="' + idContenedor + '_gradHoy" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '<stop offset="0%" stop-color="#ff9a4d"/><stop offset="100%" stop-color="#c9450c"/>' +
+            '</linearGradient>' +
+            '<linearGradient id="' + idContenedor + '_gradAyer" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '<stop offset="0%" stop-color="#7cf5b0"/><stop offset="100%" stop-color="#189a5f"/>' +
+            '</linearGradient>' +
+            '</defs>';
+
+        function punto(anguloDeg, radio) {
+            const rad = (anguloDeg * Math.PI) / 180;
+            return { x: cx + radio * Math.cos(rad), y: cy + radio * Math.sin(rad) };
+        }
+
+        // Path tipo "dona" (arco relleno entre rIn y rOut) para un segmento
+        function pathSegmento(anguloInicio, anguloFin) {
+            const largeArc = (anguloFin - anguloInicio) > 180 ? 1 : 0;
+            const pOutIni = punto(anguloInicio, rOut);
+            const pOutFin = punto(anguloFin, rOut);
+            const pInFin = punto(anguloFin, rIn);
+            const pInIni = punto(anguloInicio, rIn);
+            return 'M ' + pOutIni.x + ' ' + pOutIni.y +
+                ' A ' + rOut + ' ' + rOut + ' 0 ' + largeArc + ' 1 ' + pOutFin.x + ' ' + pOutFin.y +
+                ' L ' + pInFin.x + ' ' + pInFin.y +
+                ' A ' + rIn + ' ' + rIn + ' 0 ' + largeArc + ' 0 ' + pInIni.x + ' ' + pInIni.y +
+                ' Z';
+        }
+
+        // Ángulos (empezando arriba, -90°), proporcionales al monto, con espacio entre ambos
+        const anguloTotalDisponible = 360 - (2 * gapDeg);
+        const fracHoy = total > 0 ? hoy / total : 0.5;
+        const anguloHoy = anguloTotalDisponible * fracHoy;
+        const anguloAyer = anguloTotalDisponible * (1 - fracHoy);
+
+        const inicioHoy = -90 + (gapDeg / 2);
+        const finHoy = inicioHoy + anguloHoy;
+        const inicioAyer = finHoy + gapDeg;
+        const finAyer = inicioAyer + anguloAyer;
+
+        const segmentos = [
+            { label: 'Hoy', valor: hoy, ini: inicioHoy, fin: finHoy, gradId: idContenedor + '_gradHoy', colorLeyenda: '#E8590C' },
+            { label: 'Ayer', valor: ayer, ini: inicioAyer, fin: finAyer, gradId: idContenedor + '_gradAyer', colorLeyenda: '#1f9e6d' },
+        ];
+
+        let pathsHtml = '';
+        segmentos.forEach(function (seg, i) {
+            const bisector = (seg.ini + seg.fin) / 2;
+            const rad = (bisector * Math.PI) / 180;
+            const dist = 10; // qué tanto se separa al pasar el cursor
+            const dx = (Math.cos(rad) * dist).toFixed(2);
+            const dy = (Math.sin(rad) * dist).toFixed(2);
+            pathsHtml += '<path class="dona-ventas-segmento" data-i="' + i + '" '
+                + 'style="--dx:' + dx + 'px; --dy:' + dy + 'px;" '
+                + 'd="' + pathSegmento(seg.ini, seg.fin) + '" fill="url(#' + seg.gradId + ')"/>';
+        });
+
+        // Mini gráfico de barritas en el centro, comparando las alturas de Hoy vs Ayer
+        // (sin números, todo visual — la barra más alta es la que vendió más)
+        const maxAltura = 42;
+        const minAltura = 6;
+        const maxValor = Math.max(hoy, ayer, 0.01);
+        const alturaHoy = Math.max((hoy / maxValor) * maxAltura, hoy > 0 ? minAltura : 2);
+        const alturaAyer = Math.max((ayer / maxValor) * maxAltura, ayer > 0 ? minAltura : 2);
+        const baseY = 118;
+        const barW = 16, gap = 10;
+        const xHoy = 100 - barW - (gap / 2);
+        const xAyer = 100 + (gap / 2);
+
+        const barritasHtml =
+            '<line x1="72" y1="' + baseY + '" x2="128" y2="' + baseY + '" stroke="rgba(150,150,160,.35)" stroke-width="1.5"/>' +
+            '<rect x="' + xHoy + '" y="' + (baseY - alturaHoy) + '" width="' + barW + '" height="' + alturaHoy + '" rx="4" fill="url(#' + idContenedor + '_gradHoy)"/>' +
+            '<rect x="' + xAyer + '" y="' + (baseY - alturaAyer) + '" width="' + barW + '" height="' + alturaAyer + '" rx="4" fill="url(#' + idContenedor + '_gradAyer)"/>';
+
+        wrap.innerHTML =
+            '<svg viewBox="0 0 200 200">' +
+            defsGrad +
+            '<g>' + pathsHtml + '</g>' +
+            '<g>' + barritasHtml + '</g>' +
+            '</svg>' +
+            '<div class="dona-ventas-tooltip"></div>';
+
+        // Tooltip que sigue al cursor, con el monto exacto de cada segmento
+        const tooltip = wrap.querySelector('.dona-ventas-tooltip');
+        wrap.querySelectorAll('.dona-ventas-segmento').forEach(function (path) {
+            const seg = segmentos[parseInt(path.getAttribute('data-i'), 10)];
+            path.addEventListener('mousemove', function (ev) {
+                const rect = wrap.getBoundingClientRect();
+                tooltip.style.left = (ev.clientX - rect.left) + 'px';
+                tooltip.style.top = (ev.clientY - rect.top - 22) + 'px';
+                tooltip.textContent = seg.label + ': ' + formatoSoles(seg.valor);
+                tooltip.classList.add('visible');
+            });
+            path.addEventListener('mouseleave', function () {
+                tooltip.classList.remove('visible');
+            });
+        });
+
         if (leyendaEl) {
-            leyendaEl.innerHTML = vista.labels.map(function (etq, i) {
-                return '<span class="leyenda-item"><i style="background:' + colores[i % colores.length] + '"></i>' + etq + '</span>';
+            leyendaEl.innerHTML = [segmentos[1], segmentos[0]].map(function (seg) {
+                return '<span class="leyenda-item"><i style="background:' + seg.colorLeyenda + '"></i>' + seg.label + ' (' + formatoSoles(seg.valor) + ')</span>';
             }).join('');
         }
     }
+
     if (datos.ventas) {
-        crearDonaSimple('graficoVentas', datos.ventas.hoyVsAyer);
+        pintarDonaVentas('anilloVentas', datos.ventas.hoyVsAyer);
     }
 
     // ---------- 3. Anillo de progreso continuo (usado por "Productos activos") ----------
@@ -227,7 +334,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const anguloInicio = (360 / numAspas) * i - 90;
             const color = valor > 0 ? colorActivo[i] : colorInactivo;
             const retraso = (0.5 + i * 0.08).toFixed(2);
-            aspas += '<path class="anillo-aspa" style="animation-delay:' + retraso + 's" '
+
+            // Dirección hacia la que se "levanta" el aspa al pasar el cursor
+            // (usa el ángulo medio de esa aspa, igual que en la dona de ventas)
+            const bisector = anguloInicio + (segAngle / 2);
+            const rad = (bisector * Math.PI) / 180;
+            const dist = 8;
+            const dx = (Math.cos(rad) * dist).toFixed(2);
+            const dy = (Math.sin(rad) * dist).toFixed(2);
+
+            aspas += '<path class="anillo-aspa" data-i="' + i + '" '
+                   + 'style="animation-delay:' + retraso + 's; --dx:' + dx + 'px; --dy:' + dy + 'px;" '
                    + 'd="' + pathAspa(anguloInicio) + '" fill="' + color + '"/>';
         });
 
@@ -236,7 +353,24 @@ document.addEventListener('DOMContentLoaded', function () {
             '<g>' + aspas + '</g>' +
             '<text x="100" y="96" text-anchor="middle" class="anillo-centro-num">' + total + '</text>' +
             '<text x="100" y="118" text-anchor="middle" class="anillo-centro-lbl">Total</text>' +
-            '</svg>';
+            '</svg>' +
+            '<div class="dona-ventas-tooltip"></div>';
+
+        // Tooltip con el número exacto de esa aspa al pasar el cursor
+        const tooltip = wrap.querySelector('.dona-ventas-tooltip');
+        wrap.querySelectorAll('.anillo-aspa').forEach(function (path) {
+            const i = parseInt(path.getAttribute('data-i'), 10);
+            path.addEventListener('mousemove', function (ev) {
+                const rect = wrap.getBoundingClientRect();
+                tooltip.style.left = (ev.clientX - rect.left) + 'px';
+                tooltip.style.top = (ev.clientY - rect.top - 22) + 'px';
+                tooltip.textContent = vista.labels[i] + ': ' + vista.valores[i];
+                tooltip.classList.add('visible');
+            });
+            path.addEventListener('mouseleave', function () {
+                tooltip.classList.remove('visible');
+            });
+        });
 
         if (leyendaEl) {
             leyendaEl.innerHTML = vista.labels.map(function (etq, i) {
@@ -252,4 +386,5 @@ document.addEventListener('DOMContentLoaded', function () {
     if (datos.productos) {
         pintarAnilloProgreso('anilloProductos', [datos.productos.vsInactivos, datos.productos.porCategoria], 0);
     }
+
 });
