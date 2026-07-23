@@ -61,6 +61,7 @@ const ctxTendencia = document.getElementById('graficoPedidosTendencia');
         });
     }
 
+    
     // ---------- Función genérica: dona con toggle entre "vistas" ----------
     function crearDonaConToggle(idCanvas, nombreGrafico, vistas) {
         const canvas = document.getElementById(idCanvas);
