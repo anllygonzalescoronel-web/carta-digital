@@ -1,7 +1,19 @@
 <?php
-$tituloPagina = 'Pedidos';
-$paginaActual = 'pedidos';
-require __DIR__ . '/_layout_top.php';
+// Detectamos si esta petición viene de nuestro JS (fetch) para no volver
+// a imprimir el HTML de todo el layout (sidebar, topbar, etc.), solo la
+// tabla + filtros + paginación.
+$esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+if ($esAjax) {
+    require_once __DIR__ . '/../includes/auth.php';
+    require_once __DIR__ . '/../includes/functions.php';
+    requerirLogin();
+} else {
+    $tituloPagina = 'Pedidos';
+    $paginaActual = 'pedidos';
+    require __DIR__ . '/_layout_top.php';
+}
 
 $db = getDB();
 $mensaje = '';
@@ -87,7 +99,7 @@ function iconoPago(string $metodo, bool $conTexto = false): string
 }
 ?>
 
-<?php if ($mensaje): ?><div class="alerta-ok"><i class="ti ti-circle-check"></i> <?= limpiar($mensaje) ?></div><?php endif; ?>
+<?php if ($mensaje && !$esAjax): ?><div class="alerta-ok"><i class="ti ti-circle-check"></i> <?= limpiar($mensaje) ?></div><?php endif; ?>
 
 <?php if ($pedidoDetalle): ?>
 <div class="card">
@@ -183,8 +195,10 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <?php else: ?>
 
+<div id="listado-pedidos-ajax">
+
 <div class="card" style="padding-bottom:6px;">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <div class="filtros-ajax" style="display:flex;gap:8px;flex-wrap:wrap;">
         <a href="pedidos.php" class="btn <?= $filtroEstado==='' ? 'btn-primario' : 'btn-secundario' ?> btn-sm"><i class="ti ti-list"></i> Todos</a>
         <?php foreach (['pendiente','pagado','en_preparacion','en_camino','entregado','cancelado'] as $e): ?>
             <a href="?estado=<?= $e ?>" class="badge badge-<?= $e ?> filtro-badge <?= $filtroEstado===$e ? 'filtro-activo' : '' ?>"><?= $e ?></a>
@@ -237,6 +251,11 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
     <?php endif; ?>
 </div>
+
+</div><!-- /listado-pedidos-ajax -->
+
 <?php endif; ?>
 
+<?php if (!$esAjax): ?>
 <?php require __DIR__ . '/_layout_bottom.php'; ?>
+<?php endif; ?>
