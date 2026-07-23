@@ -287,18 +287,14 @@ function pintarOlas(): void
             <div class="grafico-leyenda"></div>
         </div>
     </div>
-
-    <div class="grafico-frame">
+    
+<div class="grafico-frame">
         <div class="grafico-box">
             <div class="grafico-header">
-                <h4><i class="ti ti-chart-donut"></i> Pedidos pendientes</h4>
-                <div class="grafico-tabs" data-grafico="pendientes">
-                    <button type="button" class="tab-activa" data-vista="0">Pendientes vs Total</button>
-                    <button type="button" data-vista="1">Por estado</button>
-                </div>
+                <h4><i class="ti ti-chart-donut"></i> Pedidos pendientes por estado</h4>
             </div>
             <div class="grafico-canvas-wrap">
-                <canvas id="graficoPendientes"></canvas>
+                <div id="anilloPendientes" class="anillo-progreso-wrap"></div>
             </div>
             <div class="grafico-leyenda"></div>
         </div>
@@ -314,7 +310,7 @@ function pintarOlas(): void
                 </div>
             </div>
             <div class="grafico-canvas-wrap">
-                <canvas id="graficoProductos"></canvas>
+                <div id="anilloProductos" class="anillo-progreso-wrap"></div>
             </div>
             <div class="grafico-leyenda"></div>
         </div>
