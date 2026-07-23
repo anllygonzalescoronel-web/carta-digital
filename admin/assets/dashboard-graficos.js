@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.datosGraficosDashboard) return;
     const datos = window.datosGraficosDashboard;
     const coloresBase = ['#f2c94c', '#4ade80', '#38d5fc', '#1769d3', '#ff843d', '#e44040', '#ff8a8a', '#1f9e6d', '#9b6bd6', '#3fb8af'];
-    const coloresProductos = ['#016bb3', '#40d7eb', '#7ea8ff', '#dd7835', '#f2c94c', '#5b4bd6', '#ff8a8a', '#e44040', '#9b6bd6', '#3fb8af'];
+    const coloresProductos = ['#016bb3', '#40d7eb', '#7ea8ff', '#ec823c', '#f2c94c', '#5b4bd6', '#ff8a8a', '#e44040', '#9b6bd6', '#3fb8af'];
 
     function formatoSoles(valor) {
         return 'S/ ' + Number(valor).toFixed(2);
