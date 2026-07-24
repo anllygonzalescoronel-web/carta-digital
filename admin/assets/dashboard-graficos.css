@@ -729,7 +729,7 @@ body.modo-oscuro .btn-secundario {
 }
 
 .dropdown-neu-btn i {
-    color: #999;
+    color: #E8590C;
     font-size: 14px;
     transition: transform .2s ease;
 }
@@ -759,6 +759,38 @@ body.modo-oscuro .btn-secundario {
 .dropdown-neu.abierto .dropdown-neu-lista {
     display: block;
     animation: entradaArriba .18s ease both;
+}
+
+/* ===== Variante: dropdown que se abre hacia ABAJO (para selects cerca
+   del inicio de un formulario/modal, donde abrir hacia arriba no cabe) ===== */
+.dropdown-neu.abre-abajo .dropdown-neu-lista {
+    top: calc(100% + 8px);
+    bottom: auto;
+}
+
+.dropdown-neu.abre-abajo.abierto .dropdown-neu-lista {
+    animation: entradaSuave .18s ease both;
+}
+
+/* El dropdown ocupa todo el ancho cuando vive dentro de un .form-group,
+   y su botón se ve HUNDIDO como el resto de los campos del formulario
+   (en vez de elevado, que es como se ve en otros contextos, ej. Pedidos) */
+.form-group .dropdown-neu {
+    width: 100%;
+    min-width: 0;
+}
+
+.form-group .dropdown-neu-btn {
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    color: #333;
+}
+
+body.modo-oscuro .form-group .dropdown-neu-btn {
+    color: #ececed;
+}
+
+.form-group .dropdown-neu.abierto .dropdown-neu-btn {
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
 }
 
 @keyframes entradaArriba {
@@ -901,6 +933,30 @@ body.modo-oscuro .stepper-neu {
 
 .modal-overlay {
     outline: none;
+}
+
+/* ===== Scroll del modal, a juego con el tema (en vez de la barra
+   azul/gris genérica del navegador) ===== */
+.modal-box {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232,89,12,.4) transparent;
+}
+
+.modal-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+    background: rgba(232,89,12,.4);
+    border-radius: 10px;
+}
+
+.modal-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(232,89,12,.65);
 }
 
 /* ===== Modal de confirmación (reemplaza el confirm() nativo del navegador) ===== */
@@ -1330,11 +1386,20 @@ body.modo-oscuro .dona-ventas-centro-num {
     vertical-align: middle;
 }
 
+/* Tamaño del ícono SVG dentro de los botones de acción (editar/eliminar) */
 .icono-accion-svg {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
     pointer-events: none;
+}
+
+/* Estrella de "Destacado" en productos (SVG, no emoji) */
+.icono-estrella {
+    width: 19px;
+    height: 19px;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 2px rgba(242,201,76,.5));
 }
 
 .btn-icono-accion:last-child {
@@ -1433,6 +1498,39 @@ body.modo-oscuro .form-group textarea {
 .form-group textarea:focus {
     outline: none;
     box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
+
+/* ===== Input de archivo (Seleccionar archivo): botón con degradado naranja ===== */
+.form-group input[type="file"] {
+    padding: 9px 10px;
+    cursor: pointer;
+    font-size: 12.5px;
+}
+
+.form-group input[type="file"]::file-selector-button,
+.form-group input[type="file"]::-webkit-file-upload-button {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    margin-right: 12px;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12.5px;
+    cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(232,89,12,.35);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.form-group input[type="file"]::file-selector-button:hover,
+.form-group input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+.form-group input[type="file"]::file-selector-button:active,
+.form-group input[type="file"]::-webkit-file-upload-button:active {
+    transform: translateY(0);
 }
 
 /* Casilla "Visible en la carta pública" también en su cuadro elevado */
