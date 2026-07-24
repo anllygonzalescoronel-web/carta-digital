@@ -17,6 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $activo = isset($_POST['activo']) ? 1 : 0;
             if ($nombre === '') throw new RuntimeException('El nombre es obligatorio.');
 
+            // Si es una categoría nueva y dejaron el orden en 0 (sin tocarlo),
+            // le asignamos automáticamente el siguiente número disponible.
+            if ($id <= 0 && $orden === 0) {
+                $maxOrden = (int) $db->query('SELECT COALESCE(MAX(orden), 0) m FROM categorias')->fetch()['m'];
+                $orden = $maxOrden + 1;
+            }
+
             if ($id > 0) {
                 $stmt = $db->prepare('UPDATE categorias SET nombre=:n, orden=:o, activo=:a WHERE id=:id');
                 $stmt->execute(['n'=>$nombre,'o'=>$orden,'a'=>$activo,'id'=>$id]);

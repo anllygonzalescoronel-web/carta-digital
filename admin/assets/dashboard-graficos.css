@@ -237,7 +237,7 @@
 
 :root {
     --neu-base: #e9edf5;
-    --neu-sombra-clara: rgba(255,255,255,.85);
+    --neu-sombra-clara: rgba(255, 255, 255, 0.171);
     --neu-sombra-oscura: rgba(163,177,198,.55);
 }
 
