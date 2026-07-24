@@ -51,6 +51,11 @@ $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.
 <button class="btn-nuevo" onclick="abrirModalCategoria()">+ Nueva categoría</button>
 
 <div class="card">
+    <div class="tabla-controles">
+        <button type="button" class="btn-scroll-tabla btn-scroll-izq" aria-label="Desplazar tabla a la izquierda"><i class="ti ti-chevron-left"></i></button>
+        <button type="button" class="btn-scroll-tabla btn-scroll-der" aria-label="Desplazar tabla a la derecha"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="tabla-scroll">
     <table>
         <thead><tr><th>Orden</th><th>Nombre</th><th>Productos</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody>
@@ -85,6 +90,7 @@ $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.
         <?php if (empty($categorias)): ?><tr><td colspan="5" style="text-align:center;color:#999;">No hay categorías todavía.</td></tr><?php endif; ?>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- Modal -->
@@ -127,7 +133,7 @@ $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.
             <i class="ti ti-alert-triangle"></i>
         </div>
         <h3>¿Eliminar esta categoría?</h3>
-        <p>Se eliminará junto con sus productos. Esta acción no se puede deshacer.</p>
+        <p>Se eliminará el elemento seleccionado. Esta acción no se puede deshacer.</p>
         <div class="modal-confirmar-botones">
             <button type="button" class="btn btn-secundario" id="btnCancelarEliminar">Cancelar</button>
             <button type="button" class="btn btn-peligro-solido" id="btnConfirmarEliminar">

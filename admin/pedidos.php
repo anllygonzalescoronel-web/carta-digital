@@ -138,7 +138,7 @@ function iconoPago(string $metodo, bool $conTexto = false): string
         <p class="detalle-total-final">Total: <?= formatoPrecio($pedidoDetalle['total']) ?></p>
     </div>
 
-    <form method="POST" style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+    <form method="POST" class="form-detalle-estado">
         <input type="hidden" name="accion" value="cambiar_estado">
         <input type="hidden" name="id" value="<?= $pedidoDetalle['id'] ?>">
 
@@ -207,6 +207,11 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 
 <div class="card">
+    <div class="tabla-controles">
+        <button type="button" class="btn-scroll-tabla btn-scroll-izq" aria-label="Desplazar tabla a la izquierda"><i class="ti ti-chevron-left"></i></button>
+        <button type="button" class="btn-scroll-tabla btn-scroll-der" aria-label="Desplazar tabla a la derecha"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="tabla-scroll">
     <table id="tabla-pedidos">
         <thead><tr>
             <th><i class="ti ti-hash"></i>Código</th>
@@ -234,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <?php if (empty($pedidos)): ?><tr><td colspan="8" style="text-align:center;color:#999;">No hay pedidos.</td></tr><?php endif; ?>
         </tbody>
     </table>
+    </div>
 
     <?php if ($totalPaginasPedidos > 1): ?>
     <div class="paginacion-pedidos">
