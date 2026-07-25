@@ -1649,3 +1649,75 @@ body.modo-oscuro .alerta-error i {
     color: #E8590C;
     font-size: 18px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================================================================
+   LOGIN: layout dividido + ilustración animada + efectos
+   ================================================================== */
+
+.login-body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(rgba(122, 43, 15, 0), rgba(232, 89, 12, 0.11)), url('pollo.png') center/cover no-repeat fixed;
+}
+
+.login-wrap {
+    display: flex;
+    width: 100%;
+    max-width: 920px;
+    min-height: 520px;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+}
+
+/* ----- Lado izquierdo: ilustración ----- */
+.login-visual {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(rgba(122, 43, 15, 0.288), rgba(232, 89, 12, 0)), url('pollo2.jpg') center/cover no-repeat;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    color: #fff;
+    text-align: center;
+}
+
