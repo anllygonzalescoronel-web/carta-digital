@@ -1565,3 +1565,71 @@ body.modo-oscuro .form-check label {
     transform: translateY(0);
     box-shadow: inset 3px 3px 6px rgba(0,0,0,.3);
 }
+
+/* ===== Alertas (éxito/error): píldora neumórfica compacta, no una barra ===== */
+.alerta-ok,
+.alerta-error {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--neu-base);
+    padding: 8px 16px 8px 10px;
+    border-radius: 30px;
+    font-size: 12.5px;
+    font-weight: 700;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+    margin-bottom: 14px;
+    max-width: 100%;
+    transition: opacity .4s ease, transform .4s ease;
+}
+
+.alerta-ok {
+    color: #1e8449;
+}
+
+.alerta-error {
+    color: #c0392b;
+}
+
+.alerta-ok i,
+.alerta-error i {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.alerta-ok i {
+    background: rgba(30,132,73,.15);
+}
+
+.alerta-error i {
+    background: rgba(192,57,43,.15);
+}
+
+body.modo-oscuro .alerta-ok {
+    color: #7fe0a8;
+}
+
+body.modo-oscuro .alerta-ok i {
+    background: rgba(127,224,168,.15);
+}
+
+body.modo-oscuro .alerta-error {
+    color: #ff8a8a;
+}
+
+body.modo-oscuro .alerta-error i {
+    background: rgba(255,138,138,.15);
+}
+
+/* Estado mientras se desvanece antes de quitarse del DOM */
+.alerta-ok.desvaneciendo,
+.alerta-error.desvaneciendo {
+    opacity: 0;
+    transform: translateY(-6px);
+}

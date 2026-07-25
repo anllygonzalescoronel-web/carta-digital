@@ -99,7 +99,19 @@ function iconoPago(string $metodo, bool $conTexto = false): string
 }
 ?>
 
-<?php if ($mensaje && !$esAjax): ?><div class="alerta-ok"><i class="ti ti-circle-check"></i> <?= limpiar($mensaje) ?></div><?php endif; ?>
+<?php if ($mensaje && !$esAjax): ?>
+<div class="alerta-ok" id="alertaMensaje"><i class="ti ti-circle-check"></i> <?= limpiar($mensaje) ?></div>
+<script>
+    (function () {
+        const alerta = document.getElementById('alertaMensaje');
+        if (!alerta) return;
+        setTimeout(function () {
+            alerta.classList.add('desvaneciendo');
+            setTimeout(function () { alerta.remove(); }, 400);
+        }, 3000);
+    })();
+</script>
+<?php endif; ?>
 
 <?php if ($pedidoDetalle): ?>
 <div class="card">
