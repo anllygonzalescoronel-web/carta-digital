@@ -50,9 +50,9 @@ function c($k, $d = '') { global $configFresca; return $configFresca[$k] ?? $d; 
 
 <form method="POST" enctype="multipart/form-data">
 
+<div class="grid-dos-cards">
     <div class="card">
-        <h3>🏪 Datos del negocio</h3>
-        <div class="form-group">
+<h3><i class="ti ti-building-store"></i> Datos del negocio</h3>        <div class="form-group">
             <label>Nombre del negocio</label>
             <input type="text" name="nombre_negocio" value="<?= limpiar(c('nombre_negocio')) ?>" required>
         </div>
@@ -72,8 +72,7 @@ function c($k, $d = '') { global $configFresca; return $configFresca[$k] ?? $d; 
     </div>
 
     <div class="card">
-        <h3>🎨 Colores de la carta</h3>
-        <div class="form-row">
+<h3><i class="ti ti-palette"></i> Colores de la carta</h3>        <div class="form-row">
             <div class="form-group">
                 <label>Color primario</label>
                 <input type="color" name="color_primario" value="<?= limpiar(c('color_primario')) ?>">
@@ -94,18 +93,22 @@ function c($k, $d = '') { global $configFresca; return $configFresca[$k] ?? $d; 
             </div>
         </div>
     </div>
+</div>
+
+
+
+
+<div class="grid-dos-cards">
 
     <div class="card">
-        <h3>📲 WhatsApp para recibir pedidos</h3>
-        <div class="form-group">
+<h3><i class="ti ti-brand-whatsapp"></i> WhatsApp para recibir pedidos</h3>        <div class="form-group">
             <label>Número de WhatsApp (con código de país, sin +)</label>
             <input type="text" name="whatsapp_numero" value="<?= limpiar(c('whatsapp_numero')) ?>" placeholder="51987654321" required>
         </div>
     </div>
 
     <div class="card">
-        <h3>🛵 Entrega</h3>
-        <div class="form-check">
+<h3><i class="ti ti-truck-delivery"></i> Entrega</h3>        <div class="form-check">
             <input type="checkbox" name="recojo_activo" id="recojo_activo" <?= c('recojo_activo')==='1'?'checked':'' ?>>
             <label for="recojo_activo" style="margin:0;">Permitir recojo en local</label>
         </div>
@@ -119,9 +122,11 @@ function c($k, $d = '') { global $configFresca; return $configFresca[$k] ?? $d; 
         </div>
     </div>
 
-    <div class="card">
-        <h3>💰 Métodos de pago</h3>
 
+
+    
+    <div class="card">
+<h3><i class="ti ti-credit-card"></i> Métodos de pago</h3>
         <div class="form-check">
             <input type="checkbox" name="efectivo_activo" id="efectivo_activo" <?= c('efectivo_activo')==='1'?'checked':'' ?>>
             <label for="efectivo_activo" style="margin:0;">Efectivo al recibir</label>

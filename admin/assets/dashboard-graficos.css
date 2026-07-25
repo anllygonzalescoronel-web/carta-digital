@@ -1633,3 +1633,19 @@ body.modo-oscuro .alerta-error i {
     opacity: 0;
     transform: translateY(-6px);
 }
+
+
+
+
+
+/* ===== Íconos naranjas en los títulos de tarjeta ===== */
+.card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card h3 i {
+    color: #E8590C;
+    font-size: 18px;
+}
