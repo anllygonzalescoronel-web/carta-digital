@@ -6,7 +6,6 @@ a { text-decoration: none; color: inherit; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f5f7; color: #222; }
 a { text-decoration: none; color: inherit; }
 
- 
 /* ---------- Login ---------- */
 .login-body {
     min-height: 100vh;
@@ -75,6 +74,9 @@ a { text-decoration: none; color: inherit; }
         animation: none;
         opacity: 1;
         transform: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255,255,255,.14);
     }
 }
  
@@ -89,6 +91,7 @@ a { text-decoration: none; color: inherit; }
     font-size: 22px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin-bottom: 6px;
 }
@@ -96,15 +99,16 @@ a { text-decoration: none; color: inherit; }
     font-size: 13.5px;
     opacity: .9;
     max-width: 320px;
+    margin: 0 auto;
 }
  
 /* ----- Lado derecho: formulario (vidrio esmerilado, llega deslizándose después) ----- */
 .login-form-side {
     flex: 0 0 320px;
     max-width: 320px;
-    background: rgba(255,255,255,.14);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255,255,255,0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
     border-left: 1px solid rgba(255,255,255,.25);
     display: flex;
     flex-direction: column;
@@ -114,13 +118,26 @@ a { text-decoration: none; color: inherit; }
     color: #fff;
     opacity: 0;
     transform: translateX(60px);
-    animation: loginPanelEntra .55s cubic-bezier(.22,1,.36,1) forwards;
-    animation-delay: .5s;
+    animation: loginPanelEntra .55s cubic-bezier(.22,1,.36,1) .5s forwards,
+               loginVidrioEmpana 1.4s ease-out .7s both;
 }
  
 @keyframes loginPanelEntra {
     from { opacity: 0; transform: translateX(60px); }
     to   { opacity: 1; transform: translateX(0); }
+}
+ 
+@keyframes loginVidrioEmpana {
+    from {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        background: rgba(255,255,255,0);
+    }
+    to {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255,255,255,.14);
+    }
 }
  
  
@@ -231,7 +248,7 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
  
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge-pendiente { background: #fff3cd; color: #8a6d3b; }
-.badge-pagado { background: #d4edda; color: #1e7e34; } CLOUDE
+.badge-pagado { background: #d4edda; color: #1e7e34; }
 .badge-en_preparacion { background: #d1ecf1; color: #0c5460; }
 .badge-en_camino { background: #cce5ff; color: #004085; }
 .badge-entregado { background: #ffc085; color: #53361d; }
@@ -251,3 +268,4 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
     .admin-sidebar.abierto { left: 0; }
     .form-row { grid-template-columns: 1fr; }
 }
+ 
