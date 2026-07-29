@@ -46,6 +46,7 @@ if ($hora < 12) {
             <a href="banners.php" class="<?= $paginaActual === 'banners' ? 'activo' : '' ?>"><i class="ti ti-photo"></i> Banners</a>
             <a href="configuracion.php" class="<?= $paginaActual === 'configuracion' ? 'activo' : '' ?>"><i class="ti ti-settings"></i> Configuración</a>
             <a href="sunat_config.php" class="<?= $paginaActual === 'sunat_config' ? 'activo' : '' ?>"><i class="ti ti-file-certificate"></i> SUNAT Nativo</a>
+            <a href="nubefact_config.php" class="<?= $paginaActual === 'nubefact_config' ? 'activo' : '' ?>"><i class="ti ti-cloud"></i> Config. NubeFacT</a>
             <a href="comprobantes.php" class="<?= $paginaActual === 'comprobantes' ? 'activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
             <a href="../index.php" target="_blank"><i class="ti ti-world"></i> Ver carta pública</a>
             <a href="logout.php" class="salir"><i class="ti ti-logout"></i> Cerrar sesión</a>

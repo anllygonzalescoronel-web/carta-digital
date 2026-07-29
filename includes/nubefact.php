@@ -1,6 +1,6 @@
 <?php
 /**
- * Integración con NubeFacT (API REST - JSON) para emitir Boletas electrónicas.
+ * Integración con NubeFacT (API REST - JSON) para emitir Boletas y Facturas.
  * Sigue el mismo patrón que includes/culqi.php: usa cfg() para las credenciales
  * y lanza una excepción propia si algo falla, sin detener el checkout.
  */
@@ -9,7 +9,8 @@ require_once __DIR__ . '/functions.php';
 class NubefactException extends RuntimeException {}
 
 /**
- * Emite una Boleta de Venta electrónica.
+ * Emite una Boleta de Venta electrónica (mantiene compatibilidad con el
+ * formato usado hasta ahora: cliente_dni suelto, sin documento = 0).
  *
  * @param array $pedido [
  *     'serie'  => 'BBB1',
@@ -19,10 +20,62 @@ class NubefactException extends RuntimeException {}
  *     'cliente_dni'    => '12345678' (opcional),
  *     'items' => [ ['descripcion' => 'Lomo Saltado', 'cantidad' => 1, 'precio_unitario' => 60.00], ... ]
  * ]
+ */
+function emitirBoletaNubefact(array $pedido): array {
+    $tieneDni = !empty($pedido['cliente_dni']);
+    return emitirComprobanteNubefact([
+        'serie'                   => $pedido['serie'],
+        'numero'                  => $pedido['numero'],
+        'cliente_nombre'          => $pedido['cliente_nombre'],
+        'cliente_email'           => $pedido['cliente_email'] ?? '',
+        'cliente_tipo_documento'  => $tieneDni ? 'dni' : '',
+        'cliente_numero_documento' => $tieneDni ? $pedido['cliente_dni'] : '',
+        'items'                   => $pedido['items'],
+    ], 2);
+}
+
+/**
+ * Emite una Factura electrónica. Requiere RUC de 11 dígitos.
+ *
+ * @param array $pedido [
+ *     'serie'  => 'FFF1',
+ *     'numero' => 5,
+ *     'cliente_nombre' => 'Empresa SAC',
+ *     'cliente_email'  => 'compras@empresa.com' (opcional),
+ *     'cliente_ruc'    => '20123456789',
+ *     'items' => [ ... ]
+ * ]
+ */
+function emitirFacturaNubefact(array $pedido): array {
+    $ruc = trim((string)($pedido['cliente_ruc'] ?? ''));
+    if (!preg_match('/^\d{11}$/', $ruc)) {
+        throw new NubefactException('Para emitir factura por NubeFacT necesitas un RUC válido de 11 dígitos.');
+    }
+
+    return emitirComprobanteNubefact([
+        'serie'                    => $pedido['serie'],
+        'numero'                   => $pedido['numero'],
+        'cliente_nombre'           => $pedido['cliente_nombre'],
+        'cliente_email'            => $pedido['cliente_email'] ?? '',
+        'cliente_tipo_documento'   => 'ruc',
+        'cliente_numero_documento' => $ruc,
+        'items'                    => $pedido['items'],
+    ], 1);
+}
+
+/**
+ * Núcleo compartido: arma el JSON y llama a la API de NubeFacT.
+ *
+ * @param array $pedido [
+ *     'serie', 'numero', 'cliente_nombre', 'cliente_email',
+ *     'cliente_tipo_documento' => 'dni'|'ruc'|'' (vacío = sin documento),
+ *     'cliente_numero_documento', 'items'
+ * ]
+ * @param int $tipoComprobante 1 = factura, 2 = boleta
  * @return array Respuesta de NubeFacT (incluye enlace_del_pdf, enlace_del_xml, enlace_del_cdr)
  * @throws NubefactException si NubeFacT rechaza el comprobante o hay error de red/config
  */
-function emitirBoletaNubefact(array $pedido): array {
+function emitirComprobanteNubefact(array $pedido, int $tipoComprobante): array {
     // NubeFacT exige que la fecha de emisión sea "hoy" en Perú; si el servidor
     // está en otra zona horaria (común en hosting), date() puede devolver el
     // día equivocado y NubeFacT rechaza el comprobante.
@@ -68,16 +121,36 @@ function emitirBoletaNubefact(array $pedido): array {
     }
 
     $total = round($totalGravada + $totalIgv, 2);
-    $tieneDni = !empty($pedido['cliente_dni']);
+
+    $tipoDoc = strtolower(trim((string)($pedido['cliente_tipo_documento'] ?? '')));
+    $numeroDoc = trim((string)($pedido['cliente_numero_documento'] ?? ''));
+
+    if ($tipoComprobante === 1) {
+        // Factura: SIEMPRE RUC.
+        $clienteTipoDocumento = 6;
+        if (!preg_match('/^\d{11}$/', $numeroDoc)) {
+            throw new NubefactException('Para factura se requiere un RUC válido de 11 dígitos.');
+        }
+        $clienteNumeroDocumento = $numeroDoc;
+    } elseif ($tipoDoc === 'dni' && preg_match('/^\d{8}$/', $numeroDoc)) {
+        $clienteTipoDocumento = 1; // DNI
+        $clienteNumeroDocumento = $numeroDoc;
+    } elseif ($tipoDoc === 'ruc' && preg_match('/^\d{11}$/', $numeroDoc)) {
+        $clienteTipoDocumento = 6; // RUC (boleta a nombre de empresa, poco común pero válido)
+        $clienteNumeroDocumento = $numeroDoc;
+    } else {
+        $clienteTipoDocumento = 0; // Sin documento (válido para boletas < S/700)
+        $clienteNumeroDocumento = '00000000'; // NubeFacT exige que no vaya vacío
+    }
 
     $body = [
         'operacion'                        => 'generar_comprobante',
-        'tipo_de_comprobante'               => 2, // Boleta de venta
+        'tipo_de_comprobante'               => $tipoComprobante, // 1 factura, 2 boleta
         'serie'                             => $pedido['serie'],
         'numero'                            => $pedido['numero'],
         'sunat_transaction'                 => 1,
-        'cliente_tipo_de_documento'         => $tieneDni ? 1 : 0, // 1 DNI, 0 sin documento (venta < S/700)
-        'cliente_numero_de_documento'       => $tieneDni ? $pedido['cliente_dni'] : '00000000',
+        'cliente_tipo_de_documento'         => $clienteTipoDocumento,
+        'cliente_numero_de_documento'       => $clienteNumeroDocumento,
         'cliente_denominacion'              => $pedido['cliente_nombre'],
         'cliente_email'                     => $pedido['cliente_email'] ?? '',
         'fecha_de_emision'                  => date('d-m-Y'),
