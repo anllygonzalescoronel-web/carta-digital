@@ -6,6 +6,7 @@
 let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
 let entregaSeleccionada = 'recojo';
 let pagoSeleccionado = 'efectivo';
+let comprobanteSeleccionado = 'boleta';
 let culqiTokenActual = null;
 let terminoBusqueda = '';
 let categoriaActiva = null;
@@ -145,6 +146,7 @@ function cerrarModal(id) { document.getElementById(id).classList.remove('visible
 function resetearCheckout() {
     const ids = [
         'inputNombre',
+        'inputNumeroDocumento',
         'inputTelefono',
         'inputDireccion',
         'inputReferencia',
@@ -159,7 +161,24 @@ function resetearCheckout() {
 
     entregaSeleccionada = 'recojo';
     pagoSeleccionado = 'efectivo';
+    comprobanteSeleccionado = 'boleta';
     culqiTokenActual = null;
+
+    document.querySelectorAll('#opcionesComprobante .opcion-toggle').forEach((el) => {
+        el.classList.toggle('activo', el.dataset.comprobante === 'boleta');
+    });
+
+    const tipoDocEl = document.getElementById('inputTipoDocumento');
+    if (tipoDocEl) {
+        tipoDocEl.value = 'dni';
+        tipoDocEl.disabled = false;
+    }
+
+    const numeroDocEl = document.getElementById('inputNumeroDocumento');
+    if (numeroDocEl) {
+        numeroDocEl.maxLength = 8;
+        numeroDocEl.placeholder = 'Ej. 12345678';
+    }
 
     document.querySelectorAll('.opcion-toggle').forEach((el) => {
         el.classList.toggle('activo', el.dataset.entrega === 'recojo');
@@ -302,6 +321,38 @@ function seleccionarPago(el) {
     culqiTokenActual = null;
 }
 
+function seleccionarComprobante(el) {
+    document.querySelectorAll('#opcionesComprobante .opcion-toggle').forEach((e) => e.classList.remove('activo'));
+    el.classList.add('activo');
+    comprobanteSeleccionado = el.dataset.comprobante;
+    actualizarTipoDocumentoSegunComprobante();
+}
+
+function actualizarTipoDocumentoSegunComprobante() {
+    const tipoDocEl = document.getElementById('inputTipoDocumento');
+    const numeroDocEl = document.getElementById('inputNumeroDocumento');
+    if (!tipoDocEl || !numeroDocEl) return;
+
+    if (comprobanteSeleccionado === 'factura') {
+        tipoDocEl.value = 'ruc';
+        tipoDocEl.disabled = true;
+        numeroDocEl.maxLength = 11;
+        numeroDocEl.placeholder = 'Ej. 20123456789';
+    } else {
+        tipoDocEl.disabled = false;
+        if (tipoDocEl.value !== 'dni' && tipoDocEl.value !== 'ruc') {
+            tipoDocEl.value = 'dni';
+        }
+        if (tipoDocEl.value === 'ruc') {
+            numeroDocEl.maxLength = 11;
+            numeroDocEl.placeholder = 'Ej. 20123456789';
+        } else {
+            numeroDocEl.maxLength = 8;
+            numeroDocEl.placeholder = 'Ej. 12345678';
+        }
+    }
+}
+
 // ---------- Validación y envío del pedido ----------
 function mostrarErrorCheckout(msg) {
     document.getElementById('checkoutError').innerHTML = `<div class="alerta-error">${msg}</div>`;
@@ -313,9 +364,26 @@ function limpiarErrorCheckout() {
 function validarFormulario() {
     const nombre = document.getElementById('inputNombre').value.trim();
     const telefono = document.getElementById('inputTelefono').value.trim();
+    const tipoDoc = document.getElementById('inputTipoDocumento').value;
+    const numeroDoc = (document.getElementById('inputNumeroDocumento').value || '').replace(/\D/g, '');
 
     if (nombre.length < 2) { mostrarErrorCheckout('Ingresa tu nombre completo.'); return false; }
     if (!/^[0-9+ ]{6,20}$/.test(telefono)) { mostrarErrorCheckout('Ingresa un teléfono válido.'); return false; }
+
+    if (comprobanteSeleccionado === 'factura' && tipoDoc !== 'ruc') {
+        mostrarErrorCheckout('La factura requiere RUC.');
+        return false;
+    }
+
+    if (tipoDoc === 'dni' && !/^\d{8}$/.test(numeroDoc)) {
+        mostrarErrorCheckout('Para DNI, ingresa 8 dígitos.');
+        return false;
+    }
+
+    if (tipoDoc === 'ruc' && !/^\d{11}$/.test(numeroDoc)) {
+        mostrarErrorCheckout('Para RUC, ingresa 11 dígitos.');
+        return false;
+    }
     if (entregaSeleccionada === 'delivery') {
         const dir = document.getElementById('inputDireccion').value.trim();
         if (dir.length < 5) { mostrarErrorCheckout('Ingresa tu dirección de entrega.'); return false; }
@@ -448,6 +516,9 @@ async function enviarPedidoAlServidor() {
         items: carrito.map(i => ({ id: i.id, cantidad: i.cantidad })),
         cliente_nombre: document.getElementById('inputNombre').value.trim(),
         cliente_telefono: document.getElementById('inputTelefono').value.trim(),
+        tipo_comprobante: comprobanteSeleccionado,
+        tipo_documento: document.getElementById('inputTipoDocumento').value,
+        numero_documento: (document.getElementById('inputNumeroDocumento').value || '').replace(/\D/g, ''),
         cliente_email: (pagoSeleccionado === 'tarjeta' || pagoSeleccionado === 'yape_plin') ? document.getElementById('inputEmail').value.trim() : '',
         tipo_entrega: entregaSeleccionada,
         direccion: entregaSeleccionada === 'delivery' ? document.getElementById('inputDireccion').value.trim() : '',
@@ -576,6 +647,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const navHome = document.getElementById('navHome');
     if (navHome) navHome.addEventListener('click', () => marcarNavActivo(navHome));
+
+    actualizarTipoDocumentoSegunComprobante();
+
+    const inputNumeroDocumento = document.getElementById('inputNumeroDocumento');
+    if (inputNumeroDocumento) {
+        inputNumeroDocumento.addEventListener('input', () => {
+            inputNumeroDocumento.value = inputNumeroDocumento.value.replace(/\D/g, '');
+        });
+    }
 
     aplicarFiltrosCatalogo();
 });

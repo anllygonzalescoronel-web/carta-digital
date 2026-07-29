@@ -58,6 +58,15 @@ CREATE TABLE IF NOT EXISTS pedidos (
     codigo VARCHAR(20) NOT NULL UNIQUE,
     cliente_nombre VARCHAR(150) NOT NULL,
     cliente_telefono VARCHAR(30) NOT NULL,
+    tipo_comprobante ENUM('boleta','factura') DEFAULT NULL,
+    tipo_documento ENUM('dni','ruc') DEFAULT NULL,
+    numero_documento VARCHAR(20) DEFAULT NULL,
+    comprobante_serie VARCHAR(10) DEFAULT NULL,
+    comprobante_correlativo INT DEFAULT NULL,
+    comprobante_numero VARCHAR(30) DEFAULT NULL,
+    comprobante_id INT DEFAULT NULL,
+    sunat_estado VARCHAR(40) DEFAULT NULL,
+    sunat_mensaje VARCHAR(500) DEFAULT NULL,
     tipo_entrega ENUM('recojo','delivery') NOT NULL,
     direccion VARCHAR(255),
     referencia VARCHAR(255),
@@ -68,6 +77,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
     total DECIMAL(10,2) NOT NULL,
     notas VARCHAR(500),
     culqi_charge_id VARCHAR(100) DEFAULT NULL,
+    INDEX idx_pedidos_comprobante_id (comprobante_id),
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -81,6 +91,38 @@ CREATE TABLE IF NOT EXISTS pedido_detalle (
     cantidad INT NOT NULL,
     subtotal DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Comprobantes electrónicos SUNAT
+CREATE TABLE IF NOT EXISTS comprobantes_electronicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    tipo_comprobante ENUM('boleta','factura') NOT NULL,
+    serie VARCHAR(10) NOT NULL,
+    correlativo INT NOT NULL,
+    numero_comprobante VARCHAR(30) NOT NULL,
+    tipo_documento ENUM('dni','ruc') NOT NULL,
+    numero_documento VARCHAR(20) NOT NULL,
+    estado_sunat ENUM('pendiente_configuracion','pendiente_envio','aceptado','observado','rechazado','error') NOT NULL DEFAULT 'pendiente_configuracion',
+    sunat_codigo VARCHAR(20) DEFAULT NULL,
+    sunat_descripcion VARCHAR(500) DEFAULT NULL,
+    sunat_ticket VARCHAR(100) DEFAULT NULL,
+    xml_path VARCHAR(255) DEFAULT NULL,
+    cdr_path VARCHAR(255) DEFAULT NULL,
+    pdf_path VARCHAR(255) DEFAULT NULL,
+    xml_hash VARCHAR(128) DEFAULT NULL,
+    cdr_response_json LONGTEXT DEFAULT NULL,
+    intentos_envio INT NOT NULL DEFAULT 0,
+    enviado_en DATETIME DEFAULT NULL,
+    respondido_en DATETIME DEFAULT NULL,
+    payload_json LONGTEXT DEFAULT NULL,
+    error_detalle TEXT DEFAULT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_comprobante_numero (numero_comprobante),
+    KEY idx_comprobantes_pedido (pedido_id),
+    KEY idx_comprobantes_estado (estado_sunat),
+    CONSTRAINT fk_comprobantes_pedido FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- ============================================
@@ -113,6 +155,25 @@ INSERT INTO configuracion (clave, valor) VALUES
 ('yape_plin_numero', '999999999'),
 ('culqi_public_key', 'pk_test_XXXXXXXXXXXXXXXXXXXX'),
 ('culqi_secret_key', 'sk_test_XXXXXXXXXXXXXXXXXXXX'),
+('facturacion_driver', 'native'),
+('sunat_modo', 'demo'),
+('sunat_ruc_emisor', ''),
+('sunat_razon_social', ''),
+('sunat_nombre_comercial', ''),
+('sunat_usuario_sol', ''),
+('sunat_clave_sol', ''),
+('sunat_certificado_path', ''),
+('sunat_certificado_clave', ''),
+('sunat_direccion', ''),
+('sunat_ubigeo', '150101'),
+('sunat_distrito', 'LIMA'),
+('sunat_provincia', 'LIMA'),
+('sunat_departamento', 'LIMA'),
+('sunat_serie_boleta', 'B001'),
+('sunat_serie_factura', 'F001'),
+('sunat_correlativo_boleta', '1'),
+('sunat_correlativo_factura', '1'),
+('sunat_igv_porcentaje', '18'),
 ('mensaje_bienvenida', '¡Bienvenido! Elige tus platos favoritos y haz tu pedido en segundos.')
 ON DUPLICATE KEY UPDATE clave=clave;
 

@@ -65,6 +65,39 @@ function subirImagen(string $inputName, string $carpetaDestino): ?string {
     return $nombreNuevo;
 }
 
+/**
+ * Sube un archivo con extensiones permitidas y devuelve el nombre generado.
+ */
+function subirArchivoSeguro(string $inputName, string $carpetaDestino, array $extensionesPermitidas, int $tamanoMaximoBytes = 5242880): ?string {
+    if (empty($_FILES[$inputName]) || $_FILES[$inputName]['error'] === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+
+    $archivo = $_FILES[$inputName];
+    if ($archivo['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Error al subir el archivo (código ' . $archivo['error'] . ')');
+    }
+
+    $ext = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+    $permitidas = array_map('strtolower', $extensionesPermitidas);
+    if (!in_array($ext, $permitidas, true)) {
+        throw new RuntimeException('Formato no permitido. Permitidos: ' . implode(', ', $permitidas));
+    }
+
+    if ($archivo['size'] > $tamanoMaximoBytes) {
+        throw new RuntimeException('El archivo supera el tamaño máximo permitido.');
+    }
+
+    $nombreNuevo = uniqid('file_', true) . '.' . $ext;
+    $rutaDestino = rtrim($carpetaDestino, '/') . '/' . $nombreNuevo;
+
+    if (!move_uploaded_file($archivo['tmp_name'], $rutaDestino)) {
+        throw new RuntimeException('No se pudo guardar el archivo en el servidor.');
+    }
+
+    return $nombreNuevo;
+}
+
 function jsonResponse($data, int $status = 200): void {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');

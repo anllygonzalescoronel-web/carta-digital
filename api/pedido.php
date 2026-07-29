@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/culqi.php';
+require_once __DIR__ . '/../includes/facturacion.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -23,6 +24,9 @@ $metodoPago     = $body['metodo_pago'] ?? '';
 $notas          = trim($body['notas'] ?? '');
 $culqiToken     = $body['culqi_token'] ?? null;
 $clienteEmail   = trim($body['cliente_email'] ?? 'cliente@example.com');
+$tipoComprobante = strtolower(trim((string)($body['tipo_comprobante'] ?? 'boleta')));
+$tipoDocumento   = strtolower(trim((string)($body['tipo_documento'] ?? 'dni')));
+$numeroDocumento = normalizarNumeroDocumento((string)($body['numero_documento'] ?? ''));
 
 // ---------- Validaciones básicas ----------
 if (empty($items) || !is_array($items)) {
@@ -47,9 +51,15 @@ if (in_array($metodoPago, ['tarjeta', 'yape_plin'], true) && empty($culqiToken))
     jsonResponse(['ok' => false, 'mensaje' => 'Falta el token de pago de Culqi.'], 400);
 }
 
+$errorDocumento = validarDocumentoCliente($tipoComprobante, $tipoDocumento, $numeroDocumento);
+if ($errorDocumento !== null) {
+    jsonResponse(['ok' => false, 'mensaje' => $errorDocumento], 400);
+}
+
 $db = getDB();
 
 try {
+    ensureFacturacionSchema($db);
     $db->beginTransaction();
 
     // ---------- Recalcular precios reales desde la BD (nunca confiar en el frontend) ----------
@@ -137,16 +147,19 @@ try {
     // ---------- Guardar pedido ----------
     $stmtPedido = $db->prepare(
         'INSERT INTO pedidos
-            (codigo, cliente_nombre, cliente_telefono, tipo_entrega, direccion, referencia,
+            (codigo, cliente_nombre, cliente_telefono, tipo_comprobante, tipo_documento, numero_documento, tipo_entrega, direccion, referencia,
              metodo_pago, estado, subtotal, costo_delivery, total, notas, culqi_charge_id)
          VALUES
-            (:codigo, :cliente_nombre, :cliente_telefono, :tipo_entrega, :direccion, :referencia,
+            (:codigo, :cliente_nombre, :cliente_telefono, :tipo_comprobante, :tipo_documento, :numero_documento, :tipo_entrega, :direccion, :referencia,
              :metodo_pago, :estado, :subtotal, :costo_delivery, :total, :notas, :culqi_charge_id)'
     );
     $stmtPedido->execute([
         'codigo' => $codigo,
         'cliente_nombre' => $clienteNombre,
         'cliente_telefono' => $clienteTelefono,
+        'tipo_comprobante' => $tipoComprobante,
+        'tipo_documento' => $tipoDocumento,
+        'numero_documento' => $numeroDocumento,
         'tipo_entrega' => $tipoEntrega,
         'direccion' => $tipoEntrega === 'delivery' ? $direccion : null,
         'referencia' => $referencia ?: null,
@@ -175,7 +188,22 @@ try {
         ]);
     }
 
+    $comprobante = registrarComprobanteElectronicoDesdePedido($db, (int)$pedidoId);
+
     $db->commit();
+
+    if ($comprobante && $comprobante['estado_sunat'] === 'pendiente_envio') {
+        try {
+            $db->beginTransaction();
+            $resultadoSunat = enviarComprobanteSunatNativo($db, (int)$comprobante['id']);
+            $db->commit();
+            $comprobante['estado_sunat'] = $resultadoSunat['estado'] ?? $comprobante['estado_sunat'];
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+        }
+    }
 
     // ---------- Construir mensaje de WhatsApp ----------
     $lineas = [];
@@ -192,6 +220,7 @@ try {
     $lineas[] = '*Total: ' . formatoPrecio($total) . '*';
     $lineas[] = '';
     $lineas[] = 'Cliente: ' . $clienteNombre;
+    $lineas[] = 'Comprobante: ' . strtoupper($tipoComprobante) . ' - ' . strtoupper($tipoDocumento) . ' ' . $numeroDocumento;
     $lineas[] = 'Teléfono: ' . $clienteTelefono;
     $lineas[] = 'Entrega: ' . ($tipoEntrega === 'delivery' ? 'Delivery 🛵' : 'Recojo en local 🏠');
     if ($tipoEntrega === 'delivery') {
@@ -215,6 +244,7 @@ try {
         'codigo' => $codigo,
         'total' => $total,
         'estado' => $estado,
+        'comprobante' => $comprobante ?? null,
         'whatsapp_url' => $whatsappUrl,
     ]);
 

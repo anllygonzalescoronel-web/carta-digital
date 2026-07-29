@@ -268,4 +268,42 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
     .admin-sidebar.abierto { left: 0; }
     .form-row { grid-template-columns: 1fr; }
 }
+
+.grid-dos-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+.badge-sunat-pendiente_configuracion { background: #fff4cf; color: #8a6d3b; }
+.badge-sunat-pendiente_envio { background: #dbeafe; color: #1e40af; }
+.badge-sunat-aceptado { background: #dcfce7; color: #166534; }
+.badge-sunat-observado { background: #ffedd5; color: #9a3412; }
+.badge-sunat-rechazado { background: #fee2e2; color: #991b1b; }
+.badge-sunat-error { background: #f5d0fe; color: #7e22ce; }
+
+.codigo-sunat {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.codigo-sunat-ok { background: #dcfce7; color: #166534; }
+.codigo-sunat-warn { background: #ffedd5; color: #9a3412; }
+.codigo-sunat-bad { background: #fee2e2; color: #991b1b; }
+.codigo-sunat-none { background: #e5e7eb; color: #374151; }
+
+@media (max-width: 980px) {
+    .grid-dos-cards {
+        grid-template-columns: 1fr;
+    }
+}
  

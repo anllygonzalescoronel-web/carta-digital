@@ -287,6 +287,27 @@ if (!empty($banners)) {
             <input type="text" id="inputNombre" placeholder="Ej. Juan Pérez">
         </div>
         <div class="form-group">
+            <label>Tipo de comprobante</label>
+            <div class="opciones-toggle" id="opcionesComprobante">
+                <div class="opcion-toggle activo" data-comprobante="boleta" onclick="seleccionarComprobante(this)">Boleta<small>B001</small></div>
+                <div class="opcion-toggle" data-comprobante="factura" onclick="seleccionarComprobante(this)">Factura<small>F001</small></div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tipo de documento</label>
+                <select id="inputTipoDocumento" onchange="actualizarTipoDocumentoSegunComprobante()">
+                    <option value="dni">DNI</option>
+                    <option value="ruc">RUC</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Número de documento</label>
+                <input type="text" id="inputNumeroDocumento" placeholder="Ej. 12345678" inputmode="numeric" maxlength="11">
+            </div>
+        </div>
+        <div class="form-group">
             <label>Teléfono (WhatsApp)</label>
             <input type="tel" id="inputTelefono" placeholder="Ej. 987654321">
         </div>
