@@ -10,7 +10,21 @@ $ventasHoy = $db->query("SELECT COALESCE(SUM(total),0) t FROM pedidos WHERE DATE
 $pendientes = $db->query("SELECT COUNT(*) c FROM pedidos WHERE estado = 'pendiente'")->fetch()['c'];
 $totalProductos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 1")->fetch()['c'];
 
-$ultimosPedidos = $db->query("SELECT * FROM pedidos ORDER BY creado_en DESC LIMIT 8")->fetchAll();
+// ----- Paginación de "Últimos pedidos" -----
+$pedidosPorPagina = 10;
+$paginaActual2 = max(1, (int) ($_GET['pagina'] ?? 1));
+$offsetPedidos = ($paginaActual2 - 1) * $pedidosPorPagina;
+
+$totalPedidosTabla = $db->query("SELECT COUNT(*) c FROM pedidos")->fetch()['c'];
+$totalPaginasPedidos = max(1, (int) ceil($totalPedidosTabla / $pedidosPorPagina));
+$paginaActual2 = min($paginaActual2, $totalPaginasPedidos);
+$offsetPedidos = ($paginaActual2 - 1) * $pedidosPorPagina;
+
+$stmtPedidos = $db->prepare("SELECT * FROM pedidos ORDER BY creado_en DESC LIMIT :limite OFFSET :offset");
+$stmtPedidos->bindValue(':limite', $pedidosPorPagina, PDO::PARAM_INT);
+$stmtPedidos->bindValue(':offset', $offsetPedidos, PDO::PARAM_INT);
+$stmtPedidos->execute();
+$ultimosPedidos = $stmtPedidos->fetchAll();
 
 // ------------------------------------------------------------------
 // MODO DE PRUEBA: pon esto en true para ver las tarjetas con datos
@@ -60,6 +74,114 @@ if ($modoPrueba) {
     $pctLlenadoPendientes = 5;
     $pctLlenadoProductos = 88;
 }
+
+// ==================================================================
+// DATOS PARA LOS 4 GRÁFICOS (debajo de las tarjetas)
+// ==================================================================
+
+// ----- 1. Pedidos hoy: tendencia de los últimos 7 días -----
+$tendenciaPedidosFilas = $db->query("
+    SELECT DATE(creado_en) fecha, COUNT(*) c
+    FROM pedidos
+    WHERE creado_en >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+    GROUP BY DATE(creado_en)
+")->fetchAll();
+
+$mapaTendencia = [];
+foreach ($tendenciaPedidosFilas as $fila) {
+    $mapaTendencia[$fila['fecha']] = (int) $fila['c'];
+}
+$etiquetasTendencia = [];
+$valoresTendencia = [];
+for ($i = 6; $i >= 0; $i--) {
+    $fechaClave = date('Y-m-d', strtotime("-$i day"));
+    $etiquetasTendencia[] = date('d/m', strtotime($fechaClave));
+    $valoresTendencia[] = $mapaTendencia[$fechaClave] ?? 0;
+}
+
+// ----- 2. Ventas hoy: vs ayer -----
+// (ya tenemos $ventasHoy y $ventasAyer calculados arriba)
+
+// ----- 3. Pedidos pendientes: vs total y desglose por estado -----
+$desglosoEstadosFilas = $db->query("SELECT estado, COUNT(*) c FROM pedidos GROUP BY estado")->fetchAll();
+$mapaEstados = [
+    'pendiente'       => 0,
+    'pagado'          => 0,
+    'en_preparacion'  => 0,
+    'en_camino'       => 0,
+    'entregado'       => 0,
+    'cancelado'       => 0,
+];
+foreach ($desglosoEstadosFilas as $fila) {
+    if (array_key_exists($fila['estado'], $mapaEstados)) {
+        $mapaEstados[$fila['estado']] = (int) $fila['c'];
+    }
+}
+$etiquetasEstados = [];
+$valoresEstados = [];
+foreach ($mapaEstados as $clave => $valor) {
+    $etiquetasEstados[] = ucfirst(str_replace('_', ' ', $clave));
+    $valoresEstados[] = $valor;
+}
+
+// ----- 4. Productos activos: vs inactivos y por categoría -----
+$productosInactivos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 0")->fetch()['c'];
+
+// Si tu tabla de categorías o la columna de relación se llaman distinto,
+// ajusta el JOIN de abajo (categorias.nombre / productos.categoria_id).
+$etiquetasCategoria = [];
+$valoresCategoria = [];
+try {
+    $productosPorCategoriaFilas = $db->query("
+        SELECT c.nombre nombre, COUNT(p.id) c
+        FROM categorias c
+        LEFT JOIN productos p ON p.categoria_id = c.id AND p.disponible = 1
+        GROUP BY c.id, c.nombre
+        ORDER BY c.nombre
+    ")->fetchAll();
+    foreach ($productosPorCategoriaFilas as $fila) {
+        $etiquetasCategoria[] = $fila['nombre'];
+        $valoresCategoria[] = (int) $fila['c'];
+    }
+} catch (Exception $e) {
+    // Si la tabla/columnas no existen con esos nombres, esta vista queda vacía
+    // sin romper el resto del dashboard.
+    $etiquetasCategoria = [];
+    $valoresCategoria = [];
+}
+
+$datosGraficosDashboard = [
+    'tendencia' => [
+        'labels'  => $etiquetasTendencia,
+        'valores' => $valoresTendencia,
+    ],
+    'ventas' => [
+        'hoyVsAyer' => [
+            'labels'  => ['Hoy', 'Ayer'],
+            'valores' => [round((float) $ventasHoy, 2), round((float) $ventasAyer, 2)],
+        ],
+    ],
+    'pendientes' => [
+        'vsTotal' => [
+            'labels'  => ['Pendientes', 'Otros'],
+            'valores' => [(int) $pendientes, max((int) $totalPedidosGeneral - (int) $pendientes, 0)],
+        ],
+        'porEstado' => [
+            'labels'  => $etiquetasEstados,
+            'valores' => $valoresEstados,
+        ],
+    ],
+    'productos' => [
+        'vsInactivos' => [
+            'labels'  => ['Activos', 'Inactivos'],
+            'valores' => [(int) $totalProductos, (int) $productosInactivos],
+        ],
+        'porCategoria' => [
+            'labels'  => $etiquetasCategoria,
+            'valores' => $valoresCategoria,
+        ],
+    ],
+];
 
 function pintarIcono(string $clase): void
 {
@@ -152,6 +274,63 @@ function pintarOlas(): void
 
 </div>
 
+<script>
+    window.datosGraficosDashboard = <?= json_encode($datosGraficosDashboard, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+</script>
+
+<div class="grid-graficos">
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-area"></i> Pedidos · últimos 7 días</h4>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <canvas id="graficoPedidosTendencia"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Ventas hoy vs Ayer</h4>
+            </div>
+<div id="anilloVentas" class="anillo-progreso-wrap"></div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+<div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Pedidos pendientes por estado</h4>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <div id="anilloPendientes" class="anillo-progreso-wrap"></div>
+            </div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+    <div class="grafico-frame">
+        <div class="grafico-box">
+            <div class="grafico-header">
+                <h4><i class="ti ti-chart-donut"></i> Productos activos</h4>
+                <div class="grafico-tabs" data-grafico="productos">
+                    <button type="button" class="tab-activa" data-vista="0">Activos vs Inactivos</button>
+                    <button type="button" data-vista="1">Por categoría</button>
+                </div>
+            </div>
+            <div class="grafico-canvas-wrap">
+                <div id="anilloProductos" class="anillo-progreso-wrap"></div>
+            </div>
+            <div class="grafico-leyenda"></div>
+        </div>
+    </div>
+
+</div>
+
 <div class="card">
     <h3>Últimos pedidos</h3>
     <div class="tabla-controles">
@@ -159,7 +338,7 @@ function pintarOlas(): void
     <button type="button" class="btn-scroll-tabla btn-scroll-der" aria-label="Desplazar tabla a la derecha"><i class="ti ti-chevron-right"></i></button>
 </div>
     <div class="tabla-scroll">
-    <table>
+    <table id="tabla-ultimos-pedidos">
 <thead><tr>
     <th><i class="ti ti-hash"></i>Código</th>
     <th><i class="ti ti-user"></i>Cliente</th>
@@ -168,13 +347,13 @@ function pintarOlas(): void
     <th><i class="ti ti-currency-dollar"></i>Total</th>
     <th><i class="ti ti-flag"></i>Estado</th>
     <th><i class="ti ti-calendar"></i>Fecha</th>
-</tr></thead>        <tbody>
+</tr></thead>        <tbody id="tbody-ultimos-pedidos">
         <?php foreach ($ultimosPedidos as $p): ?>
             <tr>
                 <td><a href="pedidos.php?ver=<?= $p['id'] ?>"><?= limpiar($p['codigo']) ?></a></td>
                 <td><?= limpiar($p['cliente_nombre']) ?></td>
-                <td><?= $p['tipo_entrega'] === 'delivery' ? '🛵 Delivery' : '🏠 Recojo' ?></td>
-                <td><?= ['efectivo'=>'💵 Efectivo','yape_plin'=>'📲 Yape (Culqi)','tarjeta'=>'💳 Tarjeta'][$p['metodo_pago']] ?></td>
+<td><?= $p['tipo_entrega'] === 'delivery' ? '<i class="ti ti-motorbike"></i> Delivery' : '<i class="ti ti-home"></i> Recojo' ?></td>
+<td><?= ['efectivo'=>'<i class="ti ti-cash"></i> Efectivo','yape_plin'=>'<i class="ti ti-device-mobile"></i> Yape (Culqi)','tarjeta'=>'<i class="ti ti-credit-card"></i> Tarjeta'][$p['metodo_pago']] ?></td>
                 <td><?= formatoPrecio($p['total']) ?></td>
                 <td><span class="badge badge-<?= $p['estado'] ?>"><?= $p['estado'] ?></span></td>
                 <td><?= date('d/m H:i', strtotime($p['creado_en'])) ?></td>
@@ -186,6 +365,21 @@ function pintarOlas(): void
         </tbody>
 </table>
     </div>
+
+    <?php if ($totalPaginasPedidos > 1): ?>
+    <div class="paginacion-pedidos" id="paginacion-pedidos"
+         data-pagina-actual="<?= $paginaActual2 ?>" data-total-paginas="<?= $totalPaginasPedidos ?>">
+        <button type="button" class="btn-scroll-tabla" id="btn-pag-prev" <?= $paginaActual2 <= 1 ? 'disabled' : '' ?>
+            aria-label="Ver pedidos más recientes">
+            <i class="ti ti-chevron-left"></i>
+        </button>
+        <span class="paginacion-texto" id="txt-pagina-actual">Página <?= $paginaActual2 ?> de <?= $totalPaginasPedidos ?></span>
+        <button type="button" class="btn-scroll-tabla" id="btn-pag-next" <?= $paginaActual2 >= $totalPaginasPedidos ? 'disabled' : '' ?>
+            aria-label="Ver pedidos anteriores">
+            <i class="ti ti-chevron-right"></i>
+        </button>
+    </div>
+    <?php endif; ?>
 </div>
 
 <?php require __DIR__ . '/_layout_bottom.php'; ?>

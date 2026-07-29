@@ -2,12 +2,190 @@
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f5f7; color: #222; }
 a { text-decoration: none; color: inherit; }
 
-/* ---------- Login ---------- */
-.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg,#E8590C,#ffb347); }
-.login-box { background: #fff; padding: 30px 26px; border-radius: 18px; width: 100%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
-.login-box h2 { text-align: center; margin-bottom: 18px; font-size: 20px; }
-.ayuda-login { font-size: 11px; color: #999; text-align: center; margin-top: 10px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f5f7; color: #222; }
+a { text-decoration: none; color: inherit; }
 
+/* ---------- Login ---------- */
+.login-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient(rgba(122,43,15,.5), rgba(232,89,12,.45)), url('pollo.png') center/cover no-repeat fixed;
+}
+ 
+.login-wrap {
+    display: flex;
+    width: 100%;
+    max-width: 920px;
+    min-height: 520px;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+}
+ 
+/* ----- Lado izquierdo: visual (aparece primero, con fade) ----- */
+.login-visual {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(rgba(122,43,15,.4), rgba(232,89,12,.35)), url('pollo2.jpg') center/cover no-repeat;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    color: #fff;
+    text-align: center;
+    opacity: 0;
+    animation: loginFotoEntra .6s ease forwards;
+}
+ 
+@keyframes loginFotoEntra {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+ 
+.login-visual-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
+    pointer-events: none;
+}
+ 
+.login-iconos-flotantes {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    font-size: 20px;
+    opacity: .85;
+    z-index: 1;
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+    .login-visual, .login-form-side {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255,255,255,.14);
+    }
+}
+ 
+.login-visual-texto {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    text-align: left;
+    align-self: flex-start;
+}
+.login-visual-texto h1 {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.login-visual-texto p {
+    font-size: 13.5px;
+    opacity: .9;
+    max-width: 320px;
+    margin: 0 auto;
+}
+ 
+/* ----- Lado derecho: formulario (vidrio esmerilado, llega deslizándose después) ----- */
+.login-form-side {
+    flex: 0 0 320px;
+    max-width: 320px;
+    background: rgba(255,255,255,0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    border-left: 1px solid rgba(255,255,255,.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    color: #fff;
+    opacity: 0;
+    transform: translateX(60px);
+    animation: loginPanelEntra .55s cubic-bezier(.22,1,.36,1) .5s forwards,
+               loginVidrioEmpana 1.4s ease-out .7s both;
+}
+ 
+@keyframes loginPanelEntra {
+    from { opacity: 0; transform: translateX(60px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+ 
+@keyframes loginVidrioEmpana {
+    from {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        background: rgba(255,255,255,0);
+    }
+    to {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255,255,255,.14);
+    }
+}
+ 
+ 
+.login-box { background: none; padding: 0; border-radius: 0; width: 100%; max-width: 100%; box-shadow: none; }
+.login-box h2 { text-align: center; margin-bottom: 18px; font-size: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; }
+.login-box .form-group label { color: #f1f1f1; }
+.login-box .form-group {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+}
+.login-box .form-group input {
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(0,0,0,.28);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 8px;
+    color: #fff;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.15);
+}
+.login-box .form-group input::placeholder { color: rgba(255,255,255,.55); }
+.login-box .form-group input:focus {
+    outline: none;
+    background: rgba(0,0,0,.38);
+    border-color: rgba(255,255,255,.6);
+}
+/* Chrome/Edge/Safari pintan el autofill en blanco/amarillo ignorando background-color;
+   este truco fuerza el color con un box-shadow interno del mismo tono del input */
+.login-box .form-group input:-webkit-autofill,
+.login-box .form-group input:-webkit-autofill:hover,
+.login-box .form-group input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px rgba(20,20,20,.55) inset;
+    box-shadow: 0 0 0 1000px rgba(20,20,20,.55) inset;
+    caret-color: #fff;
+    transition: background-color 9999s ease-in-out 0s;
+}
+.ayuda-login { font-size: 11px; color: rgba(255,255,255,.75); text-align: center; margin-top: 10px; }
+ 
+@media (max-width: 760px) {
+    .login-wrap { flex-direction: column; max-width: 420px; min-height: 0; }
+    .login-visual { min-height: 220px; padding: 26px 20px; }
+    .login-form-side { flex: 1 1 auto; max-width: 100%; }
+}
+ 
 /* ---------- Layout general ---------- */
 .admin-wrap { display: flex; min-height: 100vh; }
 .admin-sidebar {
@@ -21,7 +199,7 @@ a { text-decoration: none; color: inherit; }
 }
 .admin-sidebar nav a.activo, .admin-sidebar nav a:hover { background: #2b3142; color: #fff; border-left-color: #E8590C; }
 .admin-sidebar nav a.salir { margin-top: 14px; color: #ff8a80; }
-
+ 
 .admin-content { flex: 1; min-width: 0; }
 .admin-topbar {
     background: #fff; padding: 16px 26px; display: flex; align-items: center; justify-content: space-between;
@@ -30,35 +208,35 @@ a { text-decoration: none; color: inherit; }
 .admin-topbar h1 { font-size: 19px; }
 .admin-topbar span { font-size: 13px; color: #888; }
 .admin-body { padding: 22px 26px 60px; }
-
+ 
 /* ---------- Componentes comunes ---------- */
 .card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.05); margin-bottom: 20px; }
 .card h3 { font-size: 15px; margin-bottom: 14px; }
-
+ 
 .grid-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 14px; margin-bottom: 22px; }
 .stat-box { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
 .stat-box .num { font-size: 26px; font-weight: 800; color: #E8590C; }
 .stat-box .lbl { font-size: 12px; color: #888; margin-top: 4px; }
-
+ 
 table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 table th { text-align: left; padding: 10px 8px; background: #fafafa; font-size: 12px; color: #888; border-bottom: 2px solid #eee; }
 table td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 table tr:hover td { background: #fafafa; }
 img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; background: #eee; }
-
+ 
 .btn { display: inline-block; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; }
 .btn-primario { background: #E8590C; color: #fff; }
 .btn-secundario { background: #eee; color: #333; }
 .btn-peligro { background: #fdecea; color: #c0392b; }
 .btn-exito { background: #e9f9ee; color: #1e8449; }
 .btn-sm { padding: 5px 10px; font-size: 11.5px; }
-
+ 
 .btn-principal {
     width: 100%; padding: 12px; border: none; border-radius: 10px;
     background: #E8590C; color: #fff; font-size: 14.5px; font-weight: 800; cursor: pointer;
 }
 .btn-nuevo { display: inline-flex; align-items: center; gap: 6px; background: #E8590C; color: #fff; padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 16px; border: none; cursor: pointer; }
-
+ 
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
 .form-group input, .form-group select, .form-group textarea {
@@ -67,26 +245,27 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-check { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .form-check input { width: auto; }
-
+ 
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge-pendiente { background: #fff3cd; color: #8a6d3b; }
 .badge-pagado { background: #d4edda; color: #1e7e34; }
 .badge-en_preparacion { background: #d1ecf1; color: #0c5460; }
 .badge-en_camino { background: #cce5ff; color: #004085; }
-.badge-entregado { background: #e2e3e5; color: #383d41; }
+.badge-entregado { background: #ffc085; color: #53361d; }
 .badge-cancelado { background: #f8d7da; color: #721c24; }
-
+ 
 .alerta-error { background: #fdecea; color: #c0392b; padding: 10px 12px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
 .alerta-ok { background: #e9f9ee; color: #1e8449; padding: 10px 12px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
-
+ 
 .color-swatch { width: 26px; height: 26px; border-radius: 6px; display: inline-block; vertical-align: middle; border: 1px solid #ddd; margin-right: 8px; }
-
+ 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
 .modal-overlay.visible { display: flex; }
 .modal-box { background: #fff; border-radius: 16px; padding: 20px; max-width: 460px; width: 100%; max-height: 90vh; overflow-y: auto; }
-
+ 
 @media (max-width: 760px) {
     .admin-sidebar { position: fixed; left: -220px; transition: left .2s; z-index: 100; }
     .admin-sidebar.abierto { left: 0; }
     .form-row { grid-template-columns: 1fr; }
 }
+ 

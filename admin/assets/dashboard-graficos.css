@@ -237,7 +237,7 @@
 
 :root {
     --neu-base: #e9edf5;
-    --neu-sombra-clara: rgba(255,255,255,.85);
+    --neu-sombra-clara: rgba(255, 255, 255, 0.171);
     --neu-sombra-oscura: rgba(163,177,198,.55);
 }
 
@@ -397,7 +397,7 @@ body.modo-oscuro table th {
 
 body.modo-oscuro table td {
     border-bottom-color: #33384485;
-    color: #d8d8dc;
+    color: #ececed;
 }
 
 body.modo-oscuro table tr:hover td {
@@ -422,11 +422,11 @@ body.modo-oscuro .admin-topbar h1 {
 
 /* ===== Encabezado de tabla: neumórfico + acento naranja ===== */
 table th {
-    background: var(--neu-base);
+    background: linear-gradient(rgba(232,89,12,.04), rgba(232,89,12,.04)), var(--neu-base);
     box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
-    color: #888;
+    color: #4a5160;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .6px;
     padding: 12px 10px;
@@ -441,7 +441,8 @@ table th i {
 }
 
 body.modo-oscuro table th {
-    color: #9aa0ac;
+    background: linear-gradient(rgba(232,89,12,.07), rgba(232,89,12,.07)), var(--neu-base);
+    color: #c7cbd4;
 }
 
 /* ===== Resaltado de columna al pasar el cursor ===== */
@@ -577,3 +578,1146 @@ body.modo-oscuro .col-hover {
         display: flex;
     }
 }
+
+/* ===== Paginación de "Últimos pedidos" ===== */
+.paginacion-pedidos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.paginacion-texto {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+}
+
+body.modo-oscuro .paginacion-texto {
+    color: #9aa0ac;
+}
+
+a.btn-scroll-tabla {
+    text-decoration: none;
+}
+
+a.btn-scroll-tabla.deshabilitado {
+    opacity: .3;
+    pointer-events: none;
+}
+
+/* ===== Filtros de estado en Pedidos: la pastilla ES el botón ===== */
+.filtro-badge {
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 7px 16px;
+    display: inline-block;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    opacity: .75;
+}
+
+.filtro-badge:hover {
+    transform: translateY(-2px);
+    opacity: 1;
+}
+
+.filtro-badge.filtro-activo {
+    opacity: 1;
+    font-weight: 800;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.22);
+}
+
+/* ===== Detalle de pedido: cajas hundidas (neumórficas) ===== */
+.detalle-info,
+.detalle-totales {
+    background: var(--neu-base);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    box-shadow: inset 5px 5px 12px var(--neu-sombra-oscura), inset -5px -5px 12px var(--neu-sombra-clara);
+}
+
+.detalle-info p,
+.detalle-totales p {
+    margin: 6px 0;
+}
+
+.detalle-info p i,
+.detalle-totales p i {
+    color: #E8590C;
+    margin-right: 6px;
+    width: 16px;
+    text-align: center;
+}
+
+.detalle-total-final {
+    font-size: 18px;
+    font-weight: 800;
+    color: #E8590C;
+    margin-top: 8px !important;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0,0,0,.15);
+}
+
+body.modo-oscuro .detalle-total-final {
+    border-top-color: rgba(255,255,255,.12);
+}
+
+/* ===== Botones mejorados (elevados, con más presencia) ===== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.btn-primario {
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    box-shadow: 4px 4px 10px rgba(232,89,12,.35);
+}
+
+.btn-primario:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 8px 16px rgba(232,89,12,.4);
+}
+
+.btn-secundario {
+    background: var(--neu-base);
+    color: #4a5160;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+}
+
+.btn-secundario:hover {
+    transform: translateY(-2px);
+}
+
+.btn-secundario:active,
+.btn-primario:active {
+    transform: translateY(0);
+    box-shadow: inset 3px 3px 6px rgba(0,0,0,.25);
+}
+
+body.modo-oscuro .btn-secundario {
+    color: #d8dae0;
+}
+
+/* ===== Dropdown personalizado (reemplaza el <select> nativo) ===== */
+.dropdown-neu {
+    position: relative;
+    display: inline-block;
+    min-width: 190px;
+}
+
+.dropdown-neu-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--neu-base);
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+    cursor: pointer;
+    font-size: 13px;
+    transition: box-shadow .15s ease;
+}
+
+.dropdown-neu-btn i {
+    color: #E8590C;
+    font-size: 14px;
+    transition: transform .2s ease;
+}
+
+.dropdown-neu.abierto .dropdown-neu-btn i {
+    transform: rotate(180deg);
+}
+
+.dropdown-neu.abierto .dropdown-neu-btn {
+    box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
+}
+
+/* ===== La lista se abre HACIA ARRIBA (dropup) en vez de hacia abajo ===== */
+.dropdown-neu-lista {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--neu-base);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 8px 8px 22px var(--neu-sombra-oscura), -8px -8px 22px var(--neu-sombra-clara);
+    z-index: 30;
+    display: none;
+}
+
+.dropdown-neu.abierto .dropdown-neu-lista {
+    display: block;
+    animation: entradaArriba .18s ease both;
+}
+
+/* ===== Variante: dropdown que se abre hacia ABAJO (para selects cerca
+   del inicio de un formulario/modal, donde abrir hacia arriba no cabe) ===== */
+.dropdown-neu.abre-abajo .dropdown-neu-lista {
+    top: calc(100% + 8px);
+    bottom: auto;
+}
+
+.dropdown-neu.abre-abajo.abierto .dropdown-neu-lista {
+    animation: entradaSuave .18s ease both;
+}
+
+/* El dropdown ocupa todo el ancho cuando vive dentro de un .form-group,
+   y su botón se ve HUNDIDO como el resto de los campos del formulario
+   (en vez de elevado, que es como se ve en otros contextos, ej. Pedidos) */
+.form-group .dropdown-neu {
+    width: 100%;
+    min-width: 0;
+}
+
+.form-group .dropdown-neu-btn {
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    color: #333;
+}
+
+body.modo-oscuro .form-group .dropdown-neu-btn {
+    color: #ececed;
+}
+
+.form-group .dropdown-neu.abierto .dropdown-neu-btn {
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
+
+@keyframes entradaArriba {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-neu-opcion {
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .15s ease;
+    margin-bottom: 2px;
+}
+
+.dropdown-neu-opcion:last-child {
+    margin-bottom: 0;
+}
+
+.dropdown-neu-opcion:hover {
+    background: rgba(232, 89, 12, .1);
+}
+
+.dropdown-neu-opcion.activa {
+    box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
+}
+
+/* ===== Checkbox personalizado (neumórfico, con acento naranja) ===== */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border-radius: 7px;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: box-shadow .15s ease, background .15s ease;
+}
+
+input[type="checkbox"]:hover {
+    box-shadow: inset 4px 4px 8px var(--neu-sombra-oscura), inset -4px -4px 8px var(--neu-sombra-clara);
+}
+
+input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    box-shadow: 2px 2px 6px rgba(232,89,12,.45);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* ===== Stepper de número personalizado (reemplaza las flechitas nativas) ===== */
+.stepper-neu {
+    display: flex;
+    align-items: stretch;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+body.modo-oscuro .stepper-neu {
+    background: var(--neu-base);
+    border-color: rgba(255,255,255,.08);
+}
+
+.stepper-input {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 0;
+}
+
+.stepper-input:focus {
+    outline: none;
+}
+
+/* Oculta las flechitas nativas del navegador */
+.stepper-input::-webkit-outer-spin-button,
+.stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.stepper-input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.stepper-btn {
+    width: 40px;
+    border: none;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(232,89,12,.35);
+    transition: background .15s ease, transform .1s ease;
+}
+
+.stepper-btn:hover {
+    background: linear-gradient(135deg, #ff9d5c, #ff6a1a);
+}
+
+.stepper-btn:active {
+    transform: scale(.92);
+}
+
+/* ===== Quitar el brillo/halo blanco del modal ===== */
+.modal-box {
+    box-shadow: 0 25px 60px rgba(0,0,0,.4);
+    outline: none;
+}
+
+.modal-overlay {
+    outline: none;
+}
+
+/* ===== Scroll del modal, a juego con el tema (en vez de la barra
+   azul/gris genérica del navegador) ===== */
+.modal-box {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232,89,12,.4) transparent;
+}
+
+.modal-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+    background: rgba(232,89,12,.4);
+    border-radius: 10px;
+}
+
+.modal-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(232,89,12,.65);
+}
+
+/* ===== Modal de confirmación (reemplaza el confirm() nativo del navegador) ===== */
+.modal-confirmar {
+    text-align: center;
+    max-width: 360px;
+}
+
+.modal-confirmar-icono {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: rgba(220, 53, 69, .12);
+    color: #dc3545;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-confirmar h3 {
+    margin-bottom: 8px;
+    font-size: 17px;
+}
+
+.modal-confirmar p {
+    color: #888;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+}
+
+body.modo-oscuro .modal-confirmar p {
+    color: #9aa0ac;
+}
+
+.modal-confirmar-botones {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-confirmar-botones .btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px;
+}
+
+.btn-peligro-solido {
+    background: linear-gradient(135deg, #ff5c6c, #dc3545);
+    color: #fff;
+    box-shadow: 4px 4px 10px rgba(220,53,69,.35);
+}
+
+.btn-peligro-solido:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 8px 16px rgba(220,53,69,.4);
+}
+
+
+/* ===== Menú lateral: blanco en modo claro ===== */
+.admin-sidebar {
+    background: #ffffff !important;
+    color: #666d7a;
+    box-shadow: 10px 0 24px rgba(163,177,198,.4);
+    transition: background .2s ease, color .2s ease;
+}
+.admin-logo {
+    color: #444a5a;
+}
+.admin-sidebar nav a {
+    color: #666d7a;
+    transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.admin-sidebar nav a:hover,
+.admin-sidebar nav a.activo {
+    background: rgba(232, 89, 12, .12);
+    color: #E8590C;
+    border-left-color: #E8590C;
+}
+.admin-sidebar nav a.salir {
+    color: #d64545;
+}
+
+/* ===== Menú lateral: vuelve a oscuro en modo oscuro ===== */
+body.modo-oscuro .admin-sidebar {
+    background: #1f2430 !important;
+    color: #cfd3dc;
+    box-shadow: 10px 0 24px rgba(0,0,0,.5), -3px 0 8px rgba(255,255,255,.04);
+}
+body.modo-oscuro .admin-logo {
+    color: #fff;
+}
+body.modo-oscuro .admin-sidebar nav a {
+    color: #cfd3dc;
+}
+body.modo-oscuro .admin-sidebar nav a:hover,
+body.modo-oscuro .admin-sidebar nav a.activo {
+    background: #2b3142;
+    color: #fff;
+    border-left-color: #E8590C;
+}
+body.modo-oscuro .admin-sidebar nav a.salir {
+    color: #ff8a80;
+}
+
+/* ===== Iconos del menú lateral ===== */
+.admin-sidebar nav a i {
+    width: 18px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 15px;
+}
+
+.admin-logo i {
+    margin-right: 6px;
+}
+
+/* ===== Icono del botón de tema (sol/luna) ===== */
+.theme-toggle i {
+    font-size: 18px;
+    color: #444a5a;
+}
+
+body.modo-oscuro .theme-toggle i {
+    color: #f2c94c;
+}
+
+/* ===== Iconos de entrega y pago en la tabla ===== */
+table td i {
+    margin-right: 6px;
+    color: #E8590C;
+    font-size: 13px;
+}
+
+/* ==================================================================
+   SECCIÓN NUEVA: Gráficos del dashboard (debajo de las tarjetas)
+   ================================================================== */
+
+.grid-graficos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .grid-graficos {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cursor de "agarrar" en el gráfico de pedidos, que se puede arrastrar */
+#graficoPedidosTendencia {
+    cursor: grab;
+}
+#graficoPedidosTendencia:active {
+    cursor: grabbing;
+}
+
+.grafico-frame {
+    background: var(--neu-base);
+    border-radius: 26px;
+    padding: 12px;
+    box-shadow: inset 6px 6px 14px var(--neu-sombra-oscura), inset -6px -6px 14px var(--neu-sombra-clara);
+    animation: entradaSuave .5s ease both;
+}
+
+.grid-graficos .grafico-frame:nth-of-type(1) { animation-delay: .1s; }
+.grid-graficos .grafico-frame:nth-of-type(2) { animation-delay: .18s; }
+.grid-graficos .grafico-frame:nth-of-type(3) { animation-delay: .26s; }
+.grid-graficos .grafico-frame:nth-of-type(4) { animation-delay: .34s; }
+
+.grafico-box {
+    background: var(--neu-base);
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    box-shadow: 4px 4px 10px rgba(0,0,0,.12);
+    height: 100%;
+}
+
+.grafico-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.grafico-header h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666d7a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.grafico-header h4 i { color: #E8590C; }
+
+body.modo-oscuro .grafico-header h4 { color: #cfd3dc; }
+
+.grafico-tabs {
+    display: flex;
+    gap: 6px;
+}
+
+.grafico-tabs button {
+    border: none;
+    background: rgba(0,0,0,.05);
+    color: #888;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.grafico-tabs button:hover { background: rgba(232,89,12,.15); color: #E8590C; }
+
+.grafico-tabs button.tab-activa {
+    background: #E8590C;
+    color: #fff;
+}
+
+body.modo-oscuro .grafico-tabs button {
+    background: rgba(255,255,255,.06);
+    color: #9aa0ac;
+}
+
+body.modo-oscuro .grafico-tabs button.tab-activa {
+    background: #E8590C;
+    color: #fff;
+}
+
+.grafico-canvas-wrap {
+    position: relative;
+    height: 190px;
+}
+
+.grafico-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: 11px;
+    color: #888;
+}
+
+.grafico-leyenda .leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.grafico-leyenda .leyenda-item i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+body.modo-oscuro .grafico-leyenda { color: #9aa0ac; }
+
+@media (max-width: 640px) {
+    .grid-graficos { grid-template-columns: 1fr; gap: 14px; }
+    .grafico-canvas-wrap { height: 170px; }
+    .grafico-box { padding: 14px 14px 10px; }
+}
+
+/* ===== Anillo de progreso estilo "reloj" con brillo ===== */
+.anillo-progreso-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 210px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+}
+
+.anillo-progreso-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.anillo-tick {
+    stroke: rgba(150,150,160,.28);
+    stroke-width: 3;
+}
+
+body.modo-oscuro .anillo-tick {
+    stroke: rgba(255,255,255,.12);
+}
+
+.anillo-segmento {
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s cubic-bezier(.22,1,.36,1);
+}
+.anillo-centro-num {
+    font-size: 30px;
+    font-weight: 800;
+    fill: #444a5a;
+}
+
+body.modo-oscuro .anillo-centro-num {
+    fill: #f2f2f4;
+}
+
+.anillo-centro-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    fill: #999;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* Pulso sutil de "carga" al aparecer */
+@keyframes anilloPulso {
+    0%   { opacity: 0; transform: scale(.85); }
+    60%  { opacity: 1; transform: scale(1.03); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.anillo-progreso-wrap {
+    animation: anilloPulso .6s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ===== Rayitas cargando una por una al aparecer ===== */
+@keyframes tickAparece {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.anillo-tick-anim {
+    opacity: 0;
+    animation: tickAparece .15s ease-out forwards;
+}
+
+/* ===== Aspas fijas para "Pedidos pendientes por estado" ===== */
+.anillo-aspa {
+    transition: fill .3s ease, transform .25s cubic-bezier(.22,1,.36,1), filter .2s ease;
+    transform: translate(0, 0);
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: pointer;
+    opacity: 0;
+    animation: tickAparece .25s ease-out forwards;
+}
+
+.anillo-aspa:hover {
+    transform: translate(var(--dx), var(--dy));
+    filter: brightness(1.18) saturate(1.35);
+}
+
+/* ===== Dona "Ventas hoy vs Ayer": degradado + hover + centro ===== */
+.dona-ventas-segmento {
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+    transform: translate(0, 0);
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.dona-ventas-segmento:hover {
+    transform: translate(var(--dx), var(--dy));
+}
+
+.dona-ventas-centro-num {
+    font-size: 17px;
+    font-weight: 800;
+    fill: #444a5a;
+}
+
+body.modo-oscuro .dona-ventas-centro-num {
+    fill: #f2f2f4;
+}
+
+.dona-ventas-centro-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    fill: #999;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.dona-ventas-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #262a35;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -8px);
+    transition: opacity .15s ease;
+    z-index: 5;
+}
+
+#anilloVentas {
+    position: relative;
+}
+
+.dona-ventas-tooltip.visible {
+    opacity: 1;
+}
+
+/* ===== Botones de acciones con ícono (editar / eliminar) ===== */
+.btn-icono-accion {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #fff;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Tamaño del ícono SVG dentro de los botones de acción (editar/eliminar) */
+.icono-accion-svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Estrella de "Destacado" en productos (SVG, no emoji) */
+.icono-estrella {
+    width: 19px;
+    height: 19px;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 2px rgba(242,201,76,.5));
+}
+
+.btn-icono-accion:last-child {
+    margin-right: 0;
+}
+
+.btn-icono-accion:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+.btn-icono-accion:active {
+    transform: translateY(0);
+}
+/* botones de eliminar y editar de categorias */
+.btn-icono-editar {
+    background: linear-gradient(135deg, #d1af3e, #fc811d);
+    box-shadow: 3px 3px 8px rgba(232,89,12,.4), -2px -2px 6px rgba(255,255,255,.5);
+}
+
+.btn-icono-editar:active {
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,.3);
+}
+
+/* botones de eliminar y editar de categorias */
+.btn-icono-eliminar {
+    background: linear-gradient(135deg, #c74343, #c52816);
+    box-shadow: 3px 3px 8px rgba(192,57,43,.4), -2px -2px 6px rgba(255,255,255,.5);
+}
+
+.btn-icono-eliminar:active {
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,.3);
+}
+
+body.modo-oscuro .btn-icono-editar {
+    box-shadow: 3px 3px 8px rgba(0,0,0,.5), -2px -2px 6px rgba(255,255,255,.04);
+}
+
+body.modo-oscuro .btn-icono-eliminar {
+    box-shadow: 3px 3px 8px rgba(0,0,0,.5), -2px -2px 6px rgba(255,255,255,.04);
+}
+
+/* ===== Modal (Nueva/Editar categoría): neumorfismo completo ===== */
+.modal-box {
+    background: var(--neu-base);
+    border-radius: 22px;
+    box-shadow: 14px 14px 32px rgba(0,0,0,.28), -8px -8px 24px var(--neu-sombra-clara);
+}
+
+.modal-box h3 {
+    color: #444a5a;
+}
+
+body.modo-oscuro .modal-box h3 {
+    color: #f2f2f4;
+}
+
+/* Cada campo vive en su propio "cuadrado" elevado */
+.form-group {
+    background: var(--neu-base);
+    border-radius: 16px;
+    padding: 12px 16px;
+    box-shadow: 5px 5px 12px var(--neu-sombra-oscura), -5px -5px 12px var(--neu-sombra-clara);
+}
+
+.form-group label {
+    color: #4a5160;
+    margin-bottom: 8px;
+}
+
+body.modo-oscuro .form-group label {
+    color: #d8dae0;
+}
+
+/* El input de adentro se ve hundido dentro de su cuadro */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    background: var(--neu-base);
+    border: none;
+    border-radius: 10px;
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    padding: 10px 12px;
+    color: #333;
+    transition: box-shadow .15s ease;
+}
+
+body.modo-oscuro .form-group input,
+body.modo-oscuro .form-group select,
+body.modo-oscuro .form-group textarea {
+    color: #ececed;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
+
+/* ===== Input de archivo (Seleccionar archivo): botón con degradado naranja ===== */
+.form-group input[type="file"] {
+    padding: 9px 10px;
+    cursor: pointer;
+    font-size: 12.5px;
+}
+
+.form-group input[type="file"]::file-selector-button,
+.form-group input[type="file"]::-webkit-file-upload-button {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    margin-right: 12px;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12.5px;
+    cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(232,89,12,.35);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.form-group input[type="file"]::file-selector-button:hover,
+.form-group input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+.form-group input[type="file"]::file-selector-button:active,
+.form-group input[type="file"]::-webkit-file-upload-button:active {
+    transform: translateY(0);
+}
+
+/* Casilla "Visible en la carta pública" también en su cuadro elevado */
+.form-check {
+    background: var(--neu-base);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 5px 5px 12px var(--neu-sombra-oscura), -5px -5px 12px var(--neu-sombra-clara);
+}
+
+body.modo-oscuro .form-check label {
+    color: #d8dae0;
+}
+
+/* ===== Botón "Guardar" y "+ Nueva categoría": mismo lenguaje que btn-primario ===== */
+.btn-principal,
+.btn-nuevo {
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    box-shadow: 4px 4px 12px rgba(232,89,12,.4);
+    border-radius: 12px;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.btn-principal:hover,
+.btn-nuevo:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 10px 18px rgba(232,89,12,.45);
+}
+
+.btn-principal:active,
+.btn-nuevo:active {
+    transform: translateY(0);
+    box-shadow: inset 3px 3px 6px rgba(0,0,0,.3);
+}
+
+/* ===== Alertas (éxito/error): píldora neumórfica compacta, no una barra ===== */
+.alerta-ok,
+.alerta-error {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--neu-base);
+    padding: 8px 16px 8px 10px;
+    border-radius: 30px;
+    font-size: 12.5px;
+    font-weight: 700;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+    margin-bottom: 14px;
+    max-width: 100%;
+    transition: opacity .4s ease, transform .4s ease;
+}
+
+.alerta-ok {
+    color: #1e8449;
+}
+
+.alerta-error {
+    color: #c0392b;
+}
+
+.alerta-ok i,
+.alerta-error i {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.alerta-ok i {
+    background: rgba(30,132,73,.15);
+}
+
+.alerta-error i {
+    background: rgba(192,57,43,.15);
+}
+
+body.modo-oscuro .alerta-ok {
+    color: #7fe0a8;
+}
+
+body.modo-oscuro .alerta-ok i {
+    background: rgba(127,224,168,.15);
+}
+
+body.modo-oscuro .alerta-error {
+    color: #ff8a8a;
+}
+
+body.modo-oscuro .alerta-error i {
+    background: rgba(255,138,138,.15);
+}
+
+/* Estado mientras se desvanece antes de quitarse del DOM */
+.alerta-ok.desvaneciendo,
+.alerta-error.desvaneciendo {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+
+
+
+
+/* ===== Íconos naranjas en los títulos de tarjeta ===== */
+.card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card h3 i {
+    color: #E8590C;
+    font-size: 18px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================================================================
+   LOGIN: layout dividido + ilustración animada + efectos
+   ================================================================== */
+
+.login-body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(rgba(122, 43, 15, 0), rgba(232, 89, 12, 0.11)), url('pollo.png') center/cover no-repeat fixed;
+}
+
+.login-wrap {
+    display: flex;
+    width: 100%;
+    max-width: 920px;
+    min-height: 520px;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+}
+
+/* ----- Lado izquierdo: ilustración ----- */
+.login-visual {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(rgba(122, 43, 15, 0.288), rgba(232, 89, 12, 0)), url('pollo2.jpg') center/cover no-repeat;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    color: #fff;
+    text-align: center;
+}
+
