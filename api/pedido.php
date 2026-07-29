@@ -1,7 +1,11 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/culqi.php';
+<<<<<<< Updated upstream
 require_once __DIR__ . '/../includes/facturacion.php';
+=======
+require_once __DIR__ . '/../includes/generar_comprobante.php';
+>>>>>>> Stashed changes
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -24,9 +28,13 @@ $metodoPago     = $body['metodo_pago'] ?? '';
 $notas          = trim($body['notas'] ?? '');
 $culqiToken     = $body['culqi_token'] ?? null;
 $clienteEmail   = trim($body['cliente_email'] ?? 'cliente@example.com');
+<<<<<<< Updated upstream
 $tipoComprobante = strtolower(trim((string)($body['tipo_comprobante'] ?? 'boleta')));
 $tipoDocumento   = strtolower(trim((string)($body['tipo_documento'] ?? 'dni')));
 $numeroDocumento = normalizarNumeroDocumento((string)($body['numero_documento'] ?? ''));
+=======
+$clienteDni     = trim($body['cliente_dni'] ?? '');
+>>>>>>> Stashed changes
 
 // ---------- Validaciones básicas ----------
 if (empty($items) || !is_array($items)) {
@@ -147,19 +155,31 @@ try {
     // ---------- Guardar pedido ----------
     $stmtPedido = $db->prepare(
         'INSERT INTO pedidos
+<<<<<<< Updated upstream
             (codigo, cliente_nombre, cliente_telefono, tipo_comprobante, tipo_documento, numero_documento, tipo_entrega, direccion, referencia,
              metodo_pago, estado, subtotal, costo_delivery, total, notas, culqi_charge_id)
          VALUES
             (:codigo, :cliente_nombre, :cliente_telefono, :tipo_comprobante, :tipo_documento, :numero_documento, :tipo_entrega, :direccion, :referencia,
+=======
+            (codigo, cliente_nombre, cliente_telefono, cliente_email, cliente_dni, tipo_entrega, direccion, referencia,
+             metodo_pago, estado, subtotal, costo_delivery, total, notas, culqi_charge_id)
+         VALUES
+            (:codigo, :cliente_nombre, :cliente_telefono, :cliente_email, :cliente_dni, :tipo_entrega, :direccion, :referencia,
+>>>>>>> Stashed changes
              :metodo_pago, :estado, :subtotal, :costo_delivery, :total, :notas, :culqi_charge_id)'
     );
     $stmtPedido->execute([
         'codigo' => $codigo,
         'cliente_nombre' => $clienteNombre,
         'cliente_telefono' => $clienteTelefono,
+<<<<<<< Updated upstream
         'tipo_comprobante' => $tipoComprobante,
         'tipo_documento' => $tipoDocumento,
         'numero_documento' => $numeroDocumento,
+=======
+        'cliente_email' => $clienteEmail,
+        'cliente_dni' => $clienteDni ?: null,
+>>>>>>> Stashed changes
         'tipo_entrega' => $tipoEntrega,
         'direccion' => $tipoEntrega === 'delivery' ? $direccion : null,
         'referencia' => $referencia ?: null,
@@ -192,6 +212,7 @@ try {
 
     $db->commit();
 
+<<<<<<< Updated upstream
     if ($comprobante && $comprobante['estado_sunat'] === 'pendiente_envio') {
         try {
             $db->beginTransaction();
@@ -203,6 +224,15 @@ try {
                 $db->rollBack();
             }
         }
+=======
+    // ---------- Emitir boleta electrónica (solo si el pago ya se cobró online) ----------
+    // No va dentro de la transacción de arriba a propósito: el pedido y el pago
+    // ya quedaron guardados pase lo que pase con NubeFacT/SUNAT. Si falla, el
+    // pedido no se pierde y el comprobante se puede reintentar desde el admin.
+    $comprobante = ['ok' => false];
+    if ($estado === 'pagado') {
+        $comprobante = generarComprobantePorPedido($pedidoId);
+>>>>>>> Stashed changes
     }
 
     // ---------- Construir mensaje de WhatsApp ----------
@@ -246,6 +276,8 @@ try {
         'estado' => $estado,
         'comprobante' => $comprobante ?? null,
         'whatsapp_url' => $whatsappUrl,
+        'comprobante_pdf' => $comprobante['pdf'] ?? null,
+        'comprobante_xml' => $comprobante['xml'] ?? null,
     ]);
 
 } catch (CulqiException $e) {
