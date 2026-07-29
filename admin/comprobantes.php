@@ -12,24 +12,8 @@ $mensaje = '';
 $error = '';
 $whatsappRedirectUrl = '';
 
-// Convierte una ruta guardada en un link usable: si ya es una URL completa
-// (como las que devuelve NubeFacT), se usa tal cual; si es una ruta local
-// (como las de SUNAT Nativo), se le antepone "../".
-function urlArchivoComprobante(?string $ruta): string {
-    $ruta = trim((string) $ruta);
-    if ($ruta === '') {
-        return '';
-    }
-    if (preg_match('#^https?://#i', $ruta)) {
-        return $ruta;
-    }
-    return '../' . ltrim($ruta, '/');
-}
-
 // Autogenera PDFs faltantes para comprobantes históricos o registros previos.
-// Solo aplica a comprobantes de SUNAT Nativo (rutas locales); los de NubeFacT
-// ya traen su PDF listo desde el proveedor, así que se excluyen.
-$faltantes = $db->query("SELECT id FROM comprobantes_electronicos WHERE (pdf_path IS NULL OR pdf_path = '') AND sunat_descripcion NOT LIKE 'Generado vía NubeFacT%' ORDER BY id DESC LIMIT 30")->fetchAll();
+$faltantes = $db->query("SELECT id FROM comprobantes_electronicos WHERE (pdf_path IS NULL OR pdf_path = '') ORDER BY id DESC LIMIT 30")->fetchAll();
 foreach ($faltantes as $f) {
     facturacionRegenerarPdfComprobante($db, (int)$f['id']);
 }
@@ -177,7 +161,7 @@ function extraerIdCdr(?string $cdrJson): string {
         return '-';
     }
 
-    $id = trim((string)($arr['id'] ?? ($arr['key'] ?? '')));
+    $id = trim((string)($arr['id'] ?? ''));
     return $id !== '' ? $id : '-';
 }
 ?>
@@ -238,9 +222,8 @@ function extraerIdCdr(?string $cdrJson): string {
             </thead>
             <tbody>
                 <?php foreach ($comprobantes as $c): ?>
-                    <?php $esNubefact = str_contains((string)($c['sunat_descripcion'] ?? ''), 'NubeFacT'); ?>
                     <tr>
-                        <td><?= limpiar(strtoupper($c['tipo_comprobante'])) ?> <?= limpiar($c['numero_comprobante']) ?><?php if ($esNubefact): ?> <span class="badge" style="background:#eef;color:#334;">NubeFacT</span><?php endif; ?></td>
+                        <td><?= limpiar(strtoupper($c['tipo_comprobante'])) ?> <?= limpiar($c['numero_comprobante']) ?></td>
                         <td><?= limpiar($c['pedido_codigo']) ?></td>
                         <td><?= limpiar($c['cliente_nombre']) ?></td>
                         <td><?= strtoupper(limpiar($c['tipo_documento'])) ?> <?= limpiar($c['numero_documento']) ?></td>
@@ -252,14 +235,13 @@ function extraerIdCdr(?string $cdrJson): string {
                         </td>
                         <td style="max-width:260px;"><?= limpiar((string)($c['sunat_descripcion'] ?? '')) ?></td>
                         <td>
-                            <?php if (!empty($c['xml_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($c['xml_path'])) ?>">XML</a><?php endif; ?>
-                            <?php if (!empty($c['cdr_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($c['cdr_path'])) ?>">CDR</a><?php endif; ?>
-                            <?php if (!empty($c['pdf_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($c['pdf_path'])) ?>">PDF</a><?php endif; ?>
+                            <?php if (!empty($c['xml_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($c['xml_path']) ?>">XML</a><?php endif; ?>
+                            <?php if (!empty($c['cdr_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($c['cdr_path']) ?>">CDR</a><?php endif; ?>
+                            <?php if (!empty($c['pdf_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($c['pdf_path']) ?>">PDF</a><?php endif; ?>
                         </td>
                         <td><?= date('d/m/Y H:i', strtotime($c['creado_en'])) ?></td>
                         <td style="white-space:nowrap;">
                             <a href="?ver=<?= (int)$c['id'] ?>" class="btn btn-secundario btn-sm"><i class="ti ti-eye"></i> Ver</a>
-                            <?php if (!$esNubefact): ?>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('¿Reenviar a SUNAT este comprobante?');">
                                 <input type="hidden" name="accion" value="reenviar">
                                 <input type="hidden" name="comprobante_id" value="<?= (int)$c['id'] ?>">
@@ -270,7 +252,6 @@ function extraerIdCdr(?string $cdrJson): string {
                                 <input type="hidden" name="comprobante_id" value="<?= (int)$c['id'] ?>">
                                 <button class="btn btn-secundario btn-sm" type="submit"><i class="ti ti-file-download"></i> Generar PDF</button>
                             </form>
-                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -294,9 +275,9 @@ function extraerIdCdr(?string $cdrJson): string {
     <p><b>Intentos:</b> <?= (int)$detalle['intentos_envio'] ?></p>
 
     <p>
-        <?php if (!empty($detalle['xml_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($detalle['xml_path'])) ?>">Descargar XML</a><?php endif; ?>
-        <?php if (!empty($detalle['cdr_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($detalle['cdr_path'])) ?>">Descargar CDR</a><?php endif; ?>
-        <?php if (!empty($detalle['pdf_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="<?= limpiar(urlArchivoComprobante($detalle['pdf_path'])) ?>">Ver PDF</a><?php endif; ?>
+        <?php if (!empty($detalle['xml_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($detalle['xml_path']) ?>">Descargar XML</a><?php endif; ?>
+        <?php if (!empty($detalle['cdr_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($detalle['cdr_path']) ?>">Descargar CDR</a><?php endif; ?>
+        <?php if (!empty($detalle['pdf_path'])): ?><a class="btn btn-secundario btn-sm" target="_blank" href="../<?= limpiar($detalle['pdf_path']) ?>">Ver PDF</a><?php endif; ?>
         <form method="POST" style="display:inline;">
             <input type="hidden" name="accion" value="generar_pdf">
             <input type="hidden" name="comprobante_id" value="<?= (int)$detalle['id'] ?>">
