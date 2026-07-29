@@ -16,6 +16,74 @@ foreach ($categorias as $cat) {
 $nombreNegocio = cfg('nombre_negocio', 'Mi Restaurante');
 $logo = cfg('logo');
 $culqiPublicKey = cfg('culqi_public_key');
+$iconosCategoria = ['fa-pizza-slice', 'fa-burger', 'fa-mug-hot', 'fa-ice-cream', 'fa-drumstick-bite', 'fa-fish', 'fa-lemon', 'fa-cheese'];
+
+function rutaImagenProducto(?string $imagen): string {
+    $nombre = trim((string)$imagen);
+    if ($nombre === '') {
+        return 'assets/img/placeholder.png';
+    }
+
+    // Compatibilidad con valores antiguos: "archivo.jpg", "productos/archivo.jpg" o "uploads/productos/archivo.jpg".
+    if (strpos($nombre, 'uploads/') === 0) {
+        return $nombre;
+    }
+    if (strpos($nombre, 'productos/') === 0) {
+        return 'uploads/' . $nombre;
+    }
+
+    return 'uploads/productos/' . $nombre;
+}
+
+function rutaImagenBanner(?string $imagen): string {
+    $nombre = trim((string)$imagen);
+    if ($nombre === '') {
+        return '';
+    }
+
+    // Compatibilidad con valores: "archivo.jpg", "banners/archivo.jpg" o "uploads/banners/archivo.jpg".
+    if (strpos($nombre, 'uploads/') === 0) {
+        return $nombre;
+    }
+    if (strpos($nombre, 'banners/') === 0) {
+        return 'uploads/' . $nombre;
+    }
+
+    return 'uploads/banners/' . $nombre;
+}
+
+$slidesBanner = [];
+if (!empty($banners)) {
+    foreach ($banners as $b) {
+        $slidesBanner[] = [
+            'imagen' => rutaImagenBanner($b['imagen'] ?? ''),
+            'titulo' => (string)($b['titulo'] ?? ''),
+            'subtitulo' => (string)($b['subtitulo'] ?? ''),
+            'demo' => false,
+        ];
+    }
+} else {
+    $slidesBanner = [
+        [
+            'imagen' => 'https://placehold.co/1200x600/2e7d46/ffffff?text=Promo+1',
+            'titulo' => 'Ofertas que no te puedes perder',
+            'subtitulo' => '2x1 en platos seleccionados hasta las 8pm',
+            'demo' => true,
+        ],
+        [
+            'imagen' => 'https://placehold.co/1200x600/3ea152/ffffff?text=Promo+2',
+            'titulo' => 'Delivery disponible',
+            'subtitulo' => 'Recibe tu pedido donde estes',
+            'demo' => true,
+        ],
+        [
+            'imagen' => 'https://placehold.co/1200x600/1f6b3a/ffffff?text=Promo+3',
+            'titulo' => 'Nuevos en la carta',
+            'subtitulo' => 'Descubre los productos destacados de hoy',
+            'demo' => true,
+        ],
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -23,6 +91,7 @@ $culqiPublicKey = cfg('culqi_public_key');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title><?= limpiar($nombreNegocio) ?> - Carta Digital</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <script src="https://checkout.culqi.com/js/v4"></script>
 <style>
@@ -37,52 +106,87 @@ $culqiPublicKey = cfg('culqi_public_key');
 <body>
 
 <header class="header">
-    <?php if ($logo): ?><img src="uploads/<?= limpiar($logo) ?>" class="logo" alt="logo"><?php endif; ?>
-    <div>
-        <h1><?= limpiar($nombreNegocio) ?></h1>
-        <p><?= limpiar(cfg('direccion_local', '')) ?></p>
+    <div class="header-top">
+        <div class="header-location">
+            <span class="loc-label"><i class="fa-solid fa-location-dot"></i> Ubicacion actual</span>
+            <h1><?= limpiar(cfg('direccion_local', $nombreNegocio)) ?></h1>
+            <p><?= limpiar(cfg('direccion_local', '')) ?></p>
+        </div>
+        <?php if ($logo): ?>
+            <img src="uploads/<?= limpiar($logo) ?>" class="logo" alt="logo">
+        <?php else: ?>
+            <div class="logo logo-fallback"><i class="fa-solid fa-utensils"></i></div>
+        <?php endif; ?>
+    </div>
+    <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="inputBuscar" placeholder="Buscar en la carta...">
     </div>
 </header>
 
-<?php if (!empty($banners)): ?>
-<div class="banner-slider" id="bannerSlider">
-    <div class="banner-track" id="bannerTrack">
-        <?php foreach ($banners as $b): ?>
-        <div class="banner-slide">
-            <img src="uploads/<?= limpiar($b['imagen']) ?>" alt="<?= limpiar($b['titulo']) ?>">
-            <?php if ($b['titulo'] || $b['subtitulo']): ?>
-            <div class="banner-caption">
-                <h2><?= limpiar($b['titulo']) ?></h2>
-                <p><?= limpiar($b['subtitulo']) ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <div class="banner-dots" id="bannerDots"></div>
-</div>
-<?php endif; ?>
-
 <nav class="categorias-nav" id="categoriasNav">
-    <?php foreach ($categorias as $i => $cat): ?>
-    <button class="cat-btn <?= $i === 0 ? 'activo' : '' ?>" data-target="cat-<?= $cat['id'] ?>">
+    <button class="cat-btn activo" data-target="all-products">Todos</button>
+    <?php foreach ($categorias as $cat): ?>
+    <button class="cat-btn" data-target="cat-<?= $cat['id'] ?>">
         <?= limpiar($cat['nombre']) ?>
     </button>
     <?php endforeach; ?>
 </nav>
 
-<main>
+<nav class="quickcats" id="quickCats">
+    <button class="quickcat-item activo" type="button" data-target="all-products">
+        <span class="quickcat-circle"><i class="fa-solid fa-layer-group"></i></span>
+        <span>Todos</span>
+    </button>
+    <?php foreach ($categorias as $i => $cat): ?>
+    <button class="quickcat-item" type="button" data-target="cat-<?= $cat['id'] ?>">
+        <span class="quickcat-circle"><i class="fa-solid <?= $iconosCategoria[$i % count($iconosCategoria)] ?>"></i></span>
+        <span><?= limpiar($cat['nombre']) ?></span>
+    </button>
+    <?php endforeach; ?>
+</nav>
+
+<main class="main-content">
+    <div class="banner-slider" id="bannerSlider">
+        <div class="banner-track" id="bannerTrack">
+            <?php foreach ($slidesBanner as $slide): ?>
+            <div class="banner-slide">
+                <img src="<?= limpiar($slide['imagen']) ?>" alt="<?= limpiar($slide['titulo']) ?>">
+                <?php if ($slide['titulo'] || $slide['subtitulo']): ?>
+                <div class="banner-caption">
+                    <h2><?= limpiar($slide['titulo']) ?></h2>
+                    <p><?= limpiar($slide['subtitulo']) ?></p>
+                    <?php if (!empty($slide['demo'])): ?>
+                    <button type="button" class="banner-cta" onclick="irHomeVisual(document.getElementById('navHome'))">Pedir ahora</button>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <div class="banner-dots" id="bannerDots"></div>
+    </div>
+
     <?php foreach ($categorias as $cat): ?>
-    <section class="seccion-categoria" id="cat-<?= $cat['id'] ?>">
-        <h3><?= limpiar($cat['nombre']) ?></h3>
+    <section class="seccion seccion-categoria" id="cat-<?= $cat['id'] ?>">
+        <div class="seccion-header">
+            <h3><?= limpiar($cat['nombre']) ?></h3>
+        </div>
+        <div class="grid-items">
         <?php foreach ($productosPorCategoria[$cat['id']] as $p): ?>
-        <div class="producto-card <?= !$p['disponible'] ? 'no-disponible' : '' ?>">
-            <img class="producto-img" src="<?= $p['imagen'] ? 'uploads/' . limpiar($p['imagen']) : 'assets/img/placeholder.png' ?>" alt="<?= limpiar($p['nombre']) ?>" onerror="this.style.visibility='hidden'">
-            <div class="producto-info">
+        <article class="item-card producto-card <?= !$p['disponible'] ? 'no-disponible' : '' ?>">
+            <div class="item-img-wrap">
+                <img class="producto-img" src="<?= limpiar(rutaImagenProducto($p['imagen'] ?? '')) ?>" alt="<?= limpiar($p['nombre']) ?>" onerror="this.style.visibility='hidden'">
+                <button class="btn-fav" type="button" onclick="toggleFavoritoVisual(this); event.stopPropagation();">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
                 <?php if ($p['destacado']): ?><span class="badge-destacado">★ Destacado</span><?php endif; ?>
+                <?php if (!$p['disponible']): ?><span class="badge-agotado">Agotado</span><?php endif; ?>
+            </div>
+            <div class="producto-info">
                 <h4><?= limpiar($p['nombre']) ?></h4>
                 <p class="desc"><?= limpiar($p['descripcion']) ?></p>
-                <div class="producto-precios">
+                <div class="item-footer producto-precios">
                     <div>
                         <?php if ($p['precio_oferta']): ?>
                             <span class="precio-oferta-tachado"><?= formatoPrecio($p['precio']) ?></span>
@@ -94,23 +198,41 @@ $culqiPublicKey = cfg('culqi_public_key');
                     <div class="control-cantidad" data-id="<?= $p['id'] ?>"
                          data-nombre="<?= limpiar($p['nombre']) ?>"
                          data-precio="<?= $p['precio_oferta'] ?: $p['precio'] ?>">
-                        <button class="btn-agregar" onclick="agregarProducto(this)">Agregar</button>
+                        <button class="btn-agregar" onclick="agregarProducto(this)"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
             </div>
-        </div>
+        </article>
         <?php endforeach; ?>
+        </div>
     </section>
     <?php endforeach; ?>
 </main>
 
-<footer class="footer-public">Hecho con ❤ - Carta Digital</footer>
+<footer class="footer-public">Carta Digital</footer>
 
-<!-- Botón flotante del carrito -->
-<button class="carrito-flotante" id="btnCarrito" onclick="abrirCarrito()">
-    <span>🛒 Ver mi pedido</span>
-    <span class="badge-count" id="carritoContador">0</span>
-</button>
+<!-- Barra inferior -->
+<nav class="bottom-nav">
+    <button class="nav-item activo" id="navHome" type="button" onclick="irHomeVisual(this)">
+        <i class="fa-solid fa-house"></i>
+        <span>Inicio</span>
+    </button>
+    <button class="nav-item" id="navFav" type="button" onclick="abrirFavoritosVisual(this)">
+        <i class="fa-regular fa-heart"></i>
+        <span>Favoritos</span>
+    </button>
+    <button class="nav-item nav-carrito" id="btnCarrito" type="button" onclick="abrirCarrito()">
+        <span class="nav-carrito-icon-wrap">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span class="badge-count" id="carritoContador">0</span>
+        </span>
+        <span>Pedido</span>
+    </button>
+    <button class="nav-item" id="navPerfil" type="button" onclick="abrirPerfilVisual(this)">
+        <i class="fa-regular fa-user"></i>
+        <span>Perfil</span>
+    </button>
+</nav>
 
 <!-- Modal carrito -->
 <div class="overlay" id="overlayCarrito">
@@ -122,6 +244,32 @@ $culqiPublicKey = cfg('culqi_public_key');
         <div id="listaCarrito"></div>
         <div id="resumenCarrito"></div>
         <button class="btn-principal" id="btnIrCheckout" onclick="irACheckout()">Continuar</button>
+    </div>
+</div>
+
+<!-- Modal favoritos -->
+<div class="overlay" id="overlayFavoritos">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Mis favoritos</h3>
+            <button onclick="cerrarModal('overlayFavoritos')">&times;</button>
+        </div>
+        <div class="vacio-msg">Aun no tienes favoritos guardados.</div>
+    </div>
+</div>
+
+<!-- Modal perfil -->
+<div class="overlay" id="overlayPerfil">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Perfil</h3>
+            <button onclick="cerrarModal('overlayPerfil')">&times;</button>
+        </div>
+        <div class="perfil-card">
+            <div class="perfil-avatar"><i class="fa-solid fa-user"></i></div>
+            <h4>Invitado</h4>
+            <p>Pronto podras guardar tus direcciones y revisar tu historial de pedidos.</p>
+        </div>
     </div>
 </div>
 
