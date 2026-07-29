@@ -268,6 +268,78 @@ img{max-width:100%; display:block;}
 .alerta-error{background:#fdecec; color:#c1372f; font-size:12.5px; padding:10px 14px; border-radius:12px; margin-bottom:12px;}
 .alerta-ok{background:#e9f9ee; color:#1e8449; font-size:12.5px; padding:10px 14px; border-radius:12px; margin-bottom:12px;}
 
+.modal-confirmacion{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px 24px 0 0;
+  background:linear-gradient(180deg, #f6fff9 0%, #f2f6f2 55%, #eef7f0 100%);
+}
+.confirmacion-wrap{text-align:center; padding:6px 2px 2px; position:relative; z-index:2;}
+.confirmacion-icono{
+  width:72px; height:72px; border-radius:50%; margin:4px auto 14px;
+  display:flex; align-items:center; justify-content:center; font-size:34px; color:#fff;
+  background:linear-gradient(150deg, #22c55e 0%, #15803d 100%);
+  box-shadow:0 12px 24px rgba(21,128,61,0.28);
+}
+.confirmacion-wrap h3{font-size:22px; color:#155b34; margin-bottom:6px;}
+.confirmacion-wrap p{font-size:13px; color:#53705d; line-height:1.45;}
+.confirmacion-codigo{
+  margin:14px auto 16px;
+  background:#fff;
+  border:1px dashed #9fc4a7;
+  border-radius:12px;
+  max-width:250px;
+  padding:10px 12px;
+  font-size:13px;
+  color:#335843;
+}
+.confirmacion-codigo strong{font-size:15px; color:#155b34;}
+.acciones-confirmacion{display:grid; gap:10px; margin-top:4px;}
+.btn-whatsapp{
+  text-decoration:none;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+}
+.btn-secundario{
+  width:100%;
+  border:none;
+  background:#fff;
+  color:#276744;
+  padding:13px;
+  border-radius:var(--pill-radius);
+  font-size:13.5px;
+  font-weight:700;
+  cursor:pointer;
+  border:1px solid #cae1d2;
+}
+.btn-whatsapp.deshabilitado{
+  pointer-events:none;
+  opacity:.55;
+}
+
+.confetti-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:1;
+}
+.confetti-piece{
+  position:absolute;
+  top:-14px;
+  opacity:.96;
+  border-radius:2px;
+  animation-name:caer-confetti;
+  animation-timing-function:cubic-bezier(.2,.8,.2,1);
+  animation-fill-mode:forwards;
+}
+@keyframes caer-confetti{
+  0%{transform:translateY(0) rotate(0deg); opacity:1;}
+  100%{transform:translateY(460px) rotate(720deg); opacity:0;}
+}
+
 .perfil-card{background:#fff; border-radius:16px; padding:20px; text-align:center;}
 .perfil-avatar{
   width:64px; height:64px; border-radius:50%; background:var(--color-primario); color:#fff;
@@ -300,5 +372,10 @@ img{max-width:100%; display:block;}
     left: 50%;
     transform: translateX(-50%);
     max-width: 760px;
+  }
+
+  .modal-confirmacion {
+    border-radius: 24px;
+    margin-bottom: 18px;
   }
 }

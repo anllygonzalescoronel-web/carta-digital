@@ -365,6 +365,26 @@ if (!empty($banners)) {
     </div>
 </div>
 
+<!-- Modal confirmación de venta -->
+<div class="overlay" id="overlayConfirmacion">
+    <div class="modal modal-confirmacion">
+        <div class="confetti-layer" id="confettiLayer"></div>
+        <div class="confirmacion-wrap">
+            <div class="confirmacion-icono"><i class="fa-solid fa-check"></i></div>
+            <h3>Pedido confirmado</h3>
+            <p>Tu pedido fue procesado correctamente. Elige como deseas continuar.</p>
+            <div class="confirmacion-codigo">Codigo de pedido: <strong id="confirmacionCodigo">-</strong></div>
+
+            <div class="acciones-confirmacion">
+                <a class="btn-principal btn-whatsapp" id="btnAvisarWhatsapp" href="#" target="_self" rel="noopener noreferrer">
+                    <i class="fa-brands fa-whatsapp"></i> Avisar por WhatsApp
+                </a>
+                <button class="btn-secundario" id="btnVolverCarta" type="button">Volver a la carta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     window.APP_CONFIG = {
         culqiPublicKey: <?= json_encode($culqiPublicKey) ?>,

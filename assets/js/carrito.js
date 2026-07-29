@@ -142,6 +142,104 @@ function quitarDelCarrito(id) {
 function abrirModal(id) { document.getElementById(id).classList.add('visible'); }
 function cerrarModal(id) { document.getElementById(id).classList.remove('visible'); }
 
+function resetearCheckout() {
+    const ids = [
+        'inputNombre',
+        'inputTelefono',
+        'inputDireccion',
+        'inputReferencia',
+        'inputNotas',
+        'inputEmail'
+    ];
+
+    ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    entregaSeleccionada = 'recojo';
+    pagoSeleccionado = 'efectivo';
+    culqiTokenActual = null;
+
+    document.querySelectorAll('.opcion-toggle').forEach((el) => {
+        el.classList.toggle('activo', el.dataset.entrega === 'recojo');
+    });
+
+    const camposDelivery = document.getElementById('camposDelivery');
+    if (camposDelivery) camposDelivery.style.display = 'none';
+
+    document.querySelectorAll('.metodo-pago-card').forEach((el) => {
+        el.classList.toggle('activo', el.dataset.pago === 'efectivo');
+    });
+
+    const bloqueYape = document.getElementById('bloqueYape');
+    const bloqueTarjeta = document.getElementById('bloqueTarjeta');
+    if (bloqueYape) bloqueYape.style.display = 'none';
+    if (bloqueTarjeta) bloqueTarjeta.style.display = 'none';
+
+    limpiarErrorCheckout();
+}
+
+function mostrarConfirmacionVenta(codigoPedido, whatsappUrl) {
+    const codigoEl = document.getElementById('confirmacionCodigo');
+    const btnWhatsapp = document.getElementById('btnAvisarWhatsapp');
+    const btnVolver = document.getElementById('btnVolverCarta');
+
+    if (codigoEl) {
+        codigoEl.textContent = codigoPedido || '-';
+    }
+
+    if (btnWhatsapp) {
+        btnWhatsapp.href = whatsappUrl || '#';
+        btnWhatsapp.classList.toggle('deshabilitado', !whatsappUrl);
+        btnWhatsapp.setAttribute('aria-disabled', whatsappUrl ? 'false' : 'true');
+        btnWhatsapp.onclick = (e) => {
+            if (!whatsappUrl) {
+                e.preventDefault();
+                return;
+            }
+            cerrarModal('overlayConfirmacion');
+        };
+    }
+
+    if (btnVolver) {
+        btnVolver.onclick = () => {
+            cerrarModal('overlayConfirmacion');
+            irHomeVisual(document.getElementById('navHome'));
+        };
+    }
+
+    abrirModal('overlayConfirmacion');
+    lanzarConfettiConfirmacion();
+}
+
+function lanzarConfettiConfirmacion() {
+    const capa = document.getElementById('confettiLayer');
+    if (!capa) return;
+
+    capa.innerHTML = '';
+    const colores = ['#22c55e', '#f59e0b', '#0ea5e9', '#ef4444', '#a855f7', '#14b8a6'];
+    const total = window.innerWidth < 760 ? 75 : 120;
+
+    for (let i = 0; i < total; i++) {
+        const pieza = document.createElement('span');
+        const size = (Math.random() * 8) + 5;
+        pieza.className = 'confetti-piece';
+        pieza.style.left = `${Math.random() * 100}%`;
+        pieza.style.width = `${size}px`;
+        pieza.style.height = `${(Math.random() * 5) + 4}px`;
+        pieza.style.background = colores[Math.floor(Math.random() * colores.length)];
+        pieza.style.animationDelay = `${Math.random() * 0.55}s`;
+        pieza.style.animationDuration = `${2.1 + Math.random() * 1.4}s`;
+        pieza.style.transform = `rotate(${Math.random() * 360}deg)`;
+        capa.appendChild(pieza);
+    }
+
+    setTimeout(() => {
+        capa.innerHTML = '';
+    }, 3800);
+}
+
 function abrirCarrito() {
     renderizarCarritoModal();
     abrirModal('overlayCarrito');
@@ -273,14 +371,69 @@ function abrirCulqiCheckout() {
     Culqi.open();
 }
 
+function cerrarCheckoutCulqi() {
+    if (!window.Culqi) return;
+
+    const limpiarRestosCulqi = () => {
+        const selectores = [
+            '[id*="culqi" i]',
+            '[class*="culqi" i]',
+            'iframe[src*="culqi" i]',
+            'iframe[name*="culqi" i]',
+            'iframe[title*="culqi" i]'
+        ];
+
+        const elementos = document.querySelectorAll(selectores.join(','));
+        elementos.forEach((el) => {
+            if (el === document.documentElement || el === document.body) return;
+            if (el.closest && el.closest('#overlayCheckout, #overlayConfirmacion, #overlayCarrito, #overlayFavoritos, #overlayPerfil')) return;
+            el.remove();
+        });
+
+        [document.body, document.documentElement].forEach((root) => {
+            if (!root) return;
+            root.style.overflow = '';
+            root.style.position = '';
+            root.style.touchAction = '';
+            [...root.classList].forEach((cls) => {
+                if (/culqi/i.test(cls)) root.classList.remove(cls);
+            });
+        });
+    };
+
+    try {
+        if (typeof Culqi.close === 'function') {
+            Culqi.close();
+        }
+    } catch (e) {
+        // Ignora errores de cierre para no romper el flujo de compra.
+    }
+
+    try {
+        if (typeof Culqi.closeCheckout === 'function') {
+            Culqi.closeCheckout();
+        }
+    } catch (e) {
+        // Algunas versiones no exponen este método.
+    }
+
+    limpiarRestosCulqi();
+    setTimeout(limpiarRestosCulqi, 120);
+    setTimeout(limpiarRestosCulqi, 450);
+    setTimeout(limpiarRestosCulqi, 900);
+}
+
 // Culqi.js llama a esta función global cuando el usuario termina el checkout
 window.culqi = function () {
     if (Culqi.token) {
+        cerrarCheckoutCulqi();
         culqiTokenActual = Culqi.token.id;
         enviarPedidoAlServidor();
     } else if (Culqi.order) {
         // No usado en este flujo simple (pagos con Yape vía Culqi Order), reservado para el futuro.
+        cerrarCheckoutCulqi();
     } else if (Culqi.error) {
+        cerrarCheckoutCulqi();
         mostrarErrorCheckout(Culqi.error.user_message || 'No se pudo procesar tu tarjeta. Intenta nuevamente.');
     }
 };
@@ -320,19 +473,25 @@ async function enviarPedidoAlServidor() {
             return;
         }
 
-        // Éxito: limpiar carrito y redirigir a WhatsApp
+        // Éxito: limpiar carrito y mostrar confirmación visual
         carrito = [];
         guardarCarrito();
         document.querySelectorAll('.control-cantidad').forEach(cont => {
             renderizarStepper(cont, parseInt(cont.dataset.id, 10));
         });
 
-        document.getElementById('checkoutError').innerHTML =
-            `<div class="alerta-ok">¡Pedido ${data.codigo} registrado! Te llevamos a WhatsApp para confirmar...</div>`;
+        cerrarModal('overlayCheckout');
+        limpiarErrorCheckout();
 
-        setTimeout(() => { window.location.href = data.whatsapp_url; }, 900);
+        btn.disabled = false;
+        btn.textContent = 'Confirmar pedido';
+
+        cerrarCheckoutCulqi();
+        resetearCheckout();
+        mostrarConfirmacionVenta(data.codigo, data.whatsapp_url);
 
     } catch (err) {
+        cerrarCheckoutCulqi();
         mostrarErrorCheckout('Error de conexión. Intenta nuevamente.');
         btn.disabled = false;
         btn.textContent = 'Confirmar pedido';
