@@ -5,10 +5,12 @@
 $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+requerirLogin();
+requerirRol(['admin']);
+
 if ($esAjax) {
-    require_once __DIR__ . '/../includes/auth.php';
-    require_once __DIR__ . '/../includes/functions.php';
-    requerirLogin();
 } else {
     $tituloPagina = 'Pedidos';
     $paginaActual = 'pedidos';

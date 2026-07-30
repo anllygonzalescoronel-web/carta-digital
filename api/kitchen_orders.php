@@ -2,9 +2,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 
-if (!estaLogueado()) {
-    jsonResponse(['ok' => false, 'mensaje' => 'No autorizado'], 401);
-}
+requerirRol(['admin', 'cocinero']);
 
 $db = getDB();
 $estadosValidos = ['pendiente', 'pagado', 'en_preparacion', 'en_camino', 'entregado', 'cancelado'];
@@ -34,18 +32,48 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     jsonResponse(['ok' => false, 'mensaje' => 'Metodo no permitido'], 405);
 }
 
-$filtro = trim((string) ($_GET['estado'] ?? ''));
-$limite = max(1, min(80, (int) ($_GET['limite'] ?? 40)));
+$filtro  = trim((string) ($_GET['estado'] ?? ''));
+$limite  = max(1, min(200, (int) ($_GET['limite'] ?? 80)));
+$periodo = trim((string) ($_GET['periodo'] ?? 'hoy'));   // hoy | semana | mes | todo
+
+// Calcular rango en hora Lima (UTC-5)
+date_default_timezone_set('America/Lima');
+$periodosValidos = ['hoy', 'semana', 'mes', 'todo'];
+if (!in_array($periodo, $periodosValidos, true)) {
+    $periodo = 'hoy';
+}
+
+$desde = null;
+switch ($periodo) {
+    case 'hoy':
+        $desde = date('Y-m-d') . ' 00:00:00';
+        break;
+    case 'semana':
+        $desde = date('Y-m-d', strtotime('monday this week')) . ' 00:00:00';
+        break;
+    case 'mes':
+        $desde = date('Y-m-01') . ' 00:00:00';
+        break;
+    // 'todo': sin filtro de fecha
+}
 
 $sql = 'SELECT p.id, p.codigo, p.cliente_nombre, p.cliente_telefono, p.tipo_entrega, p.metodo_pago, p.total, p.estado, p.creado_en,
         (SELECT COALESCE(SUM(pd.cantidad),0) FROM pedido_detalle pd WHERE pd.pedido_id = p.id) AS total_items,
         (SELECT GROUP_CONCAT(CONCAT(pd.cantidad, "x ", pd.nombre_producto) SEPARATOR "||") FROM pedido_detalle pd WHERE pd.pedido_id = p.id) AS resumen_items
         FROM pedidos p';
 $params = [];
+$condiciones = [];
 
 if ($filtro !== '' && in_array($filtro, $estadosValidos, true)) {
-    $sql .= ' WHERE p.estado = :estado';
+    $condiciones[] = 'p.estado = :estado';
     $params['estado'] = $filtro;
+}
+if ($desde !== null) {
+    $condiciones[] = 'p.creado_en >= :desde';
+    $params['desde'] = $desde;
+}
+if (!empty($condiciones)) {
+    $sql .= ' WHERE ' . implode(' AND ', $condiciones);
 }
 
 $sql .= ' ORDER BY p.creado_en DESC LIMIT :limite';
@@ -80,7 +108,9 @@ foreach ($pedidos as $p) {
 }
 
 jsonResponse([
-    'ok' => true,
+    'ok'             => true,
     'estados_validos' => $estadosValidos,
-    'pedidos' => $out,
+    'pedidos'        => $out,
+    'periodo'        => $periodo,
+    'total'          => count($out),
 ]);

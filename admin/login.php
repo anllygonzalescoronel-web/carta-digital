@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 if (estaLogueado()) {
-    header('Location: index.php');
+    header('Location: ' . rutaInicioPorRol());
     exit;
 }
 
@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $usuario = trim($_POST['usuario'] ?? '');
     $password = $_POST['password'] ?? '';
     if (intentarLogin($usuario, $password)) {
-        header('Location: index.php');
+        header('Location: ' . rutaInicioPorRol());
         exit;
     }
     $error = 'Usuario o contraseña incorrectos.';

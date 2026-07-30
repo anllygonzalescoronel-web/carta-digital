@@ -10,6 +10,14 @@ $error = '';
 $productoId = (int)($_GET['producto'] ?? 0);
 $grupoId    = (int)($_GET['grupo'] ?? 0);
 
+function rutaImagenProductoAdmin(?string $imagen): string {
+    $nombre = trim((string)$imagen);
+    if ($nombre === '') return '';
+    if (str_starts_with($nombre, 'http://') || str_starts_with($nombre, 'https://')) return $nombre;
+    if (str_contains($nombre, 'uploads/')) return $nombre;
+    return '../uploads/productos/' . $nombre;
+}
+
 // ─────────────── Procesar acciones POST ───────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -83,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ─────────────── Datos ───────────────
-$productos = $db->query('SELECT p.id, p.nombre, c.nombre AS categoria FROM productos p JOIN categorias c ON c.id=p.categoria_id ORDER BY c.orden, p.orden')->fetchAll();
+$productos = $db->query('SELECT p.id, p.nombre, p.imagen, p.precio, p.precio_oferta, p.disponible, c.nombre AS categoria FROM productos p JOIN categorias c ON c.id=p.categoria_id ORDER BY c.orden, p.orden')->fetchAll();
 
 $producto = null;
 $grupos   = [];
@@ -108,269 +116,677 @@ if ($productoId > 0) {
 $grupoActivo = $grupoId ?: ($grupos[0]['id'] ?? 0);
 ?>
 
-<?php if (isset($_GET['ok'])): ?>
-<div class="alerta-ok"><?= limpiar($_GET['ok']) ?></div>
+<?php
+$okMensaje = isset($_GET['ok']) ? trim((string)$_GET['ok']) : '';
+$totalGrupos = count($grupos);
+$totalOpciones = 0;
+foreach ($grupos as $grupoTmp) {
+    $totalOpciones += count($grupoTmp['opciones'] ?? []);
+}
+?>
+
+<?php if ($okMensaje !== ''): ?>
+<div class="tp-toast tp-toast-ok" id="tpToast"><i class="ti ti-circle-check"></i> <?= limpiar($okMensaje) ?></div>
 <?php endif; ?>
-<?php if ($mensaje): ?><div class="alerta-ok"><?= limpiar($mensaje) ?></div><?php endif; ?>
-<?php if ($error): ?><div class="alerta-error"><?= limpiar($error) ?></div><?php endif; ?>
+<?php if ($mensaje): ?><div class="tp-toast tp-toast-ok"><i class="ti ti-circle-check"></i> <?= limpiar($mensaje) ?></div><?php endif; ?>
+<?php if ($error): ?><div class="tp-toast tp-toast-err"><i class="ti ti-alert-circle"></i> <?= limpiar($error) ?></div><?php endif; ?>
 
 <style>
-.op-layout{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
-.op-sidebar{width:240px;flex-shrink:0;}
-.op-sidebar select{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid #dde3e0;font-size:14px;cursor:pointer;background:#fff;}
-.op-main{flex:1;min-width:280px;}
-.op-card{background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.07);padding:20px;margin-bottom:18px;}
-.op-card h4{margin:0 0 14px;font-size:15px;display:flex;align-items:center;gap:8px;}
-.op-card h4 .badge-tipo{font-size:11px;padding:2px 8px;border-radius:20px;background:#eaf3ee;color:#2e7d55;font-weight:600;}
-.op-tabla{width:100%;border-collapse:collapse;font-size:13px;}
-.op-tabla th{text-align:left;padding:6px 10px;color:#888;font-weight:600;border-bottom:1px solid #eee;}
-.op-tabla td{padding:7px 10px;border-bottom:1px solid #f3f3f3;vertical-align:middle;}
-.op-tabla tr:last-child td{border:none;}
-.btn-sm{padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;border:none;font-weight:600;}
-.btn-sm-prim{background:var(--primario,#3ea76a);color:#fff;}
-.btn-sm-warn{background:#f59e42;color:#fff;}
-.btn-sm-danger{background:#e53e3e;color:#fff;}
-.btn-sm-ghost{background:#f0f4f2;color:#444;}
-.op-form-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;}
-.op-form-inline .fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#666;font-weight:600;}
-.op-form-inline input,.op-form-inline select{padding:7px 10px;border-radius:9px;border:1.5px solid #dde3e0;font-size:13px;background:#fff;}
-.op-form-inline input[type=number]{width:80px;}
-.op-form-inline input[type=text]{width:180px;}
-.op-check{display:flex;align-items:center;gap:6px;font-size:13px;margin-top:4px;}
-.precio-extra{color:#2e7d55;font-weight:700;}
-.precio-gratis{color:#aaa;}
-.sin-grupos{text-align:center;padding:40px;color:#aaa;}
-.grupo-acciones{display:flex;gap:6px;}
+.tp-shell { display: grid; gap: 18px; }
+
+.tp-toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+.tp-toast-ok { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.tp-toast-err { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+
+.tp-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: center;
+    border: 1px solid #dbeafe;
+    border-radius: 18px;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #eff6ff, #ffffff 62%);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+}
+.tp-header h2 { margin: 0; font-size: 22px; color: #0f172a; }
+.tp-header p { margin: 5px 0 0; font-size: 12px; color: #64748b; }
+
+.tp-kpis { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.tp-kpi {
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+    background: #fff;
+    min-width: 76px;
+    text-align: center;
+    padding: 9px 10px;
+}
+.tp-kpi strong { display: block; font-size: 20px; color: #1d4ed8; line-height: 1; }
+.tp-kpi span { font-size: 11px; color: #475569; font-weight: 700; }
+
+.tp-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.tp-panel {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    padding: 16px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.tp-sidebar { position: sticky; top: 78px; display: grid; gap: 12px; }
+.tp-label { font-size: 12px; font-weight: 800; color: #334155; margin-bottom: 6px; display: block; }
+.tp-product-picker { display: grid; gap: 10px; }
+.tp-product-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.tp-picker-title { font-size: 12px; font-weight: 800; color: #0f172a; }
+.tp-picker-count { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 4px 8px; }
+.tp-product-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+}
+.tp-product-scroll::-webkit-scrollbar { height: 7px; }
+.tp-product-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.tp-product-card {
+    min-width: 180px;
+    max-width: 180px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffffff, #f8fbff);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    scroll-snap-align: start;
+}
+.tp-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12);
+    border-color: #93c5fd;
+}
+.tp-product-card.is-selected {
+    border-color: #2563eb;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16);
+}
+.tp-product-thumb {
+    height: 84px;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 8px;
+}
+.tp-product-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+.tp-product-body { padding: 10px; display: grid; gap: 5px; }
+.tp-product-name { font-size: 13px; font-weight: 800; color: #0f172a; line-height: 1.25; }
+.tp-product-meta { font-size: 11px; color: #64748b; }
+.tp-product-price { font-size: 13px; font-weight: 800; color: #0f766e; }
+.tp-product-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #ecfeff;
+    color: #0f766e;
+}
+.tp-product-badge.is-off { background: #fef2f2; color: #b91c1c; }
+.tp-product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.tp-product-meta-row .tp-product-badge { margin-top: 2px; }
+.tp-product-meta { margin-top: 0; }
+.tp-product-meta p { margin: 0; font-size: 12px; color: #64748b; }
+.tp-product-main-price { margin-top: 6px; color: #0f766e; font-size: 13px; font-weight: 800; }
+
+.tp-actions-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.tp-actions-head h3 { margin: 0; font-size: 17px; color: #0f172a; }
+
+.tp-btn {
+    border: 0;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.tp-btn-main { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24); }
+.tp-btn-soft { background: #eef2ff; color: #3730a3; }
+.tp-btn-warn { background: #fff7ed; color: #c2410c; }
+.tp-btn-danger { background: #fef2f2; color: #b91c1c; }
+.tp-btn-gray { background: #f1f5f9; color: #334155; }
+
+.tp-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.tp-field { display: grid; gap: 5px; }
+.tp-field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+.tp-field input,
+.tp-field select {
+    border: 1.5px solid #dbe3ef;
+    border-radius: 10px;
+    background: #fff;
+    padding: 9px 10px;
+    font-size: 13px;
+}
+.tp-field input:focus,
+.tp-field select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.tp-inline-actions { display: flex; gap: 8px; margin-top: 10px; }
+.tp-check { font-size: 12px; display: inline-flex; align-items: center; gap: 6px; color: #334155; }
+
+.tp-empty {
+    text-align: center;
+    padding: 38px 14px;
+    color: #94a3b8;
+}
+.tp-empty i { font-size: 40px; display: block; margin-bottom: 8px; }
+
+.tp-group-list { display: grid; gap: 12px; }
+.tp-group-card { border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; overflow: hidden; }
+
+.tp-group-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+.tp-group-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 14px;
+}
+.tp-group-meta { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.tp-pill {
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+.tp-pill-type { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
+.tp-pill-required { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
+.tp-pill-count { background: #ecfeff; color: #0f766e; border-color: #99f6e4; }
+
+.tp-group-body { padding: 12px 14px 14px; display: grid; gap: 12px; }
+.tp-edit-panel,
+.tp-add-option-panel {
+    display: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 12px;
+}
+
+.tp-options-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+}
+.tp-option-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: linear-gradient(165deg, #ffffff, #f8fbff);
+    padding: 10px;
+    min-height: 170px;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 8px;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+}
+.tp-option-row {
+    display: contents;
+}
+.tp-option-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    min-height: 34px;
+}
+.tp-option-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 0;
+    line-height: 1.35;
+}
+.tp-option-price-up { color: #0f766e; font-weight: 700; }
+.tp-option-price-free { color: #94a3b8; font-weight: 700; }
+.tp-option-actions {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+.tp-option-actions .tp-btn {
+    justify-content: center;
+    padding: 7px 8px;
+    font-size: 11px;
+}
+
+.tp-option-edit-panel {
+    display: none;
+    margin-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+}
+
+.tp-form-inline {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+}
+
+@media (max-width: 1080px) {
+    .tp-layout { grid-template-columns: 1fr; }
+    .tp-sidebar { position: static; }
+}
+@media (max-width: 780px) {
+    .tp-header { grid-template-columns: 1fr; }
+    .tp-kpis { justify-content: flex-start; }
+    .tp-form-grid { grid-template-columns: 1fr 1fr; }
+    .tp-form-inline { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+    .tp-form-grid,
+    .tp-form-inline { grid-template-columns: 1fr; }
+    .tp-options-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tp-option-item { min-height: 160px; }
+}
+@media (max-width: 420px) {
+    .tp-options-list { grid-template-columns: 1fr; }
+}
 </style>
 
-<div class="op-layout">
-    <!-- Selector de producto -->
-    <div class="op-sidebar">
-        <div class="op-card">
-            <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:8px;">Selecciona un producto</label>
-            <select onchange="window.location='opciones_producto.php?producto='+this.value">
-                <option value="0">— Elige un producto —</option>
-                <?php foreach ($productos as $pr): ?>
-                <option value="<?= $pr['id'] ?>" <?= $pr['id'] === $productoId ? 'selected' : '' ?>>
-                    [<?= limpiar($pr['categoria']) ?>] <?= limpiar($pr['nombre']) ?>
-                </option>
-                <?php endforeach; ?>
-            </select>
+<div class="tp-shell">
+    <section class="tp-header">
+        <div>
+            <h2>Toppings y Extras</h2>
+            <p>Configura grupos de opciones y extras por producto con una vista limpia y ordenada.</p>
+        </div>
+        <div class="tp-kpis">
+            <div class="tp-kpi"><strong><?= (int)$productoId > 0 ? 1 : 0 ?></strong><span>Producto</span></div>
+            <div class="tp-kpi"><strong><?= $totalGrupos ?></strong><span>Grupos</span></div>
+            <div class="tp-kpi"><strong><?= $totalOpciones ?></strong><span>Opciones</span></div>
+        </div>
+    </section>
 
-            <?php if ($producto): ?>
-            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eee;">
-                <p style="margin:0;font-size:12px;color:#888;">Producto seleccionado:</p>
-                <p style="margin:4px 0 0;font-weight:700;font-size:14px;"><?= limpiar($producto['nombre']) ?></p>
-                <p style="margin:2px 0 0;color:#2e7d55;font-size:13px;">S/ <?= number_format($producto['precio'], 2) ?></p>
+    <div class="tp-layout">
+        <aside class="tp-sidebar">
+            <div class="tp-panel">
+                <div class="tp-product-picker">
+                    <div class="tp-product-picker-head">
+                        <span class="tp-picker-title">Selecciona un producto</span>
+                        <span class="tp-picker-count"><?= count($productos) ?> productos</span>
+                    </div>
+
+                    <div class="tp-product-scroll">
+                        <?php foreach ($productos as $pr): ?>
+                        <?php
+                            $selected = (int)$pr['id'] === $productoId;
+                            $imgPr = rutaImagenProductoAdmin((string)($pr['imagen'] ?? ''));
+                            $precioPr = (float)($pr['precio_oferta'] > 0 ? $pr['precio_oferta'] : $pr['precio']);
+                            $estadoPr = (int)$pr['disponible'] === 1 ? 'Disponible' : 'Oculto';
+                        ?>
+                        <a class="tp-product-card <?= $selected ? 'is-selected' : '' ?>" href="opciones_producto.php?producto=<?= (int)$pr['id'] ?>">
+                            <div class="tp-product-thumb">
+                                <?php if ($imgPr !== ''): ?>
+                                <img src="<?= limpiar($imgPr) ?>" alt="<?= limpiar((string)$pr['nombre']) ?>" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:28px;color:#94a3b8;\'>🍽️</span>'">
+                                <?php else: ?>
+                                <span style="font-size:28px;color:#94a3b8;">🍽️</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="tp-product-body">
+                                <div class="tp-product-name"><?= limpiar((string)$pr['nombre']) ?></div>
+                                <div class="tp-product-meta-row">
+                                    <span class="tp-product-meta"><?= limpiar((string)$pr['categoria']) ?></span>
+                                    <span class="tp-product-badge <?= (int)$pr['disponible'] === 1 ? '' : 'is-off' ?>"><?= limpiar($estadoPr) ?></span>
+                                </div>
+                                <div class="tp-product-price">S/ <?= number_format($precioPr, 2) ?></div>
+                            </div>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <?php if ($producto): ?>
+                <div class="tp-product-meta" style="margin-top:12px;padding-top:12px;border-top:1px solid #edf2f7;">
+                    <p>Producto seleccionado</p>
+                    <h4><?= limpiar((string)$producto['nombre']) ?></h4>
+                    <div class="tp-product-main-price">S/ <?= number_format((float)$producto['precio'], 2) ?></div>
+                </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
-        </div>
-    </div>
+        </aside>
 
-    <!-- Panel principal -->
-    <div class="op-main">
-        <?php if (!$producto): ?>
-        <div class="op-card sin-grupos">
-            <i class="ti ti-list-check" style="font-size:48px;color:#ccc;display:block;margin-bottom:12px;"></i>
-            <p>Selecciona un producto para gestionar sus grupos de opciones.</p>
-        </div>
-        <?php else: ?>
+        <main>
+            <?php if (!$producto): ?>
+            <div class="tp-panel tp-empty">
+                <i class="ti ti-list-check"></i>
+                <p>Selecciona un producto para empezar a gestionar sus toppings y extras.</p>
+            </div>
+            <?php else: ?>
 
-        <!-- Botón nuevo grupo -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <h3 style="margin:0;font-size:16px;">Grupos de <em><?= limpiar($producto['nombre']) ?></em></h3>
-            <button class="btn-sm btn-sm-prim" onclick="document.getElementById('formNuevoGrupo').style.display='block';this.style.display='none'">
-                <i class="ti ti-plus"></i> Nuevo grupo
-            </button>
-        </div>
+            <div class="tp-actions-head">
+                <h3>Grupos de <?= limpiar((string)$producto['nombre']) ?></h3>
+                <button class="tp-btn tp-btn-main" type="button" id="btnNuevoGrupo" onclick="toggleFormNuevoGrupo(this)">
+                    <i class="ti ti-plus"></i> Nuevo grupo
+                </button>
+            </div>
 
-        <!-- Formulario nuevo grupo -->
-        <div id="formNuevoGrupo" class="op-card" style="display:none;">
-            <h4><i class="ti ti-layout-list"></i> Nuevo grupo de opciones</h4>
-            <form method="POST">
-                <input type="hidden" name="accion" value="guardar_grupo">
-                <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                <div class="op-form-inline">
-                    <div class="fld">Nombre del grupo
-                        <input type="text" name="nombre" placeholder="Ej: Elige tu parte" required style="width:220px;">
-                    </div>
-                    <div class="fld">Tipo
-                        <select name="tipo">
-                            <option value="radio">Radio (elige uno)</option>
-                            <option value="checkbox">Checkbox (varios)</option>
-                        </select>
-                    </div>
-                    <div class="fld">Mín.
-                        <input type="number" name="min_opciones" value="0" min="0">
-                    </div>
-                    <div class="fld">Máx.
-                        <input type="number" name="max_opciones" value="1" min="1">
-                    </div>
-                    <div class="fld">Orden
-                        <input type="number" name="orden" value="0" min="0">
-                    </div>
-                    <div class="fld">&nbsp;
-                        <label class="op-check"><input type="checkbox" name="requerido"> Obligatorio</label>
-                    </div>
-                </div>
-                <div style="margin-top:14px;display:flex;gap:8px;">
-                    <button type="submit" class="btn-sm btn-sm-prim">Guardar grupo</button>
-                    <button type="button" class="btn-sm btn-sm-ghost" onclick="document.getElementById('formNuevoGrupo').style.display='none';document.querySelector('.btn-sm-prim').style.display=''">Cancelar</button>
-                </div>
-            </form>
-        </div>
-
-        <?php if (empty($grupos)): ?>
-        <div class="op-card sin-grupos">
-            <i class="ti ti-circle-off" style="font-size:36px;color:#ddd;display:block;margin-bottom:8px;"></i>
-            <p>Este producto no tiene grupos de opciones aún. Crea el primero arriba.</p>
-        </div>
-        <?php endif; ?>
-
-        <?php foreach ($grupos as $g): ?>
-        <div class="op-card">
-            <h4>
-                <i class="ti ti-<?= $g['tipo'] === 'checkbox' ? 'checkbox' : 'circle-dot' ?>"></i>
-                <?= limpiar($g['nombre']) ?>
-                <span class="badge-tipo"><?= $g['tipo'] === 'checkbox' ? 'Varios' : 'Uno' ?></span>
-                <?php if ($g['requerido']): ?><span class="badge-tipo" style="background:#fff3cd;color:#856404;">Obligatorio</span><?php endif; ?>
-                <span style="margin-left:auto;" class="grupo-acciones">
-                    <button class="btn-sm btn-sm-warn" onclick="toggleEditGrupo(<?= $g['id'] ?>)"><i class="ti ti-pencil"></i></button>
-                    <form method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar este grupo y todas sus opciones?')">
-                        <input type="hidden" name="accion" value="eliminar_grupo">
-                        <input type="hidden" name="id" value="<?= $g['id'] ?>">
-                        <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                        <button type="submit" class="btn-sm btn-sm-danger"><i class="ti ti-trash"></i></button>
-                    </form>
-                </span>
-            </h4>
-
-            <!-- Edit grupo inline -->
-            <div id="editGrupo<?= $g['id'] ?>" style="display:none;margin-bottom:14px;padding:12px;background:#f8faf9;border-radius:10px;">
+            <section id="formNuevoGrupo" class="tp-panel" style="display:none;">
                 <form method="POST">
                     <input type="hidden" name="accion" value="guardar_grupo">
-                    <input type="hidden" name="id" value="<?= $g['id'] ?>">
                     <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                    <div class="op-form-inline">
-                        <div class="fld">Nombre
-                            <input type="text" name="nombre" value="<?= limpiar($g['nombre']) ?>" required style="width:200px;">
+
+                    <div class="tp-form-grid">
+                        <div class="tp-field">
+                            <label>Nombre del grupo</label>
+                            <input type="text" name="nombre" placeholder="Ej: Elige tu porcion" required>
                         </div>
-                        <div class="fld">Tipo
+                        <div class="tp-field">
+                            <label>Tipo</label>
                             <select name="tipo">
-                                <option value="radio" <?= $g['tipo']==='radio'?'selected':'' ?>>Radio</option>
-                                <option value="checkbox" <?= $g['tipo']==='checkbox'?'selected':'' ?>>Checkbox</option>
+                                <option value="radio">Radio (elige uno)</option>
+                                <option value="checkbox">Checkbox (varios)</option>
                             </select>
                         </div>
-                        <div class="fld">Mín.
-                            <input type="number" name="min_opciones" value="<?= $g['min_opciones'] ?>" min="0">
+                        <div class="tp-field">
+                            <label>Min opciones</label>
+                            <input type="number" name="min_opciones" value="0" min="0">
                         </div>
-                        <div class="fld">Máx.
-                            <input type="number" name="max_opciones" value="<?= $g['max_opciones'] ?>" min="1">
+                        <div class="tp-field">
+                            <label>Max opciones</label>
+                            <input type="number" name="max_opciones" value="1" min="1">
                         </div>
-                        <div class="fld">Orden
-                            <input type="number" name="orden" value="<?= $g['orden'] ?>" min="0">
+                        <div class="tp-field">
+                            <label>Orden</label>
+                            <input type="number" name="orden" value="0" min="0">
                         </div>
-                        <div class="fld">&nbsp;
-                            <label class="op-check"><input type="checkbox" name="requerido" <?= $g['requerido']?'checked':'' ?>> Obligatorio</label>
+                        <div class="tp-field">
+                            <label>&nbsp;</label>
+                            <label class="tp-check"><input type="checkbox" name="requerido"> Obligatorio</label>
                         </div>
                     </div>
-                    <div style="margin-top:10px;display:flex;gap:8px;">
-                        <button type="submit" class="btn-sm btn-sm-prim">Actualizar</button>
-                        <button type="button" class="btn-sm btn-sm-ghost" onclick="toggleEditGrupo(<?= $g['id'] ?>)">Cancelar</button>
+
+                    <div class="tp-inline-actions">
+                        <button type="submit" class="tp-btn tp-btn-main"><i class="ti ti-check"></i> Guardar grupo</button>
+                        <button type="button" class="tp-btn tp-btn-gray" onclick="toggleFormNuevoGrupo(document.getElementById('btnNuevoGrupo'))">Cancelar</button>
                     </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- Opciones del grupo -->
-            <table class="op-tabla">
-                <thead>
-                    <tr><th>Opción</th><th>Precio extra</th><th>Estado</th><th></th></tr>
-                </thead>
-                <tbody>
-                <?php foreach ($g['opciones'] as $op): ?>
-                <tr>
-                    <td><?= limpiar($op['nombre']) ?></td>
-                    <td><?= $op['precio_extra'] > 0 ? '<span class="precio-extra">+S/ '.number_format($op['precio_extra'],2).'</span>' : '<span class="precio-gratis">Gratis</span>' ?></td>
-                    <td><?= $op['disponible'] ? '<span class="badge badge-pagado">Activa</span>' : '<span class="badge badge-cancelado">Oculta</span>' ?></td>
-                    <td style="display:flex;gap:6px;">
-                        <button class="btn-sm btn-sm-warn" onclick="toggleEditOpcion(<?= $op['id'] ?>)"><i class="ti ti-pencil"></i></button>
-                        <form method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar esta opción?')">
-                            <input type="hidden" name="accion" value="eliminar_opcion">
-                            <input type="hidden" name="id" value="<?= $op['id'] ?>">
-                            <input type="hidden" name="grupo_id" value="<?= $g['id'] ?>">
-                            <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                            <button type="submit" class="btn-sm btn-sm-danger"><i class="ti ti-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                <tr id="editOpcion<?= $op['id'] ?>" style="display:none;background:#f8faf9;">
-                    <td colspan="4" style="padding:10px;">
-                        <form method="POST">
-                            <input type="hidden" name="accion" value="guardar_opcion">
-                            <input type="hidden" name="id" value="<?= $op['id'] ?>">
-                            <input type="hidden" name="grupo_id" value="<?= $g['id'] ?>">
-                            <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                            <div class="op-form-inline">
-                                <div class="fld">Nombre<input type="text" name="nombre" value="<?= limpiar($op['nombre']) ?>" required></div>
-                                <div class="fld">Precio extra (S/)<input type="number" name="precio_extra" value="<?= $op['precio_extra'] ?>" min="0" step="0.10"></div>
-                                <div class="fld">Orden<input type="number" name="orden" value="<?= $op['orden'] ?>" min="0"></div>
-                                <div class="fld">&nbsp;<label class="op-check"><input type="checkbox" name="disponible" <?= $op['disponible']?'checked':'' ?>> Visible</label></div>
+            <?php if (empty($grupos)): ?>
+            <div class="tp-panel tp-empty">
+                <i class="ti ti-circle-off"></i>
+                <p>Este producto aun no tiene grupos. Crea el primero para activar toppings.</p>
+            </div>
+            <?php else: ?>
+            <section class="tp-group-list">
+                <?php foreach ($grupos as $g): ?>
+                <article class="tp-group-card">
+                    <header class="tp-group-head">
+                        <div class="tp-group-title">
+                            <i class="ti ti-<?= $g['tipo'] === 'checkbox' ? 'checkbox' : 'circle-dot' ?>"></i>
+                            <?= limpiar((string)$g['nombre']) ?>
+                        </div>
+                        <div class="tp-group-meta">
+                            <span class="tp-pill tp-pill-type"><?= $g['tipo'] === 'checkbox' ? 'Varios' : 'Uno' ?></span>
+                            <?php if ((int)$g['requerido'] === 1): ?><span class="tp-pill tp-pill-required">Obligatorio</span><?php endif; ?>
+                            <span class="tp-pill tp-pill-count"><?= count($g['opciones'] ?? []) ?> opciones</span>
+                            <button class="tp-btn tp-btn-warn" type="button" onclick="toggleEditGrupo(<?= (int)$g['id'] ?>)"><i class="ti ti-pencil"></i></button>
+                            <form method="POST" onsubmit="return confirm('¿Eliminar este grupo y todas sus opciones?')">
+                                <input type="hidden" name="accion" value="eliminar_grupo">
+                                <input type="hidden" name="id" value="<?= (int)$g['id'] ?>">
+                                <input type="hidden" name="producto_id" value="<?= $productoId ?>">
+                                <button type="submit" class="tp-btn tp-btn-danger"><i class="ti ti-trash"></i></button>
+                            </form>
+                        </div>
+                    </header>
+
+                    <div class="tp-group-body">
+                        <div class="tp-edit-panel" id="editGrupo<?= (int)$g['id'] ?>" style="<?= (int)$grupoActivo === (int)$g['id'] ? 'display:block;' : '' ?>">
+                            <form method="POST">
+                                <input type="hidden" name="accion" value="guardar_grupo">
+                                <input type="hidden" name="id" value="<?= (int)$g['id'] ?>">
+                                <input type="hidden" name="producto_id" value="<?= $productoId ?>">
+                                <div class="tp-form-grid">
+                                    <div class="tp-field">
+                                        <label>Nombre</label>
+                                        <input type="text" name="nombre" value="<?= limpiar((string)$g['nombre']) ?>" required>
+                                    </div>
+                                    <div class="tp-field">
+                                        <label>Tipo</label>
+                                        <select name="tipo">
+                                            <option value="radio" <?= $g['tipo'] === 'radio' ? 'selected' : '' ?>>Radio</option>
+                                            <option value="checkbox" <?= $g['tipo'] === 'checkbox' ? 'selected' : '' ?>>Checkbox</option>
+                                        </select>
+                                    </div>
+                                    <div class="tp-field">
+                                        <label>Min opciones</label>
+                                        <input type="number" name="min_opciones" value="<?= (int)$g['min_opciones'] ?>" min="0">
+                                    </div>
+                                    <div class="tp-field">
+                                        <label>Max opciones</label>
+                                        <input type="number" name="max_opciones" value="<?= (int)$g['max_opciones'] ?>" min="1">
+                                    </div>
+                                    <div class="tp-field">
+                                        <label>Orden</label>
+                                        <input type="number" name="orden" value="<?= (int)$g['orden'] ?>" min="0">
+                                    </div>
+                                    <div class="tp-field">
+                                        <label>&nbsp;</label>
+                                        <label class="tp-check"><input type="checkbox" name="requerido" <?= (int)$g['requerido'] === 1 ? 'checked' : '' ?>> Obligatorio</label>
+                                    </div>
+                                </div>
+                                <div class="tp-inline-actions">
+                                    <button type="submit" class="tp-btn tp-btn-main">Actualizar grupo</button>
+                                    <button type="button" class="tp-btn tp-btn-gray" onclick="toggleEditGrupo(<?= (int)$g['id'] ?>)">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tp-options-list">
+                            <?php foreach ($g['opciones'] as $op): ?>
+                            <article class="tp-option-item">
+                                <div class="tp-option-row">
+                                    <div class="tp-option-name"><?= limpiar((string)$op['nombre']) ?></div>
+                                    <div class="tp-option-sub">
+                                        <?= (float)$op['precio_extra'] > 0
+                                            ? '<span class="tp-option-price-up">+ S/ ' . number_format((float)$op['precio_extra'], 2) . '</span>'
+                                            : '<span class="tp-option-price-free">Sin costo extra</span>' ?>
+                                    </div>
+                                    <div class="tp-option-sub">
+                                        <?= (int)$op['disponible'] === 1 ? 'Visible' : 'Oculta' ?>
+                                    </div>
+                                    <div class="tp-option-actions">
+                                        <button type="button" class="tp-btn tp-btn-soft" onclick="toggleEditOpcion(<?= (int)$op['id'] ?>)" title="Editar opcion"><i class="ti ti-pencil"></i></button>
+                                        <form method="POST" onsubmit="return confirm('¿Eliminar esta opción?')">
+                                            <input type="hidden" name="accion" value="eliminar_opcion">
+                                            <input type="hidden" name="id" value="<?= (int)$op['id'] ?>">
+                                            <input type="hidden" name="grupo_id" value="<?= (int)$g['id'] ?>">
+                                            <input type="hidden" name="producto_id" value="<?= $productoId ?>">
+                                            <button type="submit" class="tp-btn tp-btn-danger" title="Eliminar opcion"><i class="ti ti-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="tp-option-edit-panel" id="editOpcion<?= (int)$op['id'] ?>">
+                                    <form method="POST">
+                                        <input type="hidden" name="accion" value="guardar_opcion">
+                                        <input type="hidden" name="id" value="<?= (int)$op['id'] ?>">
+                                        <input type="hidden" name="grupo_id" value="<?= (int)$g['id'] ?>">
+                                        <input type="hidden" name="producto_id" value="<?= $productoId ?>">
+
+                                        <div class="tp-form-inline">
+                                            <div class="tp-field">
+                                                <label>Nombre</label>
+                                                <input type="text" name="nombre" value="<?= limpiar((string)$op['nombre']) ?>" required>
+                                            </div>
+                                            <div class="tp-field">
+                                                <label>Precio extra (S/)</label>
+                                                <input type="number" name="precio_extra" value="<?= (float)$op['precio_extra'] ?>" min="0" step="0.10">
+                                            </div>
+                                            <div class="tp-field">
+                                                <label>Orden</label>
+                                                <input type="number" name="orden" value="<?= (int)$op['orden'] ?>" min="0">
+                                            </div>
+                                            <div class="tp-field">
+                                                <label class="tp-check"><input type="checkbox" name="disponible" <?= (int)$op['disponible'] === 1 ? 'checked' : '' ?>> Visible</label>
+                                            </div>
+                                        </div>
+                                        <div class="tp-inline-actions">
+                                            <button type="submit" class="tp-btn tp-btn-main">Guardar</button>
+                                            <button type="button" class="tp-btn tp-btn-gray" onclick="toggleEditOpcion(<?= (int)$op['id'] ?>)">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </article>
+                            <?php endforeach; ?>
+
+                            <?php if (empty($g['opciones'])): ?>
+                            <div class="tp-empty" style="padding:18px 10px;">
+                                <i class="ti ti-mood-empty" style="font-size:30px;"></i>
+                                <p>Sin opciones en este grupo.</p>
                             </div>
-                            <div style="margin-top:8px;display:flex;gap:8px;">
-                                <button type="submit" class="btn-sm btn-sm-prim">Actualizar</button>
-                                <button type="button" class="btn-sm btn-sm-ghost" onclick="toggleEditOpcion(<?= $op['id'] ?>)">Cancelar</button>
+                            <?php endif; ?>
+                        </div>
+
+                        <div>
+                            <button class="tp-btn tp-btn-gray" type="button" onclick="toggleNuevaOpcion(<?= (int)$g['id'] ?>)">
+                                <i class="ti ti-plus"></i> Agregar opcion
+                            </button>
+                            <div class="tp-add-option-panel" id="nuevaOpcion<?= (int)$g['id'] ?>">
+                                <form method="POST">
+                                    <input type="hidden" name="accion" value="guardar_opcion">
+                                    <input type="hidden" name="grupo_id" value="<?= (int)$g['id'] ?>">
+                                    <input type="hidden" name="producto_id" value="<?= $productoId ?>">
+
+                                    <div class="tp-form-inline">
+                                        <div class="tp-field">
+                                            <label>Nombre</label>
+                                            <input type="text" name="nombre" placeholder="Ej: Salsa picante" required>
+                                        </div>
+                                        <div class="tp-field">
+                                            <label>Precio extra (S/)</label>
+                                            <input type="number" name="precio_extra" value="0" min="0" step="0.10">
+                                        </div>
+                                        <div class="tp-field">
+                                            <label>Orden</label>
+                                            <input type="number" name="orden" value="0" min="0">
+                                        </div>
+                                        <div class="tp-field">
+                                            <label class="tp-check"><input type="checkbox" name="disponible" checked> Visible</label>
+                                        </div>
+                                    </div>
+                                    <div class="tp-inline-actions">
+                                        <button type="submit" class="tp-btn tp-btn-main">Guardar opcion</button>
+                                        <button type="button" class="tp-btn tp-btn-gray" onclick="toggleNuevaOpcion(<?= (int)$g['id'] ?>)">Cancelar</button>
+                                    </div>
+                                </form>
                             </div>
-                        </form>
-                    </td>
-                </tr>
+                        </div>
+                    </div>
+                </article>
                 <?php endforeach; ?>
-                <?php if (empty($g['opciones'])): ?>
-                <tr><td colspan="4" style="color:#aaa;text-align:center;padding:12px;">Sin opciones aún.</td></tr>
-                <?php endif; ?>
-                </tbody>
-            </table>
+            </section>
+            <?php endif; ?>
 
-            <!-- Agregar nueva opción -->
-            <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0;">
-                <button class="btn-sm btn-sm-ghost" onclick="toggleNuevaOpcion(<?= $g['id'] ?>)"><i class="ti ti-plus"></i> Agregar opción</button>
-                <div id="nuevaOpcion<?= $g['id'] ?>" style="display:none;margin-top:10px;">
-                    <form method="POST">
-                        <input type="hidden" name="accion" value="guardar_opcion">
-                        <input type="hidden" name="grupo_id" value="<?= $g['id'] ?>">
-                        <input type="hidden" name="producto_id" value="<?= $productoId ?>">
-                        <div class="op-form-inline">
-                            <div class="fld">Nombre<input type="text" name="nombre" placeholder="Ej: Pechuga" required></div>
-                            <div class="fld">Precio extra (S/)<input type="number" name="precio_extra" value="0" min="0" step="0.10"></div>
-                            <div class="fld">Orden<input type="number" name="orden" value="0" min="0"></div>
-                            <div class="fld">&nbsp;<label class="op-check"><input type="checkbox" name="disponible" checked> Visible</label></div>
-                        </div>
-                        <div style="margin-top:8px;display:flex;gap:8px;">
-                            <button type="submit" class="btn-sm btn-sm-prim">Guardar opción</button>
-                            <button type="button" class="btn-sm btn-sm-ghost" onclick="toggleNuevaOpcion(<?= $g['id'] ?>)">Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-
-        <?php endif; ?>
+            <?php endif; ?>
+        </main>
     </div>
 </div>
 
 <script>
+function toggleById(id, displayType) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const show = el.style.display === 'none' || el.style.display === '';
+    el.style.display = show ? displayType : 'none';
+}
+
+function toggleFormNuevoGrupo(btn) {
+    const form = document.getElementById('formNuevoGrupo');
+    if (!form || !btn) return;
+    const abrir = form.style.display === 'none' || form.style.display === '';
+    form.style.display = abrir ? 'block' : 'none';
+    btn.innerHTML = abrir
+        ? '<i class="ti ti-x"></i> Cerrar'
+        : '<i class="ti ti-plus"></i> Nuevo grupo';
+}
+
 function toggleEditGrupo(id) {
-    const el = document.getElementById('editGrupo' + id);
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    toggleById('editGrupo' + id, 'block');
 }
+
 function toggleEditOpcion(id) {
-    const el = document.getElementById('editOpcion' + id);
-    el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+    toggleById('editOpcion' + id, 'block');
 }
+
 function toggleNuevaOpcion(gid) {
-    const el = document.getElementById('nuevaOpcion' + gid);
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    toggleById('nuevaOpcion' + gid, 'block');
 }
+
+setTimeout(function () {
+    const toast = document.getElementById('tpToast');
+    if (!toast) return;
+    toast.style.transition = 'opacity .35s';
+    toast.style.opacity = '0';
+    setTimeout(function () { toast.remove(); }, 360);
+}, 3800);
 </script>
 
 <?php require __DIR__ . '/_layout_bottom.php'; ?>

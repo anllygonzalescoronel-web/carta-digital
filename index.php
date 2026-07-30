@@ -324,7 +324,7 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
             <h3>Mis favoritos</h3>
             <button onclick="cerrarModal('overlayFavoritos')">&times;</button>
         </div>
-        <div class="vacio-msg">Aun no tienes favoritos guardados.</div>
+        <div id="listaFavoritos"></div>
     </div>
 </div>
 

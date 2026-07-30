@@ -4,16 +4,129 @@
 
 // ---------- Estado del carrito (persistido en localStorage) ----------
 let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+let favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
 let entregaSeleccionada = 'recojo';
 let pagoSeleccionado = 'efectivo';
 let comprobanteSeleccionado = 'boleta';
 let culqiTokenActual = null;
 let terminoBusqueda = '';
 let categoriaActiva = null;
+const carruselesProductos = [];
 
 function guardarCarrito() {
     localStorage.setItem('carrito', JSON.stringify(carrito));
     actualizarBadgeCarrito();
+}
+
+function guardarFavoritos() {
+    localStorage.setItem('favoritos', JSON.stringify(favoritos));
+}
+
+function escaparHtml(txt) {
+    return String(txt || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[m]));
+}
+
+function obtenerDatosProductoDesdeCard(card) {
+    if (!card) return null;
+    const cont = card.querySelector('.control-cantidad');
+    if (!cont) return null;
+
+    const id = parseInt(cont.dataset.id || '0', 10);
+    if (!id) return null;
+
+    const nombre = cont.dataset.nombre || card.querySelector('h4')?.textContent?.trim() || 'Producto';
+    const descripcion = card.querySelector('.desc')?.textContent?.trim() || '';
+    const precio = parseFloat(cont.dataset.precio || '0');
+    const imgEl = card.querySelector('.producto-img');
+    const imagen = imgEl ? (imgEl.currentSrc || imgEl.src || '') : '';
+
+    return { id, nombre, descripcion, precio, imagen };
+}
+
+function renderizarFavoritosModal() {
+    const lista = document.getElementById('listaFavoritos');
+    if (!lista) return;
+
+    if (!favoritos.length) {
+        lista.innerHTML = '<div class="vacio-msg">Aun no tienes favoritos guardados.</div>';
+        return;
+    }
+
+    lista.innerHTML = favoritos.map((f) => `
+        <div class="favorito-item">
+            ${f.imagen ? `<img src="${escaparHtml(f.imagen)}" alt="${escaparHtml(f.nombre)}" class="favorito-img">` : '<div class="favorito-img favorito-img-placeholder"><i class="fa-solid fa-burger"></i></div>'}
+            <div class="favorito-info">
+                <h5>${escaparHtml(f.nombre)}</h5>
+                ${f.descripcion ? `<p>${escaparHtml(f.descripcion)}</p>` : ''}
+                <div class="favorito-precio">S/ ${Number(f.precio || 0).toFixed(2)}</div>
+            </div>
+            <button class="btn-quitar-fav" type="button" onclick="quitarFavorito(${f.id})">Quitar</button>
+        </div>
+    `).join('');
+}
+
+function sincronizarBotonesFavoritos() {
+    const idsFavoritos = new Set(favoritos.map((f) => Number(f.id)));
+    document.querySelectorAll('.producto-card .btn-fav').forEach((btn) => {
+        const card = btn.closest('.producto-card, .item-card');
+        const data = obtenerDatosProductoDesdeCard(card);
+        if (!data) return;
+        const activo = idsFavoritos.has(data.id);
+        btn.classList.toggle('activo', activo);
+        const icono = btn.querySelector('i');
+        if (icono) {
+            icono.classList.toggle('fa-solid', activo);
+            icono.classList.toggle('fa-regular', !activo);
+        }
+    });
+}
+
+function animarCorazonAFavoritos(btnOrigen) {
+    const destino = document.querySelector('#navFav i') || document.getElementById('navFav');
+    if (!btnOrigen || !destino) return;
+
+    const origenRect = btnOrigen.getBoundingClientRect();
+    const destinoRect = destino.getBoundingClientRect();
+    if (!origenRect.width || !destinoRect.width) return;
+
+    const heart = document.createElement('i');
+    heart.className = 'fa-solid fa-heart corazon-fly';
+    heart.style.left = (origenRect.left + origenRect.width / 2 - 22) + 'px';
+    heart.style.top = (origenRect.top + origenRect.height / 2 - 22) + 'px';
+    document.body.appendChild(heart);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            heart.style.left = (destinoRect.left + destinoRect.width / 2 - 12) + 'px';
+            heart.style.top = (destinoRect.top + destinoRect.height / 2 - 12) + 'px';
+            heart.style.fontSize = '24px';
+            heart.style.opacity = '0.32';
+            heart.style.transform = 'rotate(24deg) scale(0.55)';
+        });
+    });
+
+    heart.addEventListener('transitionend', () => {
+        heart.remove();
+        const iconoFav = document.querySelector('#navFav i');
+        if (!iconoFav) return;
+        iconoFav.classList.remove('latido-fav');
+        void iconoFav.offsetWidth;
+        iconoFav.classList.add('latido-fav');
+    }, { once: true });
+}
+
+function quitarFavorito(id) {
+    const idNum = Number(id);
+    favoritos = favoritos.filter((f) => Number(f.id) !== idNum);
+    guardarFavoritos();
+    sincronizarBotonesFavoritos();
+    renderizarFavoritosModal();
 }
 
 function actualizarBadgeCarrito() {
@@ -882,6 +995,93 @@ async function enviarPedidoAlServidor() {
     });
 })();
 
+(function initCarruselesProductos() {
+    const tracks = Array.from(document.querySelectorAll('.grid-items'));
+    if (!tracks.length) return;
+
+    tracks.forEach((track) => {
+        let autoplayTimer = null;
+        let resumeTimer = null;
+
+        const obtenerCardsVisibles = () =>
+            Array.from(track.querySelectorAll('.producto-card')).filter((card) => card.style.display !== 'none');
+
+        const obtenerIndiceActual = (cards) => {
+            if (!cards.length) return 0;
+            const referencia = track.scrollLeft + (track.clientWidth * 0.25);
+            let mejorIndice = 0;
+            let menorDistancia = Number.POSITIVE_INFINITY;
+
+            cards.forEach((card, idx) => {
+                const left = card.offsetLeft - track.offsetLeft;
+                const distancia = Math.abs(left - referencia);
+                if (distancia < menorDistancia) {
+                    menorDistancia = distancia;
+                    mejorIndice = idx;
+                }
+            });
+
+            return mejorIndice;
+        };
+
+        const deslizarAlIndice = (cards, index) => {
+            const card = cards[index];
+            if (!card) return;
+            const left = card.offsetLeft - track.offsetLeft;
+            track.scrollTo({ left, behavior: 'smooth' });
+        };
+
+        const avanzar = () => {
+            const cards = obtenerCardsVisibles();
+            if (cards.length <= 1) return;
+            const indiceActual = obtenerIndiceActual(cards);
+            const siguienteIndice = (indiceActual + 1) % cards.length;
+            deslizarAlIndice(cards, siguienteIndice);
+        };
+
+        const detenerAutoplay = () => {
+            if (autoplayTimer) {
+                clearInterval(autoplayTimer);
+                autoplayTimer = null;
+            }
+        };
+
+        const iniciarAutoplay = () => {
+            detenerAutoplay();
+            if (obtenerCardsVisibles().length > 1) {
+                autoplayTimer = setInterval(avanzar, 3000);
+            }
+        };
+
+        const pausarAutoplay = () => {
+            detenerAutoplay();
+            if (resumeTimer) {
+                clearTimeout(resumeTimer);
+                resumeTimer = null;
+            }
+        };
+
+        const reanudarConEspera = () => {
+            if (resumeTimer) clearTimeout(resumeTimer);
+            resumeTimer = setTimeout(() => {
+                iniciarAutoplay();
+            }, 3000);
+        };
+
+        track.addEventListener('pointerdown', pausarAutoplay, { passive: true });
+        track.addEventListener('pointerup', reanudarConEspera, { passive: true });
+        track.addEventListener('pointercancel', reanudarConEspera, { passive: true });
+        track.addEventListener('mouseleave', reanudarConEspera, { passive: true });
+        track.addEventListener('wheel', () => {
+            pausarAutoplay();
+            reanudarConEspera();
+        }, { passive: true });
+
+        iniciarAutoplay();
+        carruselesProductos.push({ track, iniciarAutoplay, pausarAutoplay });
+    });
+})();
+
 // ---------- Al cargar: pintar cantidades ya guardadas en localStorage ----------
 document.addEventListener('DOMContentLoaded', () => {
     actualizarBadgeCarrito();
@@ -909,6 +1109,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    renderizarFavoritosModal();
+    sincronizarBotonesFavoritos();
     aplicarFiltrosCatalogo();
 });
 
@@ -936,15 +1138,37 @@ function aplicarFiltrosCatalogo() {
 
         seccion.style.display = coincideCategoria && visibles > 0 ? '' : 'none';
     });
+
+    carruselesProductos.forEach((c) => {
+        if (!document.body.contains(c.track)) return;
+        c.iniciarAutoplay();
+    });
 }
 
 function toggleFavoritoVisual(btn) {
+    const card = btn.closest('.producto-card, .item-card');
+    const data = obtenerDatosProductoDesdeCard(card);
+    if (!data) return;
+
     const icono = btn.querySelector('i');
-    const activo = btn.classList.toggle('activo');
+    const idx = favoritos.findIndex((f) => Number(f.id) === Number(data.id));
+    const activo = idx === -1;
+
+    if (activo) {
+        favoritos.unshift(data);
+        animarCorazonAFavoritos(btn);
+    } else {
+        favoritos.splice(idx, 1);
+    }
+
+    guardarFavoritos();
+    btn.classList.toggle('activo', activo);
     if (icono) {
         icono.classList.toggle('fa-solid', activo);
         icono.classList.toggle('fa-regular', !activo);
     }
+
+    renderizarFavoritosModal();
 }
 
 function marcarNavActivo(el) {
@@ -959,6 +1183,7 @@ function irHomeVisual(el) {
 
 function abrirFavoritosVisual(el) {
     marcarNavActivo(el);
+    renderizarFavoritosModal();
     abrirModal('overlayFavoritos');
 }
 

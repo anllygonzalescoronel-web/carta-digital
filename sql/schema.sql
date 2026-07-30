@@ -10,7 +10,10 @@ CREATE TABLE IF NOT EXISTS admin_usuarios (
     usuario VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    rol ENUM('admin','cocinero') NOT NULL DEFAULT 'admin',
+    activo TINYINT(1) NOT NULL DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- Configuración general del negocio (clave/valor, muy flexible)
@@ -159,8 +162,8 @@ CREATE TABLE IF NOT EXISTS comprobantes_electronicos (
 
 -- Usuario admin por defecto -> usuario: admin / clave: admin123
 -- (cambiar el hash generando uno nuevo desde admin/generar_hash.php o al primer login)
-INSERT INTO admin_usuarios (usuario, password_hash, nombre) VALUES
-('admin', '$2y$10$vO8.XETGJIEPqhwBxaPle.KKIRFDJm.L7xomfpbRz05ccTRHiXd2S', 'Administrador')
+INSERT INTO admin_usuarios (usuario, password_hash, nombre, rol, activo) VALUES
+('admin', '$2y$10$vO8.XETGJIEPqhwBxaPle.KKIRFDJm.L7xomfpbRz05ccTRHiXd2S', 'Administrador', 'admin', 1)
 ON DUPLICATE KEY UPDATE usuario=usuario;
 -- Nota: el hash de arriba corresponde a la clave "admin123" (bcrypt).
 
