@@ -68,6 +68,26 @@ try {
     $subtotal = 0.0;
 
     $stmtProd = $db->prepare('SELECT id, nombre, precio, precio_oferta, disponible FROM productos WHERE id = :id LIMIT 1');
+    $soportaOpciones = true;
+    $stmtOp = null;
+    $stmtGruposReq = null;
+    try {
+        $stmtOp = $db->prepare(
+            'SELECT o.id, o.nombre, o.precio_extra, o.disponible, g.id AS grupo_id, g.nombre AS grupo_nombre, g.producto_id
+             FROM producto_opciones o
+             INNER JOIN producto_grupos g ON g.id = o.grupo_id
+             WHERE o.id = :opcion_id AND g.id = :grupo_id
+             LIMIT 1'
+        );
+        $stmtGruposReq = $db->prepare(
+            'SELECT id, nombre, tipo, requerido, min_opciones, max_opciones
+             FROM producto_grupos
+             WHERE producto_id = :producto_id
+             ORDER BY orden ASC, id ASC'
+        );
+    } catch (Throwable $e) {
+        $soportaOpciones = false;
+    }
 
     foreach ($items as $item) {
         $productoId = (int)($item['id'] ?? 0);
@@ -87,9 +107,77 @@ try {
             throw new RuntimeException('"' . $producto['nombre'] . '" ya no está disponible.');
         }
 
-        $precioUnitario = $producto['precio_oferta'] !== null && $producto['precio_oferta'] > 0
+        $precioBase = $producto['precio_oferta'] !== null && $producto['precio_oferta'] > 0
             ? (float)$producto['precio_oferta']
             : (float)$producto['precio'];
+
+        $opcionesItem = $item['opciones'] ?? [];
+        $opcionesNormalizadas = [];
+        $extraUnitario = 0.0;
+        $conteoPorGrupo = [];
+
+        if ($soportaOpciones && is_array($opcionesItem) && !empty($opcionesItem)) {
+            foreach ($opcionesItem as $opRaw) {
+                $grupoId = (int)($opRaw['grupo_id'] ?? 0);
+                $opcionId = (int)($opRaw['opcion_id'] ?? 0);
+                if ($grupoId <= 0 || $opcionId <= 0) {
+                    throw new RuntimeException('Se detectó una opción inválida en uno de los productos.');
+                }
+
+                $stmtOp->execute(['opcion_id' => $opcionId, 'grupo_id' => $grupoId]);
+                $opcionDb = $stmtOp->fetch();
+                if (!$opcionDb || (int)$opcionDb['producto_id'] !== (int)$producto['id']) {
+                    throw new RuntimeException('Una opción seleccionada no pertenece al producto "' . $producto['nombre'] . '".');
+                }
+                if ((int)$opcionDb['disponible'] !== 1) {
+                    throw new RuntimeException('La opción "' . $opcionDb['nombre'] . '" no está disponible.');
+                }
+
+                $precioExtra = (float)$opcionDb['precio_extra'];
+                $extraUnitario += $precioExtra;
+                $conteoPorGrupo[$grupoId] = ($conteoPorGrupo[$grupoId] ?? 0) + 1;
+                $opcionesNormalizadas[] = [
+                    'grupo_id' => (int)$opcionDb['grupo_id'],
+                    'grupo_nombre' => (string)$opcionDb['grupo_nombre'],
+                    'opcion_id' => (int)$opcionDb['id'],
+                    'opcion_nombre' => (string)$opcionDb['nombre'],
+                    'precio_extra' => $precioExtra,
+                ];
+            }
+        }
+
+        // Validar reglas de grupos (requeridos, min y max)
+        if ($soportaOpciones && $stmtGruposReq) {
+            try {
+                $stmtGruposReq->execute(['producto_id' => (int)$producto['id']]);
+                $gruposProducto = $stmtGruposReq->fetchAll();
+            } catch (Throwable $e) {
+                $gruposProducto = [];
+            }
+        } else {
+            $gruposProducto = [];
+        }
+
+        foreach ($gruposProducto as $g) {
+            $gid = (int)$g['id'];
+            $countSel = (int)($conteoPorGrupo[$gid] ?? 0);
+            $esRequerido = (int)$g['requerido'] === 1;
+            $minReq = max(0, (int)$g['min_opciones']);
+            $maxReq = max(1, (int)$g['max_opciones']);
+            $minFinal = $esRequerido ? max(1, $minReq) : $minReq;
+
+            if ($countSel < $minFinal) {
+                throw new RuntimeException('Faltan opciones en el grupo "' . $g['nombre'] . '" para "' . $producto['nombre'] . '".');
+            }
+            if ($countSel > $maxReq) {
+                throw new RuntimeException('Seleccionaste demasiadas opciones en el grupo "' . $g['nombre'] . '" para "' . $producto['nombre'] . '".');
+            }
+            if (($g['tipo'] ?? '') === 'radio' && $countSel > 1) {
+                throw new RuntimeException('Solo puedes elegir una opción en el grupo "' . $g['nombre'] . '".');
+            }
+        }
+
+        $precioUnitario = round($precioBase + $extraUnitario, 2);
 
         $subtotalItem = round($precioUnitario * $cantidad, 2);
         $subtotal += $subtotalItem;
@@ -100,6 +188,8 @@ try {
             'precio_unitario'  => $precioUnitario,
             'cantidad'         => $cantidad,
             'subtotal'         => $subtotalItem,
+            'opciones_json'    => !empty($opcionesNormalizadas) ? json_encode($opcionesNormalizadas, JSON_UNESCAPED_UNICODE) : null,
+            'opciones'         => $opcionesNormalizadas,
         ];
     }
 
@@ -139,30 +229,38 @@ try {
             $culqiToken,
             $total,
             $clienteEmail,
-            'Pedido ' . $codigo . ' - ' . cfg('nombre_negocio', 'Carta Digital')
+            'Pedido ' . $codigo . ' - ' . cfg('nombre_negocio', 'Carta Digital'),
+            $clienteNombre,
+            $clienteTelefono
         );
         $culqiChargeId = $cargo['id'] ?? null;
         $estado = 'pagado';
     }
 
     // ---------- Guardar pedido ----------
-    $stmtPedido = $db->prepare(
-        'INSERT INTO pedidos
-            (codigo, cliente_nombre, cliente_telefono, cliente_email, cliente_dni,
-             tipo_comprobante, tipo_documento, numero_documento, tipo_entrega, direccion, referencia,
-             metodo_pago, estado, subtotal, costo_delivery, total, notas, culqi_charge_id)
-         VALUES
-            (:codigo, :cliente_nombre, :cliente_telefono, :cliente_email, :cliente_dni,
-             :tipo_comprobante, :tipo_documento, :numero_documento, :tipo_entrega, :direccion, :referencia,
-             :metodo_pago, :estado, :subtotal, :costo_delivery, :total, :notas, :culqi_charge_id)'
+    $columnasPedido = [];
+    $stmtCols = $db->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pedidos'"
     );
-    $stmtPedido->execute([
+    $stmtCols->execute();
+    foreach ($stmtCols->fetchAll() as $col) {
+        $columnasPedido[$col['COLUMN_NAME']] = true;
+    }
+
+    $camposInsert = [
+        'codigo', 'cliente_nombre', 'cliente_telefono',
+        'tipo_comprobante', 'tipo_documento', 'numero_documento', 'tipo_entrega', 'direccion', 'referencia',
+        'metodo_pago', 'estado', 'subtotal', 'costo_delivery', 'total', 'notas', 'culqi_charge_id'
+    ];
+    $placeholders = [
+        ':codigo', ':cliente_nombre', ':cliente_telefono',
+        ':tipo_comprobante', ':tipo_documento', ':numero_documento', ':tipo_entrega', ':direccion', ':referencia',
+        ':metodo_pago', ':estado', ':subtotal', ':costo_delivery', ':total', ':notas', ':culqi_charge_id'
+    ];
+    $paramsPedido = [
         'codigo' => $codigo,
         'cliente_nombre' => $clienteNombre,
         'cliente_telefono' => $clienteTelefono,
-        'cliente_email' => $clienteEmail,
-        // cliente_dni se mantiene por compatibilidad con NubeFacT (generar_comprobante.php lo usa)
-        'cliente_dni' => $tipoDocumento === 'dni' && $numeroDocumento !== '' ? $numeroDocumento : null,
         'tipo_comprobante' => $tipoComprobante,
         'tipo_documento' => $tipoDocumento,
         'numero_documento' => $numeroDocumento,
@@ -176,22 +274,59 @@ try {
         'total' => $total,
         'notas' => $notas ?: null,
         'culqi_charge_id' => $culqiChargeId,
-    ]);
+    ];
+
+    if (isset($columnasPedido['cliente_email'])) {
+        $camposInsert[] = 'cliente_email';
+        $placeholders[] = ':cliente_email';
+        $paramsPedido['cliente_email'] = $clienteEmail;
+    }
+
+    if (isset($columnasPedido['cliente_dni'])) {
+        $camposInsert[] = 'cliente_dni';
+        $placeholders[] = ':cliente_dni';
+        // cliente_dni se mantiene por compatibilidad con NubeFacT (generar_comprobante.php lo usa)
+        $paramsPedido['cliente_dni'] = $tipoDocumento === 'dni' && $numeroDocumento !== '' ? $numeroDocumento : null;
+    }
+
+    $sqlPedido = 'INSERT INTO pedidos (' . implode(', ', $camposInsert) . ') VALUES (' . implode(', ', $placeholders) . ')';
+    $stmtPedido = $db->prepare($sqlPedido);
+    $stmtPedido->execute($paramsPedido);
     $pedidoId = $db->lastInsertId();
 
-    $stmtDetalle = $db->prepare(
-        'INSERT INTO pedido_detalle (pedido_id, producto_id, nombre_producto, precio_unitario, cantidad, subtotal)
-         VALUES (:pedido_id, :producto_id, :nombre_producto, :precio_unitario, :cantidad, :subtotal)'
+    $columnasDetalle = [];
+    $stmtColsDetalle = $db->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pedido_detalle'"
     );
+    $stmtColsDetalle->execute();
+    foreach ($stmtColsDetalle->fetchAll() as $colDet) {
+        $columnasDetalle[$colDet['COLUMN_NAME']] = true;
+    }
+
+    if (isset($columnasDetalle['opciones_json'])) {
+        $stmtDetalle = $db->prepare(
+            'INSERT INTO pedido_detalle (pedido_id, producto_id, nombre_producto, precio_unitario, cantidad, subtotal, opciones_json)
+             VALUES (:pedido_id, :producto_id, :nombre_producto, :precio_unitario, :cantidad, :subtotal, :opciones_json)'
+        );
+    } else {
+        $stmtDetalle = $db->prepare(
+            'INSERT INTO pedido_detalle (pedido_id, producto_id, nombre_producto, precio_unitario, cantidad, subtotal)
+             VALUES (:pedido_id, :producto_id, :nombre_producto, :precio_unitario, :cantidad, :subtotal)'
+        );
+    }
     foreach ($detalle as $d) {
-        $stmtDetalle->execute([
+        $paramsDetalle = [
             'pedido_id' => $pedidoId,
             'producto_id' => $d['producto_id'],
             'nombre_producto' => $d['nombre_producto'],
             'precio_unitario' => $d['precio_unitario'],
             'cantidad' => $d['cantidad'],
             'subtotal' => $d['subtotal'],
-        ]);
+        ];
+        if (isset($columnasDetalle['opciones_json'])) {
+            $paramsDetalle['opciones_json'] = $d['opciones_json'];
+        }
+        $stmtDetalle->execute($paramsDetalle);
     }
 
     // ---------- Registrar el comprobante según el motor de facturación activo ----------
@@ -234,6 +369,12 @@ try {
     $lineas[] = '';
     foreach ($detalle as $d) {
         $lineas[] = "• {$d['cantidad']}x {$d['nombre_producto']} - " . formatoPrecio($d['subtotal']);
+        if (!empty($d['opciones'])) {
+            foreach ($d['opciones'] as $op) {
+                $extraTxt = ((float)$op['precio_extra'] > 0) ? (' (+' . formatoPrecio((float)$op['precio_extra']) . ')') : '';
+                $lineas[] = '   - ' . $op['grupo_nombre'] . ': ' . $op['opcion_nombre'] . $extraTxt;
+            }
+        }
     }
     $lineas[] = '';
     $lineas[] = 'Subtotal: ' . formatoPrecio($subtotal);

@@ -23,24 +23,195 @@ function actualizarBadgeCarrito() {
     btn.classList.toggle('visible', totalItems > 0);
 }
 
+function limpiarCarritoCompleto() {
+    carrito = [];
+    localStorage.removeItem('carrito');
+    actualizarBadgeCarrito();
+
+    const overlayCarrito = document.getElementById('overlayCarrito');
+    if (overlayCarrito && overlayCarrito.classList.contains('visible')) {
+        renderizarCarritoModal();
+    }
+
+    document.querySelectorAll('.control-cantidad').forEach((cont) => {
+        renderizarStepper(cont, parseInt(cont.dataset.id, 10));
+    });
+}
+
 // ---------- Agregar / quitar productos ----------
+// ---------- Agregar / quitar productos ----------
+
+// Estado del modal de opciones
+let _mopCont = null;   // elemento .control-cantidad actual
+let _mopSeleccionadas = {};  // {grupoId: [opcionId, ...]}
+
 function agregarProducto(btnEl) {
     const cont = btnEl.closest('.control-cantidad');
+    const id = parseInt(cont.dataset.id, 10);
+    const tieneOpciones = cont.dataset.tieneOpciones === '1';
+    const grupos = (window.OPCIONES_PRODUCTOS || {})[id];
+
+    if (tieneOpciones && grupos && grupos.length > 0) {
+        abrirModalOpciones(cont, grupos);
+        return;
+    }
+    _agregarAlCarritoDirecto(cont);
+}
+
+function _agregarAlCarritoDirecto(cont, opcionesSeleccionadas) {
     const imgProducto = obtenerImagenDeControl(cont);
     const id = parseInt(cont.dataset.id, 10);
     const nombre = cont.dataset.nombre;
-    const precio = parseFloat(cont.dataset.precio);
+    const precioBase = parseFloat(cont.dataset.precio);
 
-    let item = carrito.find(i => i.id === id);
-    if (item) {
-        item.cantidad++;
+    if (opcionesSeleccionadas && opcionesSeleccionadas.length > 0) {
+        // Calcular precio total con extras
+        const extraTotal = opcionesSeleccionadas.reduce((s, o) => s + o.precio_extra, 0);
+        const precioTotal = precioBase + extraTotal;
+        // Usar key única por combinación de opciones
+        const key = id + '_' + opcionesSeleccionadas.map(o => o.opcion_id).sort().join('_');
+        let item = carrito.find(i => i.key === key);
+        if (item) {
+            item.cantidad++;
+        } else {
+            carrito.push({ id, key, nombre, precio: precioTotal, precioBase, opciones: opcionesSeleccionadas, cantidad: 1 });
+        }
     } else {
-        carrito.push({ id, nombre, precio, cantidad: 1 });
+        let item = carrito.find(i => i.id === id && !i.key);
+        if (item) {
+            item.cantidad++;
+        } else {
+            carrito.push({ id, nombre, precio: precioBase, cantidad: 1 });
+        }
     }
     guardarCarrito();
     volarAlCarrito(imgProducto);
     renderizarStepper(cont, id);
 }
+
+// ── Modal de opciones ──────────────────────────────────
+function abrirModalOpciones(cont, grupos) {
+    _mopCont = cont;
+    _mopSeleccionadas = {};
+
+    const id     = parseInt(cont.dataset.id, 10);
+    const nombre = cont.dataset.nombre;
+    const precio = parseFloat(cont.dataset.precio);
+    const imagen = cont.dataset.imagen || '';
+
+    // Info producto
+    document.getElementById('mopProductoInfo').innerHTML = `
+        ${imagen ? `<img src="${imagen}" alt="${nombre}">` : ''}
+        <div>
+            <p class="mop-nombre">${nombre}</p>
+            <p class="mop-precio">S/ ${precio.toFixed(2)}</p>
+        </div>`;
+
+    // Grupos
+    const container = document.getElementById('mopGrupos');
+    container.innerHTML = '';
+    grupos.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'mop-grupo';
+        div.dataset.grupoId = g.id;
+        div.dataset.tipo = g.tipo;
+        div.dataset.requerido = g.requerido ? '1' : '0';
+        div.dataset.max = g.max;
+        div.innerHTML = `<p class="mop-grupo-titulo">
+            ${g.nombre}
+            <span class="mop-badge">${g.tipo === 'checkbox' ? 'Elige varios' : 'Elige uno'}</span>
+            ${g.requerido ? '<span class="mop-badge mop-badge-req">Obligatorio</span>' : ''}
+        </p>`;
+        g.opciones.forEach(op => {
+            const label = document.createElement('label');
+            label.className = 'mop-opcion';
+            label.innerHTML = `
+                <input type="${g.tipo}" name="grupo_${g.id}" value="${op.id}"
+                    data-precio-extra="${op.precio_extra}"
+                    data-opcion-nombre="${op.nombre.replace(/"/g,'&quot;')}"
+                    data-grupo-nombre="${g.nombre.replace(/"/g,'&quot;')}"
+                    data-grupo-id="${g.id}">
+                <span class="mop-opcion-nombre">${op.nombre}</span>
+                <span class="mop-opcion-precio">${op.precio_extra > 0 ? '+S/ '+op.precio_extra.toFixed(2) : 'Gratis'}</span>`;
+            label.querySelector('input').addEventListener('change', _mopActualizarTotal);
+            label.addEventListener('click', function() {
+                // Marcar visualmente
+                div.querySelectorAll('.mop-opcion').forEach(l => l.classList.remove('seleccionada'));
+                if (g.tipo === 'radio') {
+                    label.classList.add('seleccionada');
+                } else {
+                    if (label.querySelector('input').checked) label.classList.add('seleccionada');
+                    else label.classList.remove('seleccionada');
+                }
+            });
+            div.appendChild(label);
+        });
+        container.appendChild(div);
+    });
+
+    _mopActualizarTotal();
+    document.getElementById('modalOpciones').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalOpciones() {
+    document.getElementById('modalOpciones').style.display = 'none';
+    document.body.style.overflow = '';
+    _mopCont = null;
+}
+
+function _mopActualizarTotal() {
+    if (!_mopCont) return;
+    const precioBase = parseFloat(_mopCont.dataset.precio);
+    let extra = 0;
+    document.querySelectorAll('#mopGrupos input:checked').forEach(inp => {
+        extra += parseFloat(inp.dataset.precioExtra || 0);
+    });
+    document.getElementById('mopTotalTexto').textContent = 'S/ ' + (precioBase + extra).toFixed(2);
+}
+
+function confirmarOpciones() {
+    if (!_mopCont) return;
+    const contActual = _mopCont;
+    const grupos = document.querySelectorAll('#mopGrupos .mop-grupo');
+    let valido = true;
+    const opcionesSeleccionadas = [];
+
+    grupos.forEach(div => {
+        const requerido = div.dataset.requerido === '1';
+        const marcados = div.querySelectorAll('input:checked');
+        if (requerido && marcados.length === 0) {
+            valido = false;
+            div.style.outline = '2px solid #e53e3e';
+            div.style.borderRadius = '12px';
+        } else {
+            div.style.outline = '';
+        }
+        marcados.forEach(inp => {
+            opcionesSeleccionadas.push({
+                grupo_id:      parseInt(inp.dataset.grupoId),
+                grupo_nombre:  inp.dataset.grupoNombre,
+                opcion_id:     parseInt(inp.value),
+                opcion_nombre: inp.dataset.opcionNombre,
+                precio_extra:  parseFloat(inp.dataset.precioExtra || 0),
+            });
+        });
+    });
+
+    if (!valido) return;
+    _agregarAlCarritoDirecto(contActual, opcionesSeleccionadas);
+    cerrarModalOpciones();
+}
+
+// Cerrar al click en overlay
+document.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('modalOpciones');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) cerrarModalOpciones();
+        });
+    }
+});
 
 function renderizarStepper(cont, id) {
     const item = carrito.find(i => i.id === id);
@@ -135,6 +306,29 @@ function quitarDelCarrito(id) {
     guardarCarrito();
     renderizarCarritoModal();
     // Sincroniza el stepper visible en la carta si existe
+    const cont = document.querySelector(`.control-cantidad[data-id="${id}"]`);
+    if (cont) renderizarStepper(cont, id);
+}
+
+function quitarDelCarritoKey(key, id) {
+    if (key !== null) {
+        carrito = carrito.filter(i => i.key !== key);
+    } else {
+        carrito = carrito.filter(i => i.id !== id || i.key);
+    }
+    guardarCarrito();
+    renderizarCarritoModal();
+    const cont = document.querySelector(`.control-cantidad[data-id="${id}"]`);
+    if (cont) renderizarStepper(cont, id);
+}
+
+function quitarDelCarritoIdx(idx) {
+    const item = carrito[idx];
+    if (!item) return;
+    const id = item.id;
+    carrito.splice(idx, 1);
+    guardarCarrito();
+    renderizarCarritoModal();
     const cont = document.querySelector(`.control-cantidad[data-id="${id}"]`);
     if (cont) renderizarStepper(cont, id);
 }
@@ -281,12 +475,13 @@ function renderizarCarritoModal() {
     }
     btnContinuar.style.display = 'block';
 
-    lista.innerHTML = carrito.map(i => `
+    lista.innerHTML = carrito.map((i, idx) => `
         <div class="carrito-item">
             <div class="info">
                 <h5>${i.cantidad}x ${i.nombre}</h5>
+                ${i.opciones && i.opciones.length > 0 ? '<ul class="carrito-opciones">' + i.opciones.map(o => `<li>${o.grupo_nombre}: <strong>${o.opcion_nombre}</strong>${o.precio_extra > 0 ? ' +S/ '+o.precio_extra.toFixed(2) : ''}</li>`).join('') + '</ul>' : ''}
                 <div class="p-unit">S/ ${i.precio.toFixed(2)} c/u</div>
-                <button class="btn-quitar" onclick="quitarDelCarrito(${i.id})">Quitar</button>
+                <button class="btn-quitar" onclick="quitarDelCarritoIdx(${idx})">Quitar</button>
             </div>
             <div class="subtotal-item">S/ ${(i.precio * i.cantidad).toFixed(2)}</div>
         </div>
@@ -303,6 +498,23 @@ function irACheckout() {
     cerrarModal('overlayCarrito');
     abrirModal('overlayCheckout');
 }
+
+    // Nueva versión: Abrir checkout con APIPERU
+    function irACheckoutAPIPeru() {
+        cerrarModal('overlayCarrito');
+    
+        // Inicializar checkout y mostrar modal
+        if (window.checkout) {
+            window.checkout.mostrarModal();
+        } else {
+            console.error('Checkout no inicializado');
+        }
+    }
+
+    // Mantener irACheckout por compatibilidad pero redirigir a nuevo sistema
+    function irACheckout() {
+        irACheckoutAPIPeru();
+    }
 
 // ---------- Selección entrega / pago ----------
 function seleccionarEntrega(el) {
@@ -545,6 +757,15 @@ async function enviarPedidoAlServidor() {
         }
 
         // Éxito: limpiar carrito y mostrar confirmación visual
+        try {
+            const nombre = document.getElementById('inputNombre').value.trim();
+            const telefono = document.getElementById('inputTelefono').value.trim();
+            if (nombre) localStorage.setItem('cliente_nombre', nombre);
+            if (telefono) localStorage.setItem('cliente_telefono', telefono);
+        } catch (e) {
+            // Ignorar errores de localStorage.
+        }
+
         carrito = [];
         guardarCarrito();
         document.querySelectorAll('.control-cantidad').forEach(cont => {
@@ -593,6 +814,37 @@ async function enviarPedidoAlServidor() {
     if (slides > 1) {
         setInterval(() => irASlide((actual + 1) % slides), 4000);
     }
+})();
+
+// ---------- Auto-scroll de quickcats ----------
+(function initQuickCatsAutoScroll() {
+    const nav = document.getElementById('quickCats');
+    if (!nav) return;
+    let pausado = false;
+    let intervalo;
+
+    function scrollPaso() {
+        if (pausado) return;
+        const maxScroll = nav.scrollWidth - nav.clientWidth;
+        if (maxScroll <= 0) return;
+        const siguiente = nav.scrollLeft + 90;
+        if (siguiente >= maxScroll) {
+            nav.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            nav.scrollBy({ left: 90, behavior: 'smooth' });
+        }
+    }
+
+    intervalo = setInterval(scrollPaso, 2000);
+
+    // Pausa al tocar/arrastrar
+    nav.addEventListener('pointerdown', () => { pausado = true; clearInterval(intervalo); });
+    nav.addEventListener('pointerup', () => {
+        setTimeout(() => {
+            pausado = false;
+            intervalo = setInterval(scrollPaso, 2000);
+        }, 3000);
+    });
 })();
 
 // ---------- Navegación de categorías (filtro en el mismo bloque) ----------

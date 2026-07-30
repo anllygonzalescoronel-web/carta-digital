@@ -136,7 +136,31 @@ function iconoPago(string $metodo, bool $conTexto = false): string
         <tbody>
         <?php foreach ($detalleItems as $d): ?>
             <tr>
-                <td><?= limpiar($d['nombre_producto']) ?></td>
+                <td>
+                    <div><?= limpiar($d['nombre_producto']) ?></div>
+                    <?php
+                        $ops = [];
+                        if (!empty($d['opciones_json'])) {
+                            $tmp = json_decode((string)$d['opciones_json'], true);
+                            if (is_array($tmp)) {
+                                $ops = $tmp;
+                            }
+                        }
+                    ?>
+                    <?php if (!empty($ops)): ?>
+                        <ul style="margin:6px 0 0 14px;padding:0;color:#6b7280;font-size:12px;line-height:1.5;">
+                            <?php foreach ($ops as $op): ?>
+                                <li>
+                                    <?= limpiar((string)($op['grupo_nombre'] ?? 'Opción')) ?>:
+                                    <strong style="color:#1f6b3a;"><?= limpiar((string)($op['opcion_nombre'] ?? '')) ?></strong>
+                                    <?php if (((float)($op['precio_extra'] ?? 0)) > 0): ?>
+                                        (+<?= formatoPrecio((float)$op['precio_extra']) ?>)
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </td>
                 <td><?= $d['cantidad'] ?></td>
                 <td><?= formatoPrecio($d['precio_unitario']) ?></td>
                 <td><?= formatoPrecio($d['subtotal']) ?></td>

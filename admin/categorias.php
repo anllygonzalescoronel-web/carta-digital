@@ -6,6 +6,12 @@ require __DIR__ . '/_layout_top.php';
 $db = getDB();
 $mensaje = ''; $error = '';
 
+try {
+    $db->exec("ALTER TABLE categorias ADD COLUMN IF NOT EXISTS imagen VARCHAR(255) DEFAULT NULL AFTER nombre");
+} catch (Throwable $e) {
+    // Si la columna ya existe o el motor no soporta IF NOT EXISTS, seguimos.
+}
+
 // ---------- Procesar acciones ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -15,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre = trim($_POST['nombre'] ?? '');
             $orden = (int)($_POST['orden'] ?? 0);
             $activo = isset($_POST['activo']) ? 1 : 0;
+            $imagenActual = trim($_POST['imagen_actual'] ?? '');
             if ($nombre === '') throw new RuntimeException('El nombre es obligatorio.');
 
             // Si es una categoría nueva y dejaron el orden en 0 (sin tocarlo),
@@ -25,11 +32,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($id > 0) {
-                $stmt = $db->prepare('UPDATE categorias SET nombre=:n, orden=:o, activo=:a WHERE id=:id');
-                $stmt->execute(['n'=>$nombre,'o'=>$orden,'a'=>$activo,'id'=>$id]);
+                $imagen = $imagenActual;
+                if (isset($_FILES['imagen']) && $_FILES['imagen']['size'] > 0) {
+                    $file = $_FILES['imagen'];
+                    if ($file['error'] !== UPLOAD_ERR_OK) {
+                        throw new RuntimeException('Error al subir la imagen de la categoría.');
+                    }
+                    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                    $permitidas = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                    if (!in_array($ext, $permitidas, true)) {
+                        throw new RuntimeException('La imagen debe ser jpg, jpeg, png, webp o gif.');
+                    }
+                    $dirUploads = __DIR__ . '/../uploads/categorias';
+                    if (!is_dir($dirUploads)) {
+                        mkdir($dirUploads, 0775, true);
+                    }
+                    $nombreArchivo = 'cat_' . time() . '_' . $id . '.' . $ext;
+                    $rutaDestino = $dirUploads . '/' . $nombreArchivo;
+                    if (!move_uploaded_file($file['tmp_name'], $rutaDestino)) {
+                        throw new RuntimeException('No se pudo guardar la imagen de la categoría.');
+                    }
+                    $imagen = 'uploads/categorias/' . $nombreArchivo;
+                }
+                $stmt = $db->prepare('UPDATE categorias SET nombre=:n, imagen=:i, orden=:o, activo=:a WHERE id=:id');
+                $stmt->execute(['n'=>$nombre,'i'=>$imagen ?: null,'o'=>$orden,'a'=>$activo,'id'=>$id]);
             } else {
-                $stmt = $db->prepare('INSERT INTO categorias (nombre, orden, activo) VALUES (:n,:o,:a)');
-                $stmt->execute(['n'=>$nombre,'o'=>$orden,'a'=>$activo]);
+                $imagen = null;
+                if (isset($_FILES['imagen']) && $_FILES['imagen']['size'] > 0) {
+                    $file = $_FILES['imagen'];
+                    if ($file['error'] !== UPLOAD_ERR_OK) {
+                        throw new RuntimeException('Error al subir la imagen de la categoría.');
+                    }
+                    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                    $permitidas = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                    if (!in_array($ext, $permitidas, true)) {
+                        throw new RuntimeException('La imagen debe ser jpg, jpeg, png, webp o gif.');
+                    }
+                    $dirUploads = __DIR__ . '/../uploads/categorias';
+                    if (!is_dir($dirUploads)) {
+                        mkdir($dirUploads, 0775, true);
+                    }
+                    $nombreArchivo = 'cat_' . time() . '.' . $ext;
+                    $rutaDestino = $dirUploads . '/' . $nombreArchivo;
+                    if (!move_uploaded_file($file['tmp_name'], $rutaDestino)) {
+                        throw new RuntimeException('No se pudo guardar la imagen de la categoría.');
+                    }
+                    $imagen = 'uploads/categorias/' . $nombreArchivo;
+                }
+                $stmt = $db->prepare('INSERT INTO categorias (nombre, imagen, orden, activo) VALUES (:n,:i,:o,:a)');
+                $stmt->execute(['n'=>$nombre,'i'=>$imagen,'o'=>$orden,'a'=>$activo]);
             }
             $mensaje = 'Categoría guardada correctamente.';
         } elseif ($accion === 'eliminar') {
@@ -43,6 +94,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.categoria_id=c.id) AS total_productos FROM categorias c ORDER BY orden ASC')->fetchAll();
+
+function rutaImagenCategoria(?string $imagen): string {
+    $imagen = trim((string)$imagen);
+    if ($imagen === '') {
+        return 'assets/img/placeholder.png';
+    }
+    if (strpos($imagen, 'uploads/') === 0) {
+        return $imagen;
+    }
+    return 'uploads/categorias/' . $imagen;
+}
 ?>
 
 <?php if ($mensaje): ?><div class="alerta-ok"><?= limpiar($mensaje) ?></div><?php endif; ?>
@@ -57,11 +119,16 @@ $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.
     </div>
     <div class="tabla-scroll">
     <table>
-        <thead><tr><th>Orden</th><th>Nombre</th><th>Productos</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>Orden</th><th>Imagen</th><th>Nombre</th><th>Productos</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody>
         <?php foreach ($categorias as $c): ?>
             <tr>
                 <td><?= $c['orden'] ?></td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <img src="../<?= limpiar(rutaImagenCategoria($c['imagen'] ?? '')) ?>" alt="<?= limpiar($c['nombre']) ?>" class="thumb" style="object-fit:cover;width:54px;height:54px;border-radius:14px;box-shadow:0 6px 16px rgba(0,0,0,.12);">
+                    </div>
+                </td>
                 <td><?= limpiar($c['nombre']) ?></td>
                 <td><?= $c['total_productos'] ?></td>
                 <td><?= $c['activo'] ? '<span class="badge badge-pagado">Activa</span>' : '<span class="badge badge-cancelado">Oculta</span>' ?></td>
@@ -97,12 +164,21 @@ $categorias = $db->query('SELECT c.*, (SELECT COUNT(*) FROM productos p WHERE p.
 <div class="modal-overlay" id="modalCategoria">
     <div class="modal-box">
         <h3 id="modalCategoriaTitulo" style="margin-bottom:14px;">Nueva categoría</h3>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="accion" value="guardar">
             <input type="hidden" name="id" id="catId">
+            <input type="hidden" name="imagen_actual" id="catImagenActual">
             <div class="form-group">
                 <label>Nombre</label>
                 <input type="text" name="nombre" id="catNombre" required>
+            </div>
+            <div class="form-group">
+                <label>Imagen de categoría</label>
+                <input type="file" name="imagen" id="catImagen" accept="image/*">
+                <small style="color:#666;display:block;margin-top:6px;">Se mostrará en la carta pública.</small>
+                <div id="catImagenPreviewWrap" style="display:none;margin-top:10px;">
+                    <img id="catImagenPreview" src="" alt="Vista previa" style="width:100%;max-height:180px;object-fit:cover;border-radius:16px;border:1px solid #ddd;box-shadow:0 10px 24px rgba(0,0,0,.10);">
+                </div>
             </div>
             <div class="form-group">
                 <label>Orden (menor número = aparece primero)</label>
@@ -150,6 +226,18 @@ function abrirModalCategoria(c) {
     document.getElementById('catNombre').value = c ? c.nombre : '';
     document.getElementById('catOrden').value = c ? c.orden : 0;
     document.getElementById('catActivo').checked = c ? !!parseInt(c.activo) : true;
+    document.getElementById('catImagenActual').value = c && c.imagen ? c.imagen : '';
+    const previewWrap = document.getElementById('catImagenPreviewWrap');
+    const preview = document.getElementById('catImagenPreview');
+    if (previewWrap && preview) {
+        if (c && c.imagen) {
+            preview.src = '../' + c.imagen;
+            previewWrap.style.display = 'block';
+        } else {
+            preview.src = '';
+            previewWrap.style.display = 'none';
+        }
+    }
     document.getElementById('modalCategoria').classList.add('visible');
 }
 function cerrarModalCategoria() { document.getElementById('modalCategoria').classList.remove('visible'); }

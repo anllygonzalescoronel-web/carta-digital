@@ -16,10 +16,19 @@ class CulqiException extends RuntimeException {}
  * @param float  $montoSoles Monto en SOLES (ej. 25.50)
  * @param string $email    Email del cliente
  * @param string $descripcion Descripción del cargo (ej. "Pedido PED-260721-ABCDE")
+ * @param string|null $clienteNombre Nombre completo del cliente (checkout)
+ * @param string|null $clienteTelefono Teléfono del cliente
  * @return array Respuesta decodificada de Culqi (incluye "id" del cargo si fue exitoso)
  * @throws CulqiException si Culqi rechaza el cargo o hay un error de red
  */
-function crearCargoCulqi(string $token, float $montoSoles, string $email, string $descripcion): array {
+function crearCargoCulqi(
+    string $token,
+    float $montoSoles,
+    string $email,
+    string $descripcion,
+    ?string $clienteNombre = null,
+    ?string $clienteTelefono = null
+): array {
     $secretKey = cfg('culqi_secret_key');
     if (empty($secretKey) || str_contains($secretKey, 'XXXX')) {
         throw new CulqiException('Aún no configuraste tu llave secreta de Culqi en el panel de administración (Configuración).');
@@ -35,6 +44,28 @@ function crearCargoCulqi(string $token, float $montoSoles, string $email, string
         'description'   => $descripcion,
         'capture'       => true,
     ];
+
+    $clienteNombre = trim((string)$clienteNombre);
+    $clienteTelefono = preg_replace('/\D+/', '', (string)$clienteTelefono);
+    if ($clienteNombre !== '') {
+        $partes = preg_split('/\s+/', $clienteNombre) ?: [];
+        $firstName = trim((string)($partes[0] ?? 'Cliente'));
+        $lastName = trim((string)(count($partes) > 1 ? implode(' ', array_slice($partes, 1)) : 'Carta'));
+
+        $payload['antifraud_details'] = [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+        ];
+
+        if ($clienteTelefono !== '') {
+            $payload['antifraud_details']['phone_number'] = $clienteTelefono;
+        }
+
+        $payload['metadata'] = [
+            'cliente_nombre' => $clienteNombre,
+            'cliente_telefono' => $clienteTelefono,
+        ];
+    }
 
     $ch = curl_init('https://api.culqi.com/v2/charges');
     curl_setopt_array($ch, [

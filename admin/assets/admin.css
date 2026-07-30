@@ -223,6 +223,21 @@ table th { text-align: left; padding: 10px 8px; background: #fafafa; font-size: 
 table td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 table tr:hover td { background: #fafafa; }
 img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; background: #eee; }
+
+.categoria-thumb-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.categoria-thumb {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    background: #f3f3f3;
+}
  
 .btn { display: inline-block; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; }
 .btn-primario { background: #E8590C; color: #fff; }
@@ -276,6 +291,51 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
     margin-bottom: 16px;
 }
 
+.config-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.config-tab-btn {
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #444;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.config-tab-btn:hover {
+    border-color: #c9c9c9;
+    background: #f9f9f9;
+}
+
+.config-tab-btn.activo {
+    background: #E8590C;
+    border-color: #E8590C;
+    color: #fff;
+}
+
+.config-card.oculto-tab {
+    display: none;
+}
+
+.categoria-preview {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid #ddd;
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+}
+
 .tabla-scroll {
     overflow-x: auto;
 }
@@ -304,6 +364,11 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
 @media (max-width: 980px) {
     .grid-dos-cards {
         grid-template-columns: 1fr;
+    }
+
+    .config-tab-btn {
+        flex: 1 1 calc(50% - 10px);
+        justify-content: center;
     }
 }
  

@@ -18,6 +18,43 @@ $logo = cfg('logo');
 $culqiPublicKey = cfg('culqi_public_key');
 $iconosCategoria = ['fa-pizza-slice', 'fa-burger', 'fa-mug-hot', 'fa-ice-cream', 'fa-drumstick-bite', 'fa-fish', 'fa-lemon', 'fa-cheese'];
 
+// Cargar opciones/toppings de todos los productos
+$opcionesProductos = [];
+try {
+    $allGrupos = $db->query('SELECT g.*, GROUP_CONCAT(o.id,"|",o.nombre,"|",o.precio_extra,"|",o.disponible ORDER BY o.orden SEPARATOR ";;") AS opciones_raw FROM producto_grupos g LEFT JOIN producto_opciones o ON o.grupo_id = g.id GROUP BY g.id ORDER BY g.orden')->fetchAll();
+    foreach ($allGrupos as $g) {
+        $opciones = [];
+        if ($g['opciones_raw']) {
+            foreach (explode(';;', $g['opciones_raw']) as $row) {
+                $parts = explode('|', $row);
+                if (count($parts) === 4 && $parts[3] == 1) {
+                    $opciones[] = ['id' => (int)$parts[0], 'nombre' => $parts[1], 'precio_extra' => (float)$parts[2]];
+                }
+            }
+        }
+        if (empty($opciones)) continue;
+        $opcionesProductos[$g['producto_id']][] = [
+            'id'         => $g['id'],
+            'nombre'     => $g['nombre'],
+            'tipo'       => $g['tipo'],
+            'requerido'  => (bool)$g['requerido'],
+            'max'        => (int)$g['max_opciones'],
+            'opciones'   => $opciones,
+        ];
+    }
+} catch (Throwable $e) { /* tablas aún no existen */ }
+
+function rutaImagenCategoria(?string $imagen): string {
+    $nombre = trim((string)$imagen);
+    if ($nombre === '') {
+        return 'assets/img/placeholder.png';
+    }
+    if (strpos($nombre, 'uploads/') === 0) {
+        return $nombre;
+    }
+    return 'uploads/categorias/' . $nombre;
+}
+
 function rutaImagenProducto(?string $imagen): string {
     $nombre = trim((string)$imagen);
     if ($nombre === '') {
@@ -93,10 +130,12 @@ if (!empty($banners)) {
 <title><?= limpiar($nombreNegocio) ?> - Carta Digital</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/checkout-apiperu.css">
 <script src="https://checkout.culqi.com/js/v4"></script>
 <style>
 :root {
     --color-primario: <?= limpiar(cfg('color_primario', '#E8590C')) ?>;
+    --color-primario-fuerte: <?= limpiar(cfg('color_primario_fuerte', cfg('color_primario', '#E8590C'))) ?>;
     --color-secundario: <?= limpiar(cfg('color_secundario', '#FFC107')) ?>;
     --color-texto: <?= limpiar(cfg('color_texto', '#212121')) ?>;
     --color-fondo: <?= limpiar(cfg('color_fondo', '#FFF8F0')) ?>;
@@ -124,28 +163,6 @@ if (!empty($banners)) {
     </div>
 </header>
 
-<nav class="categorias-nav" id="categoriasNav">
-    <button class="cat-btn activo" data-target="all-products">Todos</button>
-    <?php foreach ($categorias as $cat): ?>
-    <button class="cat-btn" data-target="cat-<?= $cat['id'] ?>">
-        <?= limpiar($cat['nombre']) ?>
-    </button>
-    <?php endforeach; ?>
-</nav>
-
-<nav class="quickcats" id="quickCats">
-    <button class="quickcat-item activo" type="button" data-target="all-products">
-        <span class="quickcat-circle"><i class="fa-solid fa-layer-group"></i></span>
-        <span>Todos</span>
-    </button>
-    <?php foreach ($categorias as $i => $cat): ?>
-    <button class="quickcat-item" type="button" data-target="cat-<?= $cat['id'] ?>">
-        <span class="quickcat-circle"><i class="fa-solid <?= $iconosCategoria[$i % count($iconosCategoria)] ?>"></i></span>
-        <span><?= limpiar($cat['nombre']) ?></span>
-    </button>
-    <?php endforeach; ?>
-</nav>
-
 <main class="main-content">
     <div class="banner-slider" id="bannerSlider">
         <div class="banner-track" id="bannerTrack">
@@ -167,10 +184,35 @@ if (!empty($banners)) {
         <div class="banner-dots" id="bannerDots"></div>
     </div>
 
+    <nav class="quickcats" id="quickCats">
+        <button class="quickcat-item activo" type="button" data-target="all-products">
+            <span class="quickcat-circle"><i class="fa-solid fa-layer-group"></i></span>
+            <span>Todos</span>
+        </button>
+        <?php foreach ($categorias as $i => $cat): ?>
+        <button class="quickcat-item" type="button" data-target="cat-<?= $cat['id'] ?>">
+            <span class="quickcat-circle">
+                <?php if (!empty($cat['imagen'])): ?>
+                    <img src="<?= limpiar(rutaImagenCategoria($cat['imagen'])) ?>" alt="<?= limpiar($cat['nombre']) ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                <?php else: ?>
+                    <i class="fa-solid <?= $iconosCategoria[$i % count($iconosCategoria)] ?>"></i>
+                <?php endif; ?>
+            </span>
+            <span><?= limpiar($cat['nombre']) ?></span>
+        </button>
+        <?php endforeach; ?>
+    </nav>
+
     <?php foreach ($categorias as $cat): ?>
     <section class="seccion seccion-categoria" id="cat-<?= $cat['id'] ?>">
         <div class="seccion-header">
-            <h3><?= limpiar($cat['nombre']) ?></h3>
+            <div class="categoria-hero" style="display:flex;align-items:center;gap:12px;">
+                <img src="<?= limpiar(rutaImagenCategoria($cat['imagen'] ?? '')) ?>" alt="<?= limpiar($cat['nombre']) ?>" style="width:72px;height:72px;border-radius:20px;object-fit:cover;flex:0 0 auto;box-shadow:0 12px 28px rgba(0,0,0,.14);border:2px solid rgba(255,255,255,.75);">
+                <div>
+                    <h3 style="margin:0;font-size:18px;"><?= limpiar($cat['nombre']) ?></h3>
+                    <p style="margin:4px 0 0;color:#6b7a70;font-size:12px;">Selecciona tus favoritos de esta categoría</p>
+                </div>
+            </div>
         </div>
         <div class="grid-items">
         <?php foreach ($productosPorCategoria[$cat['id']] as $p): ?>
@@ -197,7 +239,9 @@ if (!empty($banners)) {
                     </div>
                     <div class="control-cantidad" data-id="<?= $p['id'] ?>"
                          data-nombre="<?= limpiar($p['nombre']) ?>"
-                         data-precio="<?= $p['precio_oferta'] ?: $p['precio'] ?>">
+                         data-precio="<?= $p['precio_oferta'] ?: $p['precio'] ?>"
+                         data-tiene-opciones="<?= isset($opcionesProductos[$p['id']]) ? '1' : '0' ?>"
+                         data-imagen="<?= limpiar(rutaImagenProducto($p['imagen'] ?? '')) ?>">
                         <button class="btn-agregar" onclick="agregarProducto(this)"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
@@ -210,6 +254,28 @@ if (!empty($banners)) {
 </main>
 
 <footer class="footer-public">Carta Digital</footer>
+
+<!-- JSON de opciones de productos -->
+<script>
+window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_UNICODE) ?>;
+</script>
+
+<!-- Modal de personalización de producto -->
+<div id="modalOpciones" class="modal-opciones-overlay" style="display:none;">
+    <div class="modal-opciones-box">
+        <button class="modal-opciones-cerrar" onclick="cerrarModalOpciones()" aria-label="Cerrar">&times;</button>
+        <div class="modal-opciones-producto" id="mopProductoInfo"></div>
+        <div id="mopGrupos"></div>
+        <div class="modal-opciones-footer">
+            <div class="modal-opciones-total">
+                Total: <strong id="mopTotalTexto">S/ 0.00</strong>
+            </div>
+            <button class="btn-agregar-opciones" id="btnAgregarConOpciones" onclick="confirmarOpciones()">
+                <i class="fa-solid fa-plus"></i> Agregar al carrito
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Barra inferior -->
 <nav class="bottom-nav">
@@ -231,6 +297,10 @@ if (!empty($banners)) {
     <button class="nav-item" id="navPerfil" type="button" onclick="abrirPerfilVisual(this)">
         <i class="fa-regular fa-user"></i>
         <span>Perfil</span>
+    </button>
+    <button class="nav-item" id="navEstado" type="button" onclick="window.location.href='estado-pedido.php'">
+        <i class="fa-solid fa-route"></i>
+        <span>Mi estado</span>
     </button>
 </nav>
 
@@ -413,6 +483,19 @@ if (!empty($banners)) {
         nombreNegocio: <?= json_encode($nombreNegocio) ?>
     };
 </script>
+
+    <!-- Modal de Checkout Multi-Paso -->
+    <?php include 'template frontend/checkout-modal.html'; ?>
+
+    <!-- Scripts de Checkout -->
+    <script src="assets/js/checkout-apiperu.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar checkout cuando el DOM esté listo
+        window.checkout = new CheckoutAPIPeru();
+    });
+    </script>
+
 <script src="assets/js/carrito.js"></script>
 </body>
 </html>

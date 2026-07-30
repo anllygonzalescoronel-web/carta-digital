@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS configuracion (
 CREATE TABLE IF NOT EXISTS categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
+    imagen VARCHAR(255) DEFAULT NULL,
     orden INT DEFAULT 0,
     activo TINYINT(1) DEFAULT 1
 ) ENGINE=InnoDB;
@@ -58,6 +59,8 @@ CREATE TABLE IF NOT EXISTS pedidos (
     codigo VARCHAR(20) NOT NULL UNIQUE,
     cliente_nombre VARCHAR(150) NOT NULL,
     cliente_telefono VARCHAR(30) NOT NULL,
+    cliente_dni VARCHAR(20) DEFAULT NULL,
+    cliente_email VARCHAR(255) DEFAULT NULL,
     tipo_comprobante ENUM('boleta','factura') DEFAULT NULL,
     tipo_documento ENUM('dni','ruc') DEFAULT NULL,
     numero_documento VARCHAR(20) DEFAULT NULL,
@@ -90,7 +93,32 @@ CREATE TABLE IF NOT EXISTS pedido_detalle (
     precio_unitario DECIMAL(10,2) NOT NULL,
     cantidad INT NOT NULL,
     subtotal DECIMAL(10,2) NOT NULL,
+    opciones_json TEXT DEFAULT NULL,
     FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Grupos de opciones / variaciones de productos (ej: "Elige tu parte", "Salsas", "Extras")
+CREATE TABLE IF NOT EXISTS producto_grupos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    producto_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    tipo ENUM('radio','checkbox') DEFAULT 'radio',
+    requerido TINYINT(1) DEFAULT 0,
+    min_opciones INT DEFAULT 0,
+    max_opciones INT DEFAULT 1,
+    orden INT DEFAULT 0,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Opciones individuales dentro de cada grupo
+CREATE TABLE IF NOT EXISTS producto_opciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    grupo_id INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    precio_extra DECIMAL(10,2) DEFAULT 0.00,
+    disponible TINYINT(1) DEFAULT 1,
+    orden INT DEFAULT 0,
+    FOREIGN KEY (grupo_id) REFERENCES producto_grupos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- Comprobantes electrónicos SUNAT

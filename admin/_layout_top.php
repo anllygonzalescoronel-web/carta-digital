@@ -41,12 +41,12 @@ if ($hora < 12) {
         <nav>
             <a href="index.php" class="<?= $paginaActual === 'dashboard' ? 'activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
             <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
+            <a href="cocina.php" class="<?= $paginaActual === 'cocina' ? 'activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina en Vivo</a>
             <a href="categorias.php" class="<?= $paginaActual === 'categorias' ? 'activo' : '' ?>"><i class="ti ti-category"></i> Categorías</a>
             <a href="productos.php" class="<?= $paginaActual === 'productos' ? 'activo' : '' ?>"><i class="ti ti-tools-kitchen-2"></i> Productos</a>
+            <a href="opciones_producto.php" class="<?= $paginaActual === 'opciones' ? 'activo' : '' ?>"><i class="ti ti-adjustments-horizontal"></i> Toppings / Extras</a>
             <a href="banners.php" class="<?= $paginaActual === 'banners' ? 'activo' : '' ?>"><i class="ti ti-photo"></i> Banners</a>
             <a href="configuracion.php" class="<?= $paginaActual === 'configuracion' ? 'activo' : '' ?>"><i class="ti ti-settings"></i> Configuración</a>
-            <a href="sunat_config.php" class="<?= $paginaActual === 'sunat_config' ? 'activo' : '' ?>"><i class="ti ti-file-certificate"></i> SUNAT Nativo</a>
-            <a href="nubefact_config.php" class="<?= $paginaActual === 'nubefact_config' ? 'activo' : '' ?>"><i class="ti ti-cloud"></i> Config. NubeFacT</a>
             <a href="comprobantes.php" class="<?= $paginaActual === 'comprobantes' ? 'activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
             <a href="../index.php" target="_blank"><i class="ti ti-world"></i> Ver carta pública</a>
             <a href="logout.php" class="salir"><i class="ti ti-logout"></i> Cerrar sesión</a>

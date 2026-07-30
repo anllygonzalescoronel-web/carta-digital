@@ -1,0 +1,331 @@
+<!-- 
+    Modal de Checkout Multi-Paso con Integración APIPERU
+    Este archivo se incluye desde index.php antes de cerrar body.
+-->
+
+<!-- Modal Principal de Checkout -->
+<div id="checkout-modal">
+    <div class="checkout-container">
+        <!-- Header -->
+        <div class="checkout-header">
+            <h2>Checkout</h2>
+            <button class="checkout-close" id="checkout-cerrar">&times;</button>
+        </div>
+
+        <!-- Indicador de Pasos -->
+        <div id="pasos-indicador">
+            <div class="paso-item" data-paso="1">
+                <span>1</span>
+                Comprobante
+            </div>
+            <div class="paso-item" data-paso="2">
+                <span>2</span>
+                Documento
+            </div>
+            <div class="paso-item" data-paso="3">
+                <span>3</span>
+                Envío
+            </div>
+            <div class="paso-item" data-paso="4">
+                <span>4</span>
+                Pago
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="checkout-content">
+
+            <!-- Mensaje de Error -->
+            <div id="mensaje-error"></div>
+
+            <!-- ===== PASO 1: SELECCIONAR COMPROBANTE ===== -->
+            <div class="paso" id="paso-1" data-paso="1">
+                <h3>📄 Tipo de Comprobante</h3>
+                <p>Selecciona el tipo de comprobante que deseas:</p>
+
+                <div class="comprobante-opciones">
+                    <!-- Boleta -->
+                    <div class="opcion-comprobante" data-comprobante="boleta">
+                        <div class="opcion-comprobante-icono">🧾</div>
+                        <div class="opcion-comprobante-titulo">Boleta</div>
+                        <div class="opcion-comprobante-desc">Con DNI</div>
+                    </div>
+
+                    <!-- Factura -->
+                    <div class="opcion-comprobante" data-comprobante="factura">
+                        <div class="opcion-comprobante-icono">📋</div>
+                        <div class="opcion-comprobante-titulo">Factura</div>
+                        <div class="opcion-comprobante-desc">Con RUC</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== PASO 2: CONSULTAR DOCUMENTO ===== -->
+            <div class="paso" id="paso-2" data-paso="2">
+                <h3>🔍 Consultar Documento</h3>
+                <p>Ingresa tu número de documento para completar los datos automáticamente:</p>
+
+                <!-- Input DNI -->
+                <div id="seccion-dni" style="display: none;">
+                    <div class="documento-input-group">
+                        <label class="documento-input-label">Número de DNI</label>
+                        <div class="documento-input-wrapper">
+                            <input 
+                                type="text"
+                                id="documento-input-dni"
+                                placeholder="Ej: 12345678"
+                                maxlength="8"
+                                inputmode="numeric"
+                                pattern="[0-9]{8}"
+                            />
+                            <button class="documento-consultar-btn" id="documento-consultar-dni">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input RUC -->
+                <div id="seccion-ruc" style="display: none;">
+                    <div class="documento-input-group">
+                        <label class="documento-input-label">Número de RUC</label>
+                        <div class="documento-input-wrapper">
+                            <input 
+                                type="text"
+                                id="documento-input-ruc"
+                                placeholder="Ej: 20123456789"
+                                maxlength="11"
+                                inputmode="numeric"
+                                pattern="[0-9]{11}"
+                            />
+                            <button class="documento-consultar-btn" id="documento-consultar-ruc">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos Consultados -->
+                <div id="datos-consultados" style="display: none;">
+                    <div class="datos-consultados-box">
+                        <h4>✓ Datos Consultados</h4>
+                        <div id="datos-consultados-contenido"></div>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="checkout-botones">
+                    <button class="btn-secundario" id="paso-2-volver">
+                        ← Volver
+                    </button>
+                    <button class="btn-primario" id="paso-2-manual" type="button">
+                        Continuar manualmente →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== PASO 3: DATOS DE ENTREGA ===== -->
+            <div class="paso" id="paso-3" data-paso="3">
+                <h3>🚚 Datos de Entrega</h3>
+                <p>Verifica y completa tus datos de envío:</p>
+
+                <!-- Nombre -->
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo</label>
+                    <input 
+                        type="text"
+                        id="cliente-nombre"
+                        class="form-input"
+                        placeholder="Tu nombre completo"
+                    />
+                    <small style="display:block;margin-top:6px;color:#6b7280;">Si la consulta RENIEC/RUC falla, puedes ingresar tu nombre manualmente.</small>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input 
+                        type="email"
+                        id="cliente-email"
+                        class="form-input"
+                        placeholder="tu@email.com"
+                    />
+                </div>
+
+                <!-- Teléfono -->
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input 
+                        type="tel"
+                        id="cliente-telefono"
+                        class="form-input"
+                        placeholder="+51 999 000 000"
+                    />
+                </div>
+
+                <!-- Tipo de Entrega -->
+                <div class="form-group">
+                    <label class="form-label">Tipo de Entrega</label>
+                    <div class="form-opciones">
+                        <div class="form-opcion">
+                            <input 
+                                type="radio"
+                                id="entrega-recojo"
+                                name="tipo_entrega"
+                                value="recojo"
+                                checked
+                            />
+                            <label for="entrega-recojo">🏪 Recojo</label>
+                        </div>
+                        <div class="form-opcion">
+                            <input 
+                                type="radio"
+                                id="entrega-delivery"
+                                name="tipo_entrega"
+                                value="delivery"
+                            />
+                            <label for="entrega-delivery">📦 Delivery</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dirección (solo si delivery) -->
+                <div id="seccion-direccion" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Dirección de Entrega</label>
+                        <input 
+                            type="text"
+                            id="cliente-direccion"
+                            class="form-input"
+                            placeholder="Calle, número, apto."
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Referencia (opcional)</label>
+                        <input 
+                            type="text"
+                            id="cliente-referencia"
+                            class="form-input"
+                            placeholder="Ej: Frente a la farmacia, puerta azul"
+                        />
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="checkout-botones">
+                    <button class="btn-secundario" id="paso-3-volver">
+                        ← Volver
+                    </button>
+                    <button class="btn-primario" id="paso-3-siguiente">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== PASO 4: MÉTODO DE PAGO ===== -->
+            <div class="paso" id="paso-4" data-paso="4">
+                <h3>💳 Método de Pago</h3>
+                <p>Elige cómo deseas pagar tu pedido:</p>
+
+                <div class="metodos-pago">
+                    <!-- Efectivo -->
+                    <div class="metodo-pago" data-metodo="efectivo">
+                        <div class="metodo-pago-icono">💵</div>
+                        <div class="metodo-pago-nombre">Efectivo</div>
+                    </div>
+
+                    <!-- Tarjeta -->
+                    <div class="metodo-pago" data-metodo="tarjeta">
+                        <div class="metodo-pago-icono">💳</div>
+                        <div class="metodo-pago-nombre">Tarjeta</div>
+                    </div>
+
+                    <!-- Yape -->
+                    <div class="metodo-pago" data-metodo="yape">
+                        <div class="metodo-pago-icono">📱</div>
+                        <div class="metodo-pago-nombre">Yape</div>
+                    </div>
+
+                    <!-- PLIN -->
+                    <div class="metodo-pago" data-metodo="plin">
+                        <div class="metodo-pago-icono">📲</div>
+                        <div class="metodo-pago-nombre">PLIN</div>
+                    </div>
+                </div>
+
+                <!-- Detalles Culqi (para tarjeta, yape, plin) -->
+                <div id="seccion-culqi" style="display: none; margin-top: 16px;">
+                    <div class="form-group" id="error-culqi" style="display: none;">
+                        <!-- Mostrado por Culqi -->
+                    </div>
+                    <div id="culqi-form"></div>
+                </div>
+
+                <!-- Botones -->
+                <div class="checkout-botones">
+                    <button class="btn-secundario" id="paso-4-volver">
+                        ← Volver
+                    </button>
+                    <button class="btn-primario" id="paso-4-procesar">
+                        Confirmar Pedido
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Overlay de Cargando -->
+<div id="cargando-overlay">
+    <div>
+        <div class="spinner"></div>
+        <div id="cargando-mensaje">Procesando...</div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Pedido -->
+<div id="confirmacion-pedido-modal">
+    <div class="confirmacion-box">
+        <div class="confirmacion-icono">✅</div>
+        <div class="confirmacion-titulo">¡Pedido Confirmado!</div>
+        <p>Tu pedido ha sido registrado exitosamente.</p>
+
+        <div class="confirmacion-detalles">
+            <div class="confirmacion-detalle-item">
+                <span>Número de Pedido:</span>
+                <strong id="confirmacion-numero"></strong>
+            </div>
+            <div class="confirmacion-detalle-item">
+                <span>Total:</span>
+                <strong id="confirmacion-total"></strong>
+            </div>
+            <div class="confirmacion-detalle-item">
+                <span>Método de Pago:</span>
+                <strong id="confirmacion-metodo"></strong>
+            </div>
+            <div class="confirmacion-detalle-item">
+                <span>Entrega:</span>
+                <strong id="confirmacion-entrega"></strong>
+            </div>
+        </div>
+
+        <div class="confirmacion-pdf" id="confirmacion-pdf-wrap" style="display:none;">
+            <h4>Vista previa del comprobante</h4>
+            <iframe id="confirmacion-pdf-frame" title="Vista previa del comprobante" style="width:100%;height:340px;border:1px solid #ddd;border-radius:10px;background:#fff;"></iframe>
+            <div style="margin-top:10px;">
+                <a id="confirmacion-pdf-link" class="btn-secundario" href="#" target="_blank" rel="noopener noreferrer">Abrir PDF</a>
+            </div>
+        </div>
+
+        <div class="confirmacion-botones" style="margin-top:16px;">
+            <a class="btn-principal btn-whatsapp" id="btnAvisarWhatsappCheckout" href="#" target="_self" rel="noopener noreferrer">
+                <i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp
+            </a>
+            <a class="btn-secundario" id="confirmacion-seguimiento" href="estado-pedido.php">Ver estado del pedido</a>
+            <button class="btn-secundario" id="confirmacion-volver" type="button">Volver al Inicio</button>
+        </div>
+    </div>
+</div>
