@@ -157,6 +157,7 @@ function limpiarCarritoCompleto() {
 // Estado del modal de opciones
 let _mopCont = null;   // elemento .control-cantidad actual
 let _mopSeleccionadas = {};  // {grupoId: [opcionId, ...]}
+let _detalleCont = null; // elemento .control-cantidad del modal detalle
 
 function agregarProducto(btnEl) {
     const cont = btnEl.closest('.control-cantidad');
@@ -273,6 +274,58 @@ function cerrarModalOpciones() {
     _mopCont = null;
 }
 
+function abrirModalDetalleProducto(card) {
+    const data = obtenerDatosProductoDesdeCard(card);
+    const cont = card?.querySelector('.control-cantidad');
+    if (!data || !cont) return;
+
+    _detalleCont = cont;
+
+    const img = document.getElementById('detalleProductoImagen');
+    const nombre = document.getElementById('detalleProductoNombre');
+    const desc = document.getElementById('detalleProductoDescripcion');
+    const precio = document.getElementById('detalleProductoPrecio');
+    const tipo = document.getElementById('detalleProductoTipo');
+    const btnAgregar = document.getElementById('detalleProductoAgregar');
+
+    if (img) {
+        img.src = data.imagen || '';
+        img.alt = data.nombre || 'Producto';
+    }
+    if (nombre) nombre.textContent = data.nombre || 'Producto';
+    if (desc) desc.textContent = data.descripcion || 'Sin descripcion disponible.';
+    if (precio) precio.textContent = `S/ ${Number(data.precio || 0).toFixed(2)}`;
+
+    const tieneOpciones = cont.dataset.tieneOpciones === '1';
+    if (tipo) tipo.textContent = tieneOpciones ? 'Personalizable' : 'Listo para agregar';
+    if (btnAgregar) btnAgregar.textContent = tieneOpciones ? 'Personalizar y agregar' : 'Agregar al carrito';
+
+    abrirModal('overlayProductoDetalle');
+}
+
+function cerrarModalDetalleProducto() {
+    cerrarModal('overlayProductoDetalle');
+    _detalleCont = null;
+}
+
+function agregarDesdeDetalleProducto() {
+    if (!_detalleCont) return;
+
+    const cont = _detalleCont;
+    const id = parseInt(cont.dataset.id, 10);
+    const tieneOpciones = cont.dataset.tieneOpciones === '1';
+    const grupos = (window.OPCIONES_PRODUCTOS || {})[id];
+
+    cerrarModalDetalleProducto();
+
+    if (tieneOpciones && grupos && grupos.length > 0) {
+        abrirModalOpciones(cont, grupos);
+        return;
+    }
+
+    _agregarAlCarritoDirecto(cont);
+}
+
 function _mopActualizarTotal() {
     if (!_mopCont) return;
     const precioBase = parseFloat(_mopCont.dataset.precio);
@@ -324,6 +377,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === overlay) cerrarModalOpciones();
         });
     }
+
+    const overlayDetalle = document.getElementById('overlayProductoDetalle');
+    if (overlayDetalle) {
+        overlayDetalle.addEventListener('click', function(e) {
+            if (e.target === overlayDetalle) cerrarModalDetalleProducto();
+        });
+    }
 });
 
 function renderizarStepper(cont, id) {
@@ -331,7 +391,7 @@ function renderizarStepper(cont, id) {
     const cantidad = item ? item.cantidad : 0;
 
     if (cantidad === 0) {
-        cont.innerHTML = `<button class="btn-agregar" onclick="agregarProducto(this)">Agregar</button>`;
+        cont.innerHTML = `<button class="btn-agregar" onclick="agregarProducto(this)" aria-label="Agregar al carrito">Agregar</button>`;
         return;
     }
     cont.innerHTML = `
@@ -1090,6 +1150,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (carrito.find(i => i.id === id)) {
             renderizarStepper(cont, id);
         }
+    });
+
+    document.querySelectorAll('.producto-card, .item-card').forEach((card) => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-fav, .control-cantidad, .stepper, button, a, input, label')) return;
+            abrirModalDetalleProducto(card);
+        });
     });
 
     const inputBuscar = document.getElementById('inputBuscar');

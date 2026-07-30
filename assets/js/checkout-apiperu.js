@@ -56,13 +56,31 @@ class CheckoutAPIPeru {
         }
 
         setupEventListeners() {
+            if (this._listenersAdded) return;
+            this._listenersAdded = true;
+
+            // Cerrar al hacer click en el overlay (fuera del contenedor)
+            document.getElementById('checkout-modal')?.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('checkout-modal')) {
+                    this.cerrarModal();
+                }
+            });
+
             // PASO 1: Seleccionar comprobante
             document.querySelectorAll('.opcion-comprobante').forEach(el => {
                 el.onclick = (e) => {
                     document.querySelectorAll('.opcion-comprobante').forEach(o => o.classList.remove('seleccionado'));
                     el.classList.add('seleccionado');
                     this.seleccionarComprobante(el.dataset.comprobante);
+                    // Habilitar botón de siguiente
+                    const btnSiguiente = document.getElementById('paso-1-siguiente');
+                    if (btnSiguiente) btnSiguiente.disabled = false;
                 };
+            });
+
+            // PASO 1: Botón siguiente
+            document.getElementById('paso-1-siguiente')?.addEventListener('click', () => {
+                this.mostrarPaso(2);
             });
 
             // PASO 2: Consultar documento
@@ -89,17 +107,19 @@ class CheckoutAPIPeru {
             });
 
             // PASO 4: Método de pago
-            document.querySelectorAll('.metodo-pago').forEach(el => {
+            document.querySelectorAll('.metodo-pago-card').forEach(el => {
                 el.onclick = () => {
-                    document.querySelectorAll('.metodo-pago').forEach(m => m.classList.remove('seleccionado'));
+                    document.querySelectorAll('.metodo-pago-card').forEach(m => m.classList.remove('seleccionado'));
                     el.classList.add('seleccionado');
                     const metodo = el.dataset.metodo;
-                    document.getElementById('paso-4-procesar').disabled = false;
+                    const btnProcesar = document.getElementById('paso-4-procesar');
+                    if (btnProcesar) btnProcesar.disabled = false;
+                    this.datos.metodo_pago = metodo;
                 };
             });
 
             document.getElementById('paso-4-procesar')?.addEventListener('click', () => {
-                const seleccionado = document.querySelector('.metodo-pago.seleccionado');
+                const seleccionado = document.querySelector('.metodo-pago-card.seleccionado');
                 if (seleccionado) {
                     this.seleccionarMetodoPago(seleccionado.dataset.metodo);
                 }
@@ -179,8 +199,6 @@ class CheckoutAPIPeru {
         const seccionRuc = document.getElementById('seccion-ruc');
         if (seccionDni) seccionDni.style.display = this.datos.tipo_documento === 'dni' ? 'block' : 'none';
         if (seccionRuc) seccionRuc.style.display = this.datos.tipo_documento === 'ruc' ? 'block' : 'none';
-
-        this.mostrarPaso(2);
     }
 
     /**
@@ -576,7 +594,12 @@ class CheckoutAPIPeru {
 
         } catch (error) {
             console.error('Error procesando pedido:', error);
-            this.mostrarError('Error: ' + error.message);
+            const msg = error.message || '';
+            if (msg.toLowerCase().includes('faltan opciones')) {
+                this.mostrarError(msg + ' Por favor, retira ese producto del carrito y agrégalo nuevamente seleccionando todas las opciones requeridas.');
+            } else {
+                this.mostrarError('Error: ' + msg);
+            }
             this.procesandoPagoOnline = false;
         } finally {
             this.mostrarCargando(false);

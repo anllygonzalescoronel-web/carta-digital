@@ -12,7 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'nombre_negocio', 'direccion_local', 'whatsapp_numero', 'costo_delivery',
             'color_primario', 'color_primario_fuerte', 'color_secundario', 'color_texto', 'color_fondo',
             'yape_plin_numero', 'culqi_public_key', 'culqi_secret_key', 'mensaje_bienvenida',
-            'facturacion_driver_activo', 'facturacion_modo_hibrido',
+            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_secure',
+            'smtp_from_email', 'smtp_from_name', 'smtp_timeout',
+            'facturacion_driver', 'facturacion_modo_hibrido',
             'sunat_ruc_emisor', 'sunat_razon_social', 'sunat_nombre_comercial',
             'sunat_usuario_sol', 'sunat_clave_sol', 'sunat_certificado_clave',
             'sunat_direccion', 'sunat_ubigeo', 'sunat_modo',
@@ -25,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST[$c])) guardarConfig($c, trim($_POST[$c]));
         }
 
-        $checkboxes = ['delivery_activo', 'recojo_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado'];
+        $checkboxes = ['delivery_activo', 'recojo_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado', 'smtp_enabled'];
         foreach ($checkboxes as $c) {
             guardarConfig($c, isset($_POST[$c]) ? '1' : '0');
         }
@@ -113,6 +115,7 @@ $colorFondo = c('color_fondo', '#f2f6f2');
 <div class="config-tabs" id="config-tabs">
     <button type="button" class="config-tab-btn activo" data-tab="general"><i class="ti ti-settings"></i> General</button>
     <button type="button" class="config-tab-btn" data-tab="pagos"><i class="ti ti-credit-card"></i> Pagos</button>
+    <button type="button" class="config-tab-btn" data-tab="smtp"><i class="ti ti-mail"></i> SMTP</button>
     <button type="button" class="config-tab-btn" data-tab="facturacion"><i class="ti ti-file-invoice"></i> Facturación</button>
     <button type="button" class="config-tab-btn" data-tab="apiperu"><i class="ti ti-api"></i> APIPERU</button>
 </div>
@@ -291,17 +294,85 @@ $colorFondo = c('color_fondo', '#f2f6f2');
         </div>
     </div>
 
+    <div class="card config-card" data-tab="smtp">
+        <h3><i class="ti ti-mail"></i> Correo SMTP</h3>
+        <p style="color:#666;margin-top:-6px;">Envía correo automático al cliente luego de la compra con adjuntos del comprobante (PDF/XML/CDR).</p>
+
+        <div class="form-check">
+            <input type="checkbox" name="smtp_enabled" id="smtp_enabled" value="1" <?= c('smtp_enabled')==='1'?'checked':'' ?>>
+            <label for="smtp_enabled" style="margin:0;">Activar envío de correo al cliente</label>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Servidor SMTP</label>
+                <input type="text" name="smtp_host" value="<?= limpiar(c('smtp_host')) ?>" placeholder="smtp.gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Puerto SMTP</label>
+                <input type="number" name="smtp_port" value="<?= limpiar(c('smtp_port', '587')) ?>" min="1" max="65535" placeholder="587">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Usuario SMTP</label>
+                <input type="text" name="smtp_username" value="<?= limpiar(c('smtp_username')) ?>" placeholder="usuario@dominio.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña SMTP</label>
+                <input type="password" name="smtp_password" value="<?= limpiar(c('smtp_password')) ?>" placeholder="••••••••">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Seguridad</label>
+                <select name="smtp_secure">
+                    <option value="tls" <?= c('smtp_secure', 'tls') === 'tls' ? 'selected' : '' ?>>TLS</option>
+                    <option value="ssl" <?= c('smtp_secure') === 'ssl' ? 'selected' : '' ?>>SSL</option>
+                    <option value="none" <?= c('smtp_secure') === 'none' ? 'selected' : '' ?>>Sin cifrado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Timeout (segundos)</label>
+                <input type="number" name="smtp_timeout" value="<?= limpiar(c('smtp_timeout', '15')) ?>" min="5" max="120">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Email remitente</label>
+                <input type="email" name="smtp_from_email" value="<?= limpiar(c('smtp_from_email')) ?>" placeholder="ventas@tuempresa.com">
+            </div>
+            <div class="form-group">
+                <label>Nombre remitente</label>
+                <input type="text" name="smtp_from_name" value="<?= limpiar(c('smtp_from_name', c('nombre_negocio', 'Carta Digital'))) ?>" placeholder="Carta Digital">
+            </div>
+        </div>
+
+        <?php if (c('smtp_enabled') === '1' && c('smtp_host') && c('smtp_username')): ?>
+            <div class="alerta-ok" style="margin-top:10px;">
+                <i class="ti ti-check"></i> SMTP habilitado. Se intentará enviar correo al cliente al confirmar la compra.
+            </div>
+        <?php else: ?>
+            <div class="alerta-error" style="margin-top:10px;">
+                <i class="ti ti-alert-triangle"></i> Configura SMTP para activar el envío automático de comprobantes por email.
+            </div>
+        <?php endif; ?>
+    </div>
+
     <div class="card config-card" data-tab="facturacion">
         <h3><i class="ti ti-receipt-2"></i> Facturación Electrónica Híbrida</h3>
         <p style="color:#666;margin-top:-6px;">Selecciona el sistema de facturación a usar: SUNAT Nativo o NubeFacT.</p>
         
         <div class="form-group">
             <label>Driver de Facturación Activo</label>
-            <select name="facturacion_driver_activo" required>
-                <option value="native" <?= c('facturacion_driver_activo') === 'native' ? 'selected' : '' ?>>
+            <select name="facturacion_driver" required>
+                <option value="native" <?= c('facturacion_driver', 'native') === 'native' ? 'selected' : '' ?>>
                     🏛️ SUNAT Nativo (Certificado Digital + SOL)
                 </option>
-                <option value="nubefact" <?= c('facturacion_driver_activo') === 'nubefact' ? 'selected' : '' ?>>
+                <option value="nubefact" <?= c('facturacion_driver') === 'nubefact' ? 'selected' : '' ?>>
                     ☁️ NubeFacT (API Cloud)
                 </option>
             </select>

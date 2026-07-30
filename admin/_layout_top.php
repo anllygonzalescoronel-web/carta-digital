@@ -318,8 +318,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
             justify-content: space-between;
         }
         .admin-quick-links {
-            margin-left: 0;
-            margin-top: 4px;
+            display: none;
         }
     }
 </style>

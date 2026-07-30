@@ -3,6 +3,25 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/culqi.php';
 require_once __DIR__ . '/../includes/facturacion.php';
 require_once __DIR__ . '/../includes/facturacion_nubefact_bridge.php';
+require_once __DIR__ . '/../includes/mailer.php';
+
+// Migrar clave legada 'facturacion_driver_activo' → 'facturacion_driver' si aún existe
+try {
+    $stmtLegado = getDB()->prepare("SELECT valor FROM configuracion WHERE clave = 'facturacion_driver_activo' LIMIT 1");
+    $stmtLegado->execute();
+    $valorLegado = $stmtLegado->fetchColumn();
+    if ($valorLegado !== false && $valorLegado !== '') {
+        $actual = getDB()->prepare("SELECT valor FROM configuracion WHERE clave = 'facturacion_driver' LIMIT 1");
+        $actual->execute();
+        $valorActual = $actual->fetchColumn();
+        // Solo migrar si la clave principal está vacía o en default
+        if ($valorActual === false || $valorActual === '' || $valorActual === 'native') {
+            guardarConfig('facturacion_driver', $valorLegado);
+        }
+        // Limpiar clave legada para evitar confusión futura
+        getDB()->exec("DELETE FROM configuracion WHERE clave = 'facturacion_driver_activo'");
+    }
+} catch (Throwable $e) { /* Silencioso: no debe interrumpir la compra */ }
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -24,7 +43,7 @@ $referencia     = trim($body['referencia'] ?? '');
 $metodoPago     = $body['metodo_pago'] ?? '';
 $notas          = trim($body['notas'] ?? '');
 $culqiToken     = $body['culqi_token'] ?? null;
-$clienteEmail   = trim($body['cliente_email'] ?? 'cliente@example.com');
+$clienteEmail   = trim($body['cliente_email'] ?? '');
 $tipoComprobante = strtolower(trim((string)($body['tipo_comprobante'] ?? 'boleta')));
 $tipoDocumento   = strtolower(trim((string)($body['tipo_documento'] ?? 'dni')));
 $numeroDocumento = normalizarNumeroDocumento((string)($body['numero_documento'] ?? ''));
@@ -344,9 +363,8 @@ try {
         // NubeFacT: va DESPUÉS del commit a propósito. El pedido y el pago ya
         // quedaron guardados pase lo que pase con NubeFacT; si falla, no se
         // pierde el pedido y se puede reintentar luego.
-        if ($estado === 'pagado') {
-            $comprobante = emitirComprobanteNubefactUnificado($db, $pedidoId);
-        }
+        // Se emite para cualquier método de pago (efectivo incluido).
+        $comprobante = emitirComprobanteNubefactUnificado($db, $pedidoId);
     } else {
         // SUNAT Nativo: si quedó listo para enviar, lo enviamos ya mismo.
         if ($comprobante && ($comprobante['estado_sunat'] ?? '') === 'pendiente_envio') {
@@ -403,6 +421,27 @@ try {
     $numeroWhatsapp = preg_replace('/\D/', '', cfg('whatsapp_numero', ''));
     $whatsappUrl = 'https://wa.me/' . $numeroWhatsapp . '?text=' . rawurlencode($mensaje);
 
+    // ---------- Enviar correo al cliente (no bloqueante) ----------
+    $mailResultado = ['ok' => false, 'mensaje' => 'No enviado'];
+    if (!empty($clienteEmail)) {
+        $mailResultado = enviarCorreoCompraCliente([
+            'cliente_email' => $clienteEmail,
+            'cliente_nombre' => $clienteNombre,
+            'codigo' => $codigo,
+            'total' => $total,
+            'numero_comprobante' => $comprobante['numero_comprobante']
+                ?? $comprobante['numero']
+                ?? $comprobante['serie_numero']
+                ?? ($comprobante['serie'] ?? '') . ((isset($comprobante['correlativo']) && isset($comprobante['serie'])) ? ('-' . $comprobante['correlativo']) : ''),
+            'comprobante_pdf' => $comprobante['pdf'] ?? null,
+            'comprobante_xml' => $comprobante['xml'] ?? null,
+            'comprobante_cdr' => $comprobante['cdr'] ?? null,
+            'comprobante_pdf_path' => $comprobante['pdf_path'] ?? null,
+            'comprobante_xml_path' => $comprobante['xml_path'] ?? null,
+            'comprobante_cdr_path' => $comprobante['cdr_path'] ?? null,
+        ]);
+    }
+
     jsonResponse([
         'ok' => true,
         'codigo' => $codigo,
@@ -412,6 +451,8 @@ try {
         'whatsapp_url' => $whatsappUrl,
         'comprobante_pdf' => $comprobante['pdf'] ?? null,
         'comprobante_xml' => $comprobante['xml'] ?? null,
+        'correo_enviado' => $mailResultado['ok'],
+        'correo_mensaje' => $mailResultado['mensaje'] ?? '',
     ]);
 
 } catch (CulqiException $e) {

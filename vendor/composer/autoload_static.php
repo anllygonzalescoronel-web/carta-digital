@@ -120,6 +120,7 @@ class ComposerStaticInit11aa37fa2c64508f005c681cb7e23d3b
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'PhpZip\\' => 7,
+            'PHPMailer\\PHPMailer\\' => 20,
         ),
         'M' => 
         array (
@@ -190,6 +191,10 @@ class ComposerStaticInit11aa37fa2c64508f005c681cb7e23d3b
         'PhpZip\\' => 
         array (
             0 => __DIR__ . '/..' . '/nelexa/zip/src',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'Masterminds\\' => 
         array (

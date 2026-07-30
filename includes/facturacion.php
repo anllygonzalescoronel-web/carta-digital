@@ -7,6 +7,15 @@ if (file_exists($autoload)) {
 }
 
 function ensureFacturacionSchema(PDO $db): void {
+    // Tabla de correlativos para NubeFacT y flujo nativo
+    $db->exec(
+        "CREATE TABLE IF NOT EXISTS comprobante_correlativo (
+            serie VARCHAR(10) PRIMARY KEY,
+            tipo_comprobante TINYINT NOT NULL DEFAULT 2,
+            ultimo_numero INT NOT NULL DEFAULT 0
+        ) ENGINE=InnoDB"
+    );
+
     $db->exec(
         "CREATE TABLE IF NOT EXISTS comprobantes_electronicos (
             id INT AUTO_INCREMENT PRIMARY KEY,

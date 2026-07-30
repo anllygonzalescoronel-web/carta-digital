@@ -242,7 +242,7 @@ if (!empty($banners)) {
                          data-precio="<?= $p['precio_oferta'] ?: $p['precio'] ?>"
                          data-tiene-opciones="<?= isset($opcionesProductos[$p['id']]) ? '1' : '0' ?>"
                          data-imagen="<?= limpiar(rutaImagenProducto($p['imagen'] ?? '')) ?>">
-                        <button class="btn-agregar" onclick="agregarProducto(this)"><i class="fa-solid fa-plus"></i></button>
+                        <button class="btn-agregar" onclick="agregarProducto(this)" aria-label="Agregar al carrito">Agregar</button>
                     </div>
                 </div>
             </div>
@@ -259,6 +259,28 @@ if (!empty($banners)) {
 <script>
 window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_UNICODE) ?>;
 </script>
+
+<!-- Modal detalle de producto -->
+<div class="overlay" id="overlayProductoDetalle">
+    <div class="modal modal-producto-detalle">
+        <div class="modal-header">
+            <h3>Detalle del producto</h3>
+            <button type="button" onclick="cerrarModalDetalleProducto()" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="detalle-producto-wrap">
+            <img id="detalleProductoImagen" class="detalle-producto-img" src="" alt="Producto">
+            <div class="detalle-producto-body">
+                <h4 id="detalleProductoNombre"></h4>
+                <p id="detalleProductoDescripcion"></p>
+                <div class="detalle-producto-footer">
+                    <strong id="detalleProductoPrecio" class="detalle-producto-precio"></strong>
+                    <span id="detalleProductoTipo" class="detalle-producto-tipo"></span>
+                </div>
+            </div>
+            <button type="button" class="btn-principal" id="detalleProductoAgregar" onclick="agregarDesdeDetalleProducto()">Agregar al carrito</button>
+        </div>
+    </div>
+</div>
 
 <!-- Modal de personalización de producto -->
 <div id="modalOpciones" class="modal-opciones-overlay" style="display:none;">
