@@ -125,6 +125,43 @@ foreach ($mapaEstados as $clave => $valor) {
 }
 
 // ----- 4. Productos activos: vs inactivos y por categoría -----
+// ----- 3.5 Comprobantes: Boleta vs Factura, año calendario actual (Ene-Dic) -----
+$nombresMeses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+$anioActual = (int) date('Y');
+
+$clavesMeses = [];
+$etiquetasMeses = [];
+for ($m = 1; $m <= 12; $m++) {
+    $clavesMeses[] = sprintf('%04d-%02d', $anioActual, $m);
+    $etiquetasMeses[] = $nombresMeses[$m - 1];
+}
+
+$stmtComprobantesMes = $db->prepare("
+    SELECT DATE_FORMAT(creado_en, '%Y-%m') AS mes, tipo_comprobante, COUNT(*) c
+    FROM comprobantes_electronicos
+    WHERE YEAR(creado_en) = :anio
+    GROUP BY mes, tipo_comprobante
+");
+$stmtComprobantesMes->bindValue(':anio', $anioActual, PDO::PARAM_INT);
+$stmtComprobantesMes->execute();
+$filasComprobantesMes = $stmtComprobantesMes->fetchAll();
+
+$mapaMesBoleta = array_fill_keys($clavesMeses, 0);
+$mapaMesFactura = array_fill_keys($clavesMeses, 0);
+foreach ($filasComprobantesMes as $fila) {
+    if (!array_key_exists($fila['mes'], $mapaMesBoleta)) continue;
+    if ($fila['tipo_comprobante'] === 'boleta') {
+        $mapaMesBoleta[$fila['mes']] = (int) $fila['c'];
+    } elseif ($fila['tipo_comprobante'] === 'factura') {
+        $mapaMesFactura[$fila['mes']] = (int) $fila['c'];
+    }
+}
+
+$valoresMesBoleta = array_values($mapaMesBoleta);
+$valoresMesFactura = array_values($mapaMesFactura);
+
+
+
 $productosInactivos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 0")->fetch()['c'];
 
 // Si tu tabla de categorías o la columna de relación se llaman distinto,
@@ -171,6 +208,15 @@ $datosGraficosDashboard = [
             'valores' => $valoresEstados,
         ],
     ],
+
+'comprobantes' => [
+        'porMes' => [
+            'labels'  => $etiquetasMeses,
+            'boleta'  => $valoresMesBoleta,
+            'factura' => $valoresMesFactura,
+        ],
+    ],
+
     'productos' => [
         'vsInactivos' => [
             'labels'  => ['Activos', 'Inactivos'],
@@ -313,6 +359,7 @@ function pintarOlas(): void
         </div>
     </div>
 
+
     <div class="grafico-frame">
         <div class="grafico-box">
             <div class="grafico-header">
@@ -328,6 +375,22 @@ function pintarOlas(): void
             <div class="grafico-leyenda"></div>
         </div>
     </div>
+
+
+<div class="grafico-frame-full">
+    <div class="grafico-box">
+        <div class="grafico-header">
+<h4><i class="ti ti-file-invoice"></i> Boletas vs Facturas · <?= date('Y') ?></h4>            <div class="tabla-controles" style="display:flex;">
+                <button type="button" class="btn-scroll-tabla" id="btn-comprobantes-izq" aria-label="Ver meses anteriores"><i class="ti ti-chevron-left"></i></button>
+                <button type="button" class="btn-scroll-tabla" id="btn-comprobantes-der" aria-label="Ver meses siguientes"><i class="ti ti-chevron-right"></i></button>
+            </div>
+        </div>
+        <div class="grafico-canvas-wrap grafico-canvas-wrap-full">
+            <canvas id="graficoComprobantesMensual"></canvas>
+        </div>
+        <div class="grafico-leyenda"></div>
+    </div>
+</div>
 
 </div>
 

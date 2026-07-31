@@ -385,6 +385,100 @@ document.addEventListener('DOMContentLoaded', function () {
     if (datos.pendientes) {
         pintarAnilloAspas('anilloPendientes', datos.pendientes.porEstado);
     }
+
+
+
+    // ---------- 4.5 Comprobantes: Boletas vs Facturas, año calendario (Chart.js, barras agrupadas) ----------
+    if (typeof Chart !== 'undefined' && datos.comprobantes && datos.comprobantes.porMes) {
+        const ctxComprobantesMes = document.getElementById('graficoComprobantesMensual');
+        if (ctxComprobantesMes) {
+            const vm = datos.comprobantes.porMes;
+            const totalMeses = vm.labels.length;
+            const mesesVisibles = Math.min(6, totalMeses);
+            let indiceInicio = Math.max(totalMeses - mesesVisibles, 0);
+ 
+            const chartComprobantes = new Chart(ctxComprobantesMes, {
+                type: 'bar',
+                data: {
+                    labels: vm.labels,
+datasets: [
+                        {
+                            label: 'Boleta',
+                            data: vm.boleta,
+                            backgroundColor: '#f2c94c',
+                            borderRadius: 6,
+                            barPercentage: 0.5,
+                            categoryPercentage: 0.6,
+                        },
+                        {
+                            label: 'Factura',
+                            data: vm.factura,
+                            backgroundColor: '#4ade80',
+                            borderRadius: 6,
+                            barPercentage: 0.5,
+                            categoryPercentage: 0.6,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y;
+                                }
+                            }
+                        },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 0, max: totalMeses - 1, minRange: 1 } }
+                        }
+                    },
+
+
+              scales: {
+                        x: {
+                            grid: { display: false },
+                            min: vm.labels[indiceInicio],
+                            max: vm.labels[totalMeses - 1],
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            max: 20,
+                        },
+                    }
+
+                    
+                }
+
+
+
+            });
+ 
+            // Botones para deslizar de a un mes (además de la ruedita/pan del mouse)
+            const btnIzq = document.getElementById('btn-comprobantes-izq');
+            const btnDer = document.getElementById('btn-comprobantes-der');
+ 
+            function desplazarMeses(pasos) {
+                indiceInicio = Math.min(Math.max(indiceInicio + pasos, 0), totalMeses - mesesVisibles);
+                const indiceFin = Math.min(indiceInicio + mesesVisibles - 1, totalMeses - 1);
+                chartComprobantes.options.scales.x.min = vm.labels[indiceInicio];
+                chartComprobantes.options.scales.x.max = vm.labels[indiceFin];
+                chartComprobantes.update();
+            }
+ 
+            if (btnIzq) btnIzq.addEventListener('click', function () { desplazarMeses(-1); });
+            if (btnDer) btnDer.addEventListener('click', function () { desplazarMeses(1); });
+        }
+    }
+
+
+    
     if (datos.productos) {
         pintarAnilloProgreso('anilloProductos', [datos.productos.vsInactivos, datos.productos.porCategoria], 0, coloresProductos);
     }

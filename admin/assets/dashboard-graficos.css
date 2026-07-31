@@ -1721,3 +1721,26 @@ body.modo-oscuro .alerta-error i {
     text-align: center;
 }
 
+
+
+
+
+
+.grafico-frame-full {
+    grid-column: 1 / -1;
+    background: var(--neu-base);
+    border-radius: 26px;
+    padding: 12px;
+    box-shadow: inset 6px 6px 14px var(--neu-sombra-oscura), inset -6px -6px 14px var(--neu-sombra-clara);
+    animation: entradaSuave .5s ease both;
+    margin-bottom: 24px;
+}
+
+.grafico-canvas-wrap-full {
+    height: 260px;
+    width: 100%;
+}
+
+.grafico-canvas-wrap-full canvas {
+    width: 100% !important;
+}
