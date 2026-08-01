@@ -376,17 +376,13 @@ function pintarOlas(): void
         </div>
     </div>
 
-
 <div class="grafico-frame-full">
     <div class="grafico-box">
         <div class="grafico-header">
-<h4><i class="ti ti-file-invoice"></i> Boletas vs Facturas · <?= date('Y') ?></h4>            <div class="tabla-controles" style="display:flex;">
-                <button type="button" class="btn-scroll-tabla" id="btn-comprobantes-izq" aria-label="Ver meses anteriores"><i class="ti ti-chevron-left"></i></button>
-                <button type="button" class="btn-scroll-tabla" id="btn-comprobantes-der" aria-label="Ver meses siguientes"><i class="ti ti-chevron-right"></i></button>
-            </div>
+            <h4><i class="ti ti-file-invoice"></i> Boletas vs Facturas · <?= date('Y') ?></h4>
         </div>
         <div class="grafico-canvas-wrap grafico-canvas-wrap-full">
-            <canvas id="graficoComprobantesMensual"></canvas>
+            <div id="graficoComprobantesMensual" class="barras-comprobantes-wrap"></div>
         </div>
         <div class="grafico-leyenda"></div>
     </div>

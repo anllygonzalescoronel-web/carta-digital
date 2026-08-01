@@ -388,95 +388,136 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-    // ---------- 4.5 Comprobantes: Boletas vs Facturas, año calendario (Chart.js, barras agrupadas) ----------
-    if (typeof Chart !== 'undefined' && datos.comprobantes && datos.comprobantes.porMes) {
-        const ctxComprobantesMes = document.getElementById('graficoComprobantesMensual');
-        if (ctxComprobantesMes) {
-            const vm = datos.comprobantes.porMes;
-            const totalMeses = vm.labels.length;
-            const mesesVisibles = Math.min(6, totalMeses);
-            let indiceInicio = Math.max(totalMeses - mesesVisibles, 0);
- 
-            const chartComprobantes = new Chart(ctxComprobantesMes, {
-                type: 'bar',
-                data: {
-                    labels: vm.labels,
-datasets: [
-                        {
-                            label: 'Boleta',
-                            data: vm.boleta,
-                            backgroundColor: '#f2c94c',
-                            borderRadius: 6,
-                            barPercentage: 0.5,
-                            categoryPercentage: 0.6,
-                        },
-                        {
-                            label: 'Factura',
-                            data: vm.factura,
-                            backgroundColor: '#4ade80',
-                            borderRadius: 6,
-                            barPercentage: 0.5,
-                            categoryPercentage: 0.6,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 11 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function (ctx) {
-                                    return ctx.dataset.label + ': ' + ctx.parsed.y;
-                                }
-                            }
-                        },
-                        zoom: {
-                            pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
-                            limits: { x: { min: 0, max: totalMeses - 1, minRange: 1 } }
-                        }
-                    },
+// ---------- 4.5 Comprobantes: Boletas vs Facturas, año calendario
+    //            (cápsulas SVG con riel de fondo, degradado, animación de carga y brillo neón) ----------
+    function pintarBarrasComprobantes(idContenedor, vista) {
+        const wrap = document.getElementById(idContenedor);
+        if (!wrap || !vista || !vista.labels.length) return;
 
+        const contenedor = wrap.closest('.grafico-box');
+        const leyendaEl = contenedor ? contenedor.querySelector('.grafico-leyenda') : null;
 
-              scales: {
-                        x: {
-                            grid: { display: false },
-                            min: vm.labels[indiceInicio],
-                            max: vm.labels[totalMeses - 1],
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 },
-                            max: 20,
-                        },
-                    }
+        const numMeses = vista.labels.length;
+        const groupWidth = 70;
+        const padX = 34;
+        const anchoTotal = padX * 2 + groupWidth * numMeses;
+        const altoTotal = 240;
+        const baseline = 200;
+        const plotHeight = 170;
+        const barW = 16;
+        const gapBarras = 8;
 
-                    
-                }
+        const techo = Math.max(20, ...vista.boleta, ...vista.factura);
+        const totalBoleta = vista.boleta.reduce(function (a, b) { return a + b; }, 0);
+        const totalFactura = vista.factura.reduce(function (a, b) { return a + b; }, 0);
 
+        const defsGrad =
+            '<defs>' +
+            '<linearGradient id="' + idContenedor + '_gradBoleta" x1="0%" y1="0%" x2="0%" y2="100%">' +
+            '<stop offset="0%" stop-color="#fff3b0"/><stop offset="100%" stop-color="#e8b923"/>' +
+            '</linearGradient>' +
+            '<linearGradient id="' + idContenedor + '_gradFactura" x1="0%" y1="0%" x2="0%" y2="100%">' +
+            '<stop offset="0%" stop-color="#a6f4c5"/><stop offset="100%" stop-color="#1f9e6d"/>' +
+            '</linearGradient>' +
+            '</defs>';
 
+        let barrasHtml = '';
+        let etiquetasHtml = '';
 
-            });
- 
-            // Botones para deslizar de a un mes (además de la ruedita/pan del mouse)
-            const btnIzq = document.getElementById('btn-comprobantes-izq');
-            const btnDer = document.getElementById('btn-comprobantes-der');
- 
-            function desplazarMeses(pasos) {
-                indiceInicio = Math.min(Math.max(indiceInicio + pasos, 0), totalMeses - mesesVisibles);
-                const indiceFin = Math.min(indiceInicio + mesesVisibles - 1, totalMeses - 1);
-                chartComprobantes.options.scales.x.min = vm.labels[indiceInicio];
-                chartComprobantes.options.scales.x.max = vm.labels[indiceFin];
-                chartComprobantes.update();
+        for (let i = 0; i < numMeses; i++) {
+            const groupX = padX + i * groupWidth;
+            const anchoBarras = barW * 2 + gapBarras;
+            const xBoleta = groupX + (groupWidth - anchoBarras) / 2;
+            const xFactura = xBoleta + barW + gapBarras;
+            const yTop = baseline - plotHeight;
+
+           
+            const valorBoleta = vista.boleta[i] || 0;
+            const valorFactura = vista.factura[i] || 0;
+            const alturaBoleta = techo > 0 ? (valorBoleta / techo) * plotHeight : 0;
+            const alturaFactura = techo > 0 ? (valorFactura / techo) * plotHeight : 0;
+            const retraso = (i * 0.05).toFixed(2);
+
+            if (valorBoleta > 0) {
+                barrasHtml += '<rect class="barra-capsula" data-tipo="Boleta" data-valor="' + valorBoleta + '" data-mes="' + vista.labels[i] + '" '
+                    + 'style="transition-delay:' + retraso + 's" '
+                    + 'x="' + xBoleta + '" y="' + baseline + '" width="' + barW + '" height="0" rx="' + (barW / 2) + '" '
+                    + 'data-final-y="' + (baseline - alturaBoleta) + '" data-final-h="' + alturaBoleta + '" '
+                    + 'fill="url(#' + idContenedor + '_gradBoleta)"/>';
             }
- 
-            if (btnIzq) btnIzq.addEventListener('click', function () { desplazarMeses(-1); });
-            if (btnDer) btnDer.addEventListener('click', function () { desplazarMeses(1); });
+            if (valorFactura > 0) {
+                barrasHtml += '<rect class="barra-capsula" data-tipo="Factura" data-valor="' + valorFactura + '" data-mes="' + vista.labels[i] + '" '
+                    + 'style="transition-delay:' + (parseFloat(retraso) + 0.05).toFixed(2) + 's" '
+                    + 'x="' + xFactura + '" y="' + baseline + '" width="' + barW + '" height="0" rx="' + (barW / 2) + '" '
+                    + 'data-final-y="' + (baseline - alturaFactura) + '" data-final-h="' + alturaFactura + '" '
+                    + 'fill="url(#' + idContenedor + '_gradFactura)"/>';
+            }
+
+            etiquetasHtml += '<text x="' + (groupX + groupWidth / 2) + '" y="' + (baseline + 20) + '" text-anchor="middle" class="barra-mes-label">' + vista.labels[i] + '</text>';
+        }
+
+        // Eje Y: líneas horizontales + números, en pasos parejos (según el techo)
+        const numPasos = 10;
+        const pasoValor = techo / numPasos;
+        let ejeYHtml = '';
+        for (let p = 0; p <= numPasos; p++) {
+            const valor = Math.round(pasoValor * p);
+            const y = baseline - (plotHeight * (p / numPasos));
+            ejeYHtml += '<line x1="' + padX + '" y1="' + y + '" x2="' + (anchoTotal - padX) + '" y2="' + y + '" stroke="rgba(150,150,160,.18)" stroke-width="1"/>';
+            ejeYHtml += '<text x="' + (padX - 8) + '" y="' + (y + 3) + '" text-anchor="end" class="barra-eje-num">' + valor + '</text>';
+        }
+
+        let svgHtml = '<svg viewBox="0 0 ' + anchoTotal + ' ' + altoTotal + '" preserveAspectRatio="xMidYMid meet">';
+        svgHtml += defsGrad;
+        svgHtml += '<g>' + ejeYHtml + '</g>';
+        svgHtml += '<line x1="' + (padX - 6) + '" y1="' + baseline + '" x2="' + (anchoTotal - padX + 6) + '" y2="' + baseline + '" stroke="rgba(150,150,160,.35)" stroke-width="1.5"/>';
+        svgHtml += '<g>' + barrasHtml + '</g>';
+        svgHtml += '<g>' + etiquetasHtml + '</g>';
+        svgHtml += '</svg>';
+
+        wrap.innerHTML = svgHtml + '<div class="dona-ventas-tooltip"></div>';
+
+        requestAnimationFrame(function () {
+            wrap.querySelectorAll('.barra-capsula').forEach(function (rect) {
+                rect.setAttribute('y', rect.getAttribute('data-final-y'));
+                rect.setAttribute('height', rect.getAttribute('data-final-h'));
+            });
+        });
+
+        const tooltip = wrap.querySelector('.dona-ventas-tooltip');
+        wrap.querySelectorAll('.barra-capsula').forEach(function (rect) {
+            rect.addEventListener('mousemove', function (ev) {
+                const rectBox = wrap.getBoundingClientRect();
+                tooltip.style.left = (ev.clientX - rectBox.left) + 'px';
+                tooltip.style.top = (ev.clientY - rectBox.top - 22) + 'px';
+                tooltip.textContent = rect.getAttribute('data-mes') + ' · ' + rect.getAttribute('data-tipo') + ': ' + rect.getAttribute('data-valor');
+                tooltip.classList.add('visible');
+            });
+            rect.addEventListener('mouseleave', function () {
+                tooltip.classList.remove('visible');
+            });
+        });
+
+        if (leyendaEl) {
+            leyendaEl.innerHTML =
+                '<span class="leyenda-item leyenda-clickeable" data-tipo="Boleta"><i style="background:#f2c94c"></i>Boleta (' + totalBoleta + ')</span>' +
+                '<span class="leyenda-item leyenda-clickeable" data-tipo="Factura"><i style="background:#4ade80"></i>Factura (' + totalFactura + ')</span>';
+
+            leyendaEl.querySelectorAll('.leyenda-clickeable').forEach(function (item) {
+                item.addEventListener('click', function () {
+                    const tipo = item.getAttribute('data-tipo');
+                    const oculto = item.classList.toggle('leyenda-oculta');
+                    wrap.querySelectorAll('.barra-capsula[data-tipo="' + tipo + '"]').forEach(function (rect) {
+                        rect.style.display = oculto ? 'none' : '';
+                    });
+                });
+            });
         }
     }
 
+    if (datos.comprobantes && datos.comprobantes.porMes) {
+        pintarBarrasComprobantes('graficoComprobantesMensual', datos.comprobantes.porMes);
+    }
 
     
     if (datos.productos) {
