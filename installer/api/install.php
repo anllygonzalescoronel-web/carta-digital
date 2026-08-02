@@ -105,29 +105,26 @@ function importSchema($config) {
         throw new Exception("El archivo schema.sql está vacío");
     }
 
-    // Dividir por puntos y coma y ejecutar cada sentencia
-    // Esto es necesario porque PDO no soporta ejecución múltiple por defecto
-    $statements = preg_split('/;(?=(?:[^\']*\'[^\']*\')*[^\']*$)/', $sql);
+    $statements = parseSqlStatements($sql);
 
     foreach ($statements as $statement) {
         $statement = trim($statement);
-        
-        if (empty($statement)) {
+
+        if ($statement === '') {
             continue;
         }
 
-        // Skip comments
-        if (strpos($statement, '--') === 0) {
+        // Ya conectamos y seleccionamos la BD elegida por el usuario.
+        if (preg_match('/^CREATE\s+DATABASE\b/i', $statement)) {
             continue;
         }
 
-        // Skip MySQL specific comments
-        if (strpos($statement, '/*') === 0) {
+        if (preg_match('/^USE\s+/i', $statement)) {
             continue;
         }
 
         try {
-            $pdo->exec($statement . ';');
+            $pdo->exec($statement);
         } catch (PDOException $e) {
             if (stripos($e->getMessage(), 'already exists') !== false) {
                 // Ignorar errores de "tabla ya existe"
@@ -138,6 +135,60 @@ function importSchema($config) {
     }
 
     return true;
+}
+
+function parseSqlStatements($sql) {
+    $statements = [];
+    $buffer = '';
+    $delimiter = ';';
+
+    $lines = preg_split('/\r\n|\r|\n/', $sql);
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+
+        if ($trimmed === '') {
+            continue;
+        }
+
+        // Ignorar comentarios de una sola línea.
+        if (strpos($trimmed, '--') === 0 || strpos($trimmed, '#') === 0) {
+            continue;
+        }
+
+        // Ignorar comentarios de dump MySQL tipo /*! ... */
+        if (strpos($trimmed, '/*!') === 0 && substr($trimmed, -2) === '*/') {
+            continue;
+        }
+
+        if (preg_match('/^DELIMITER\s+(.+)$/i', $trimmed, $matches)) {
+            $delimiter = $matches[1];
+            continue;
+        }
+
+        $buffer .= $line . "\n";
+
+        if ($delimiter === ';') {
+            if (preg_match('/;\s*$/', rtrim($line))) {
+                $statements[] = rtrim(substr(trim($buffer), 0, -1));
+                $buffer = '';
+            }
+            continue;
+        }
+
+        $quotedDelimiter = preg_quote($delimiter, '/');
+        if (preg_match('/' . $quotedDelimiter . '\s*$/', rtrim($line))) {
+            $statement = preg_replace('/' . $quotedDelimiter . '\s*$/', '', trim($buffer));
+            $statements[] = $statement;
+            $buffer = '';
+        }
+    }
+
+    if (trim($buffer) !== '') {
+        $statements[] = trim($buffer);
+    }
+
+    return $statements;
 }
 
 function installComposerDependencies() {

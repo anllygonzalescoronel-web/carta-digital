@@ -1,4 +1,13 @@
 <?php
+// Evita que /admin (sin slash) rompa rutas relativas de assets.
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+if (preg_match('#/admin$#i', $requestPath)) {
+    $query = $_SERVER['QUERY_STRING'] ?? '';
+    $destino = $requestPath . '/' . ($query !== '' ? ('?' . $query) : '');
+    header('Location: ' . $destino, true, 302);
+    exit;
+}
+
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
