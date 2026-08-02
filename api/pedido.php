@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/culqi.php';
 require_once __DIR__ . '/../includes/facturacion.php';
 require_once __DIR__ . '/../includes/facturacion_nubefact_bridge.php';
@@ -40,6 +41,7 @@ $clienteTelefono = trim($body['cliente_telefono'] ?? '');
 $tipoEntrega    = $body['tipo_entrega'] ?? '';
 $direccion      = trim($body['direccion'] ?? '');
 $referencia     = trim($body['referencia'] ?? '');
+$mesaId         = (int)($body['mesa_id'] ?? 0);
 $metodoPago     = $body['metodo_pago'] ?? '';
 $notas          = trim($body['notas'] ?? '');
 $culqiToken     = $body['culqi_token'] ?? null;
@@ -47,6 +49,11 @@ $clienteEmail   = trim($body['cliente_email'] ?? '');
 $tipoComprobante = strtolower(trim((string)($body['tipo_comprobante'] ?? 'boleta')));
 $tipoDocumento   = strtolower(trim((string)($body['tipo_documento'] ?? 'dni')));
 $numeroDocumento = normalizarNumeroDocumento((string)($body['numero_documento'] ?? ''));
+$origen          = strtolower(trim((string)($body['origen'] ?? 'web')));
+
+if ($origen === 'pos') {
+    requerirRol(['admin']);
+}
 
 // ---------- Validaciones básicas ----------
 if (empty($items) || !is_array($items)) {
@@ -58,16 +65,19 @@ if ($clienteNombre === '' || mb_strlen($clienteNombre) < 2) {
 if (!preg_match('/^[0-9+ ]{6,20}$/', $clienteTelefono)) {
     jsonResponse(['ok' => false, 'mensaje' => 'Ingresa un teléfono válido.'], 400);
 }
-if (!in_array($tipoEntrega, ['recojo', 'delivery'], true)) {
-    jsonResponse(['ok' => false, 'mensaje' => 'Selecciona recojo o delivery.'], 400);
+if (!in_array($tipoEntrega, ['recojo', 'delivery', 'comer_aqui'], true)) {
+    jsonResponse(['ok' => false, 'mensaje' => 'Selecciona recojo, delivery o comer aqui.'], 400);
 }
 if ($tipoEntrega === 'delivery' && mb_strlen($direccion) < 5) {
     jsonResponse(['ok' => false, 'mensaje' => 'Ingresa tu dirección de entrega.'], 400);
 }
+if ($tipoEntrega === 'comer_aqui' && $mesaId <= 0) {
+    jsonResponse(['ok' => false, 'mensaje' => 'Selecciona una mesa para comer aqui.'], 400);
+}
 if (!in_array($metodoPago, ['efectivo', 'yape_plin', 'tarjeta'], true)) {
     jsonResponse(['ok' => false, 'mensaje' => 'Selecciona un método de pago.'], 400);
 }
-if (in_array($metodoPago, ['tarjeta', 'yape_plin'], true) && empty($culqiToken)) {
+if ($origen !== 'pos' && in_array($metodoPago, ['tarjeta', 'yape_plin'], true) && empty($culqiToken)) {
     jsonResponse(['ok' => false, 'mensaje' => 'Falta el token de pago de Culqi.'], 400);
 }
 
@@ -81,6 +91,56 @@ $db = getDB();
 try {
     ensureFacturacionSchema($db);
     $db->beginTransaction();
+
+    $cajaTurnoId = null;
+    if ($origen === 'pos') {
+        $stmtCaja = $db->query("SELECT id FROM cajas_turnos WHERE estado = 'abierta' ORDER BY id DESC LIMIT 1");
+        $turno = $stmtCaja->fetch();
+        if (!$turno) {
+            throw new RuntimeException('Debes abrir una caja para registrar ventas POS.');
+        }
+        $cajaTurnoId = (int)$turno['id'];
+    }
+
+    $mesaNombrePedido = null;
+    $zonaNombrePedido = null;
+
+    if ($tipoEntrega === 'comer_aqui') {
+        if (cfg('comer_aqui_activo', '1') !== '1') {
+            throw new RuntimeException('La opción comer aqui no está disponible en este momento.');
+        }
+
+        $stmtMesa = $db->prepare(
+            'SELECT m.id, m.nombre AS mesa_nombre, z.nombre AS zona_nombre
+             FROM mesas m
+             INNER JOIN zonas_mesas z ON z.id = m.zona_id
+             WHERE m.id = :id AND m.activa = 1 AND z.activa = 1
+             LIMIT 1'
+        );
+        $stmtMesa->execute(['id' => $mesaId]);
+        $mesaData = $stmtMesa->fetch();
+        if (!$mesaData) {
+            throw new RuntimeException('La mesa seleccionada no está disponible.');
+        }
+
+        // En checkout web evitamos doble asignación de mesa; en POS sí permitimos seguir sumando consumos.
+        if ($origen !== 'pos') {
+            $stmtOcupada = $db->prepare(
+                "SELECT COUNT(*)
+                 FROM pedidos
+                 WHERE tipo_entrega = 'comer_aqui'
+                   AND mesa_id = :mesa_id
+                   AND estado NOT IN ('entregado', 'cancelado')"
+            );
+            $stmtOcupada->execute(['mesa_id' => $mesaId]);
+            if ((int)$stmtOcupada->fetchColumn() > 0) {
+                throw new RuntimeException('Esa mesa ya está ocupada por otro pedido activo.');
+            }
+        }
+
+        $mesaNombrePedido = (string)$mesaData['mesa_nombre'];
+        $zonaNombrePedido = (string)$mesaData['zona_nombre'];
+    }
 
     // ---------- Recalcular precios reales desde la BD (nunca confiar en el frontend) ----------
     $detalle = [];
@@ -223,13 +283,15 @@ try {
             throw new RuntimeException('El delivery no está disponible en este momento.');
         }
         $costoDelivery = (float) cfg('costo_delivery', '0');
-    } elseif (cfg('recojo_activo', '1') !== '1') {
+    } elseif ($tipoEntrega === 'recojo' && cfg('recojo_activo', '1') !== '1') {
         throw new RuntimeException('El recojo en local no está disponible en este momento.');
+    } elseif ($tipoEntrega === 'comer_aqui' && cfg('comer_aqui_activo', '1') !== '1') {
+        throw new RuntimeException('La opción comer aqui no está disponible en este momento.');
     }
 
     $total = round($subtotal + $costoDelivery, 2);
     $codigo = generarCodigoPedido();
-    $estado = 'pendiente';
+    $estado = $origen === 'pos' ? 'pagado' : 'pendiente';
     $culqiChargeId = null;
 
     // ---------- Verificar método habilitado ----------
@@ -243,7 +305,7 @@ try {
     }
 
     // ---------- Procesar pago online con Culqi (tarjeta / yape) ----------
-    if (in_array($metodoPago, ['tarjeta', 'yape_plin'], true)) {
+    if ($origen !== 'pos' && in_array($metodoPago, ['tarjeta', 'yape_plin'], true)) {
         $cargo = crearCargoCulqi(
             $culqiToken,
             $total,
@@ -308,6 +370,30 @@ try {
         $paramsPedido['cliente_dni'] = $tipoDocumento === 'dni' && $numeroDocumento !== '' ? $numeroDocumento : null;
     }
 
+    if (isset($columnasPedido['mesa_id'])) {
+        $camposInsert[] = 'mesa_id';
+        $placeholders[] = ':mesa_id';
+        $paramsPedido['mesa_id'] = $tipoEntrega === 'comer_aqui' ? $mesaId : null;
+    }
+
+    if (isset($columnasPedido['mesa_nombre'])) {
+        $camposInsert[] = 'mesa_nombre';
+        $placeholders[] = ':mesa_nombre';
+        $paramsPedido['mesa_nombre'] = $tipoEntrega === 'comer_aqui' ? $mesaNombrePedido : null;
+    }
+
+    if (isset($columnasPedido['zona_nombre'])) {
+        $camposInsert[] = 'zona_nombre';
+        $placeholders[] = ':zona_nombre';
+        $paramsPedido['zona_nombre'] = $tipoEntrega === 'comer_aqui' ? $zonaNombrePedido : null;
+    }
+
+    if (isset($columnasPedido['caja_turno_id'])) {
+        $camposInsert[] = 'caja_turno_id';
+        $placeholders[] = ':caja_turno_id';
+        $paramsPedido['caja_turno_id'] = $cajaTurnoId;
+    }
+
     $sqlPedido = 'INSERT INTO pedidos (' . implode(', ', $camposInsert) . ') VALUES (' . implode(', ', $placeholders) . ')';
     $stmtPedido = $db->prepare($sqlPedido);
     $stmtPedido->execute($paramsPedido);
@@ -346,6 +432,21 @@ try {
             $paramsDetalle['opciones_json'] = $d['opciones_json'];
         }
         $stmtDetalle->execute($paramsDetalle);
+    }
+
+    if ($cajaTurnoId !== null) {
+        $stmtMovCaja = $db->prepare(
+            'INSERT INTO caja_movimientos (turno_id, tipo, concepto, monto, referencia_tipo, referencia_id)
+             VALUES (:turno_id, :tipo, :concepto, :monto, :ref_tipo, :ref_id)'
+        );
+        $stmtMovCaja->execute([
+            'turno_id' => $cajaTurnoId,
+            'tipo' => 'venta',
+            'concepto' => 'Venta POS ' . $codigo,
+            'monto' => $total,
+            'ref_tipo' => 'pedido',
+            'ref_id' => (int)$pedidoId,
+        ]);
     }
 
     // ---------- Registrar el comprobante según el motor de facturación activo ----------
@@ -404,7 +505,16 @@ try {
     $lineas[] = 'Cliente: ' . $clienteNombre;
     $lineas[] = 'Comprobante: ' . strtoupper($tipoComprobante) . ' - ' . strtoupper($tipoDocumento) . ' ' . $numeroDocumento;
     $lineas[] = 'Teléfono: ' . $clienteTelefono;
-    $lineas[] = 'Entrega: ' . ($tipoEntrega === 'delivery' ? 'Delivery 🛵' : 'Recojo en local 🏠');
+    if ($tipoEntrega === 'delivery') {
+        $lineas[] = 'Entrega: Delivery 🛵';
+    } elseif ($tipoEntrega === 'comer_aqui') {
+        $lineas[] = 'Entrega: Comer aqui 🍽️';
+        if ($mesaNombrePedido !== null) {
+            $lineas[] = 'Mesa: ' . $mesaNombrePedido . ($zonaNombrePedido ? ' · Zona ' . $zonaNombrePedido : '');
+        }
+    } else {
+        $lineas[] = 'Entrega: Recojo en local 🏠';
+    }
     if ($tipoEntrega === 'delivery') {
         $lineas[] = 'Dirección: ' . $direccion;
         if ($referencia) $lineas[] = 'Referencia: ' . $referencia;

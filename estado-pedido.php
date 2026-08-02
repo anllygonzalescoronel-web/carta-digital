@@ -189,7 +189,12 @@ body {
 
         result.innerHTML = pedidos.map(function(p) {
             const badgeClass = 'b-' + p.estado;
-            const entrega = p.tipo_entrega === 'delivery' ? 'Delivery' : 'Recojo';
+            let entrega = 'Recojo';
+            if (p.tipo_entrega === 'delivery') {
+                entrega = 'Delivery';
+            } else if (p.tipo_entrega === 'comer_aqui') {
+                entrega = 'Comer aqui';
+            }
             return `
                 <article class="p-card">
                     <div class="p-head">

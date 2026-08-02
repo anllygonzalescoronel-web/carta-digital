@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Instalación - Carta Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #334155;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #e8ff47;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(232, 255, 71, 0.2);
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+
+        .status {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #a7f3d0;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            border-color: #e8ff47;
+            box-shadow: 0 0 20px rgba(232, 255, 71, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #e8ff47;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e8ff47, #d1e535);
+            color: #0f172a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(232, 255, 71, 0.3);
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .features {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .features h2 {
+            color: #e8ff47;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            padding: 15px;
+            background: rgba(232, 255, 71, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid #e8ff47;
+        }
+
+        .feature-item strong {
+            color: #e8ff47;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-box strong {
+            color: #93c5fd;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #334155, transparent);
+            margin: 40px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🍕 Carta Digital</h1>
+            <p>Centro de Instalación v2.0</p>
+        </div>
+
+        <!-- Status Alert -->
+        <div class="status">
+            ✅ Sistema de instalación automática disponible y listo para usar
+        </div>
+
+        <!-- Main Options -->
+        <div class="grid">
+            <!-- Option 1: Web Installer (Recommended) -->
+            <div class="card">
+                <div class="card-icon">🌐</div>
+                <h3>Instalador Web</h3>
+                <p>Interfaz visual profesional, paso a paso. La forma más fácil de instalar.</p>
+                <p style="color: #e8ff47; font-size: 0.85em; font-weight: 600;">✨ RECOMENDADO</p>
+                <div class="card-actions">
+                    <a href="index.php" class="btn btn-primary" target="_blank">
+                        🚀 Abrir Instalador
+                    </a>
+                </div>
+            </div>
+
+            <!-- Option 2: Diagnostics -->
+            <div class="card">
+                <div class="card-icon">🔧</div>
+                <h3>Diagnóstico</h3>
+                <p>Verifica requisitos, revisa configuración actual, y obtén soluciones automáticas.</p>
+                <div class="card-actions">
+                    <a href="diagnostico.php" class="btn btn-primary" target="_blank">
+                        🔍 Abrir Diagnóstico
+                    </a>
+                </div>
+            </div>
+
+            <!-- Option 3: CLI Scripts -->
+            <div class="card">
+                <div class="card-icon">⌨️</div>
+                <h3>Instalación CLI</h3>
+                <p>Scripts de terminal para usuarios avanzados. Soporta Windows, Linux y Mac.</p>
+                <div class="card-actions">
+                    <a href="#cli-section" class="btn btn-secondary">
+                        📖 Ver Scripts
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <h2>✨ Características del Instalador</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <strong>✅ Verificación Automática</strong>
+                    <p>Comprueba PHP, extensiones, MySQL, permisos y dependencias</p>
+                </div>
+                <div class="feature-item">
+                    <strong>⚙️ Configuración Interactiva</strong>
+                    <p>Configura BD fácilmente con validación en tiempo real</p>
+                </div>
+                <div class="feature-item">
+                    <strong>🎨 Interfaz Moderna</strong>
+                    <p>Diseño Dark Mode profesional y totalmente responsivo</p>
+                </div>
+                <div class="feature-item">
+                    <strong>🔒 Seguridad</strong>
+                    <p>Validaciones avanzadas, SQL injection prevention, backups automáticos</p>
+                </div>
+                <div class="feature-item">
+                    <strong>🌍 Multi-Plataforma</strong>
+                    <p>Windows, Mac, Linux - Apache, Nginx, IIS - Shared hosting</p>
+                </div>
+                <div class="feature-item">
+                    <strong>📚 Documentación</strong>
+                    <p>README completo, guía rápida, y herramienta de diagnóstico</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <strong>💡 Información Importante:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px; color: #94a3b8;">
+                <li>Se verificarán automáticamente todos los requisitos</li>
+                <li>Los datos de configuración se guardan localmente</li>
+                <li>Puedes reintentar el proceso sin problemas</li>
+                <li>Se crean backups de archivos de configuración</li>
+                <li>Credenciales admin por defecto: admin / admin123 ⚠️ Cámbialas inmediatamente</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CLI Instructions Section -->
+        <div id="cli-section">
+            <h2 style="color: #e8ff47; margin-bottom: 25px;">⌨️ Instalación por Terminal</h2>
+
+            <div class="grid">
+                <!-- Linux/Mac -->
+                <div class="card">
+                    <div class="card-icon">🐧</div>
+                    <h3>Linux / Mac</h3>
+                    <p>Usa el script bash automático para instalación rápida desde terminal.</p>
+                    <div style="background: #0f172a; padding: 15px; border-radius: 6px; margin: 15px 0; font-family: monospace; font-size: 0.85em; overflow-x: auto;">
+<code>cd /ruta/a/carta-digital/installer
+chmod +x install.sh
+./install.sh</code>
+                    </div>
+                    <div class="card-actions">
+                        <a href="install.sh" class="btn btn-secondary" download>
+                            📥 Descargar install.sh
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Windows -->
+                <div class="card">
+                    <div class="card-icon">🪟</div>
+                    <h3>Windows</h3>
+                    <p>Utiliza el batch file para instalación automatizada. Requiere CMD como admin.</p>
+                    <div style="background: #0f172a; padding: 15px; border-radius: 6px; margin: 15px 0; font-family: monospace; font-size: 0.85em; overflow-x: auto;">
+<code>cd C:\ruta\a\carta-digital\installer
+install.bat</code>
+                    </div>
+                    <div class="card-actions">
+                        <a href="install.bat" class="btn btn-secondary" download>
+                            📥 Descargar install.bat
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 25px;">
+                <strong>ℹ️ Requisitos CLI:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px; color: #94a3b8;">
+                    <li>PHP disponible en PATH</li>
+                    <li>MySQL disponible en PATH</li>
+                    <li>Windows: Ejecutar CMD como Administrador</li>
+                    <li>Linux/Mac: Permisos de ejecución (se otorgan automáticamente)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Documentation Links -->
+        <div style="margin-bottom: 40px;">
+            <h2 style="color: #e8ff47; margin-bottom: 25px;">📚 Documentación</h2>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-icon">📖</div>
+                    <h3>Guía Completa</h3>
+                    <p>Documentación técnica exhaustiva con todos los detalles, troubleshooting y configuraciones avanzadas.</p>
+                    <div class="card-actions">
+                        <a href="README.md" class="btn btn-secondary" target="_blank">
+                            📖 Ver README
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Inicio Rápido</h3>
+                    <p>Guía resumida (5 minutos) para usuarios que quieren empezar rápidamente sin tecnicismos.</p>
+                    <div class="card-actions">
+                        <a href="QUICK_START.md" class="btn btn-secondary" target="_blank">
+                            ⚡ Ver Guía Rápida
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h3>Resumen Técnico</h3>
+                    <p>Información detallada sobre la arquitectura, características y casos de uso del instalador.</p>
+                    <div class="card-actions">
+                        <a href="INSTALLATION_SUMMARY.md" class="btn btn-secondary" target="_blank">
+                            📋 Ver Resumen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 30px;">
+            <h2 style="color: #e8ff47; margin-bottom: 20px;">📊 Estadísticas del Instalador</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div style="padding: 15px; background: rgba(232, 255, 71, 0.05); border-radius: 8px;">
+                    <div style="color: #e8ff47; font-weight: 600; font-size: 1.5em;">11</div>
+                    <div style="color: #94a3b8; font-size: 0.9em;">Archivos Creados</div>
+                </div>
+
+                <div style="padding: 15px; background: rgba(232, 255, 71, 0.05); border-radius: 8px;">
+                    <div style="color: #e8ff47; font-weight: 600; font-size: 1.5em;">3</div>
+                    <div style="color: #94a3b8; font-size: 0.9em;">Formas de Instalación</div>
+                </div>
+
+                <div style="padding: 15px; background: rgba(232, 255, 71, 0.05); border-radius: 8px;">
+                    <div style="color: #e8ff47; font-weight: 600; font-size: 1.5em;">20+</div>
+                    <div style="color: #94a3b8; font-size: 0.9em;">Verificaciones Automáticas</div>
+                </div>
+
+                <div style="padding: 15px; background: rgba(232, 255, 71, 0.05); border-radius: 8px;">
+                    <div style="color: #e8ff47; font-weight: 600; font-size: 1.5em;">5</div>
+                    <div style="color: #94a3b8; font-size: 0.9em;">Pasos de Instalación</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Carta Digital v2.0 - Instalador Profesional 2024</p>
+            <p style="margin-top: 10px; color: #64748b;">
+                © 2024 Carta Digital | Diseño moderno y seguro | Multi-plataforma
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -472,7 +472,7 @@ function facturacionCrearSeeGreenter(): Greenter\See {
     $see = new Greenter\See();
 
     $modo = strtolower(trim((string)cfg('sunat_modo', 'beta')));
-    if ($modo === 'produccion') {
+    if (in_array($modo, ['produccion', 'prod'], true)) {
         $see->setService(Greenter\Ws\Services\SunatEndpoints::FE_PRODUCCION);
     } else {
         $see->setService(Greenter\Ws\Services\SunatEndpoints::FE_BETA);

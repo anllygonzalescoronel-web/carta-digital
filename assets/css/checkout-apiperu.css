@@ -327,6 +327,58 @@
     color: var(--checkout-text-light);
     margin: 0;
 }
+    .mesa-mapa-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid var(--checkout-border);
+        border-radius: 12px;
+        padding: 10px;
+        min-height: 74px;
+    }
+    .mesa-mapa-item {
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 10px;
+        text-align: left;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .mesa-mapa-item:hover {
+        border-color: var(--checkout-secondary);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+    }
+    .mesa-mapa-item.seleccionada {
+        border-color: var(--checkout-secondary);
+        background: rgba(37, 99, 235, 0.08);
+    }
+    .mesa-mapa-item.ocupada {
+        opacity: 0.62;
+        border-color: #fca5a5;
+        background: #fff1f2;
+        cursor: not-allowed;
+    }
+    .mesa-mapa-item .mesa-titulo {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .mesa-mapa-item .mesa-meta {
+        display: block;
+        font-size: 11px;
+        color: #475569;
+    }
+    .mesa-mapa-empty {
+        grid-column: 1 / -1;
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+        padding: 10px;
+    }
 
 /* =============================================
    PASO 1: SELECCIONAR COMPROBANTE
@@ -1112,6 +1164,9 @@
     .checkout-content {
         padding: 16px;
     }
+        .mesa-mapa-grid {
+            grid-template-columns: 1fr;
+        }
 
     .paso-header h3 {
         font-size: 16px;

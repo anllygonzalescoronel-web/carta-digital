@@ -99,6 +99,7 @@ function subirArchivoSeguro(string $inputName, string $carpetaDestino, array $ex
 }
 
 function jsonResponse($data, int $status = 200): void {
+    if (ob_get_level()) ob_clean();
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($data, JSON_UNESCAPED_UNICODE);
@@ -107,4 +108,47 @@ function jsonResponse($data, int $status = 200): void {
 
 function limpiar(string $texto): string {
     return htmlspecialchars(trim($texto), ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Convierte cantidad entre unidades de medida
+ * @param float $cantidad Valor a convertir
+ * @param string $desde Unidad origen (kg, g, l, ml, m, cm, unidad, porcion)
+ * @param string $hacia Unidad destino
+ * @return float Cantidad convertida
+ */
+function convertirUnidad(float $cantidad, string $desde, string $hacia): float {
+    if ($desde === $hacia || $cantidad <= 0) return $cantidad;
+
+    // Tabla de conversiones (todo a la unidad "base")
+    // kg, g: base = g (gramos)
+    // l, ml: base = ml (mililitros)
+    // m, cm: base = cm (centímetros)
+    // unidad, porcion: no tienen conversión
+
+    $grupos = [
+        'peso'    => ['kg' => 1000, 'g' => 1],        // 1 kg = 1000 g
+        'volumen' => ['l' => 1000, 'ml' => 1],         // 1 l = 1000 ml
+        'longitud'=> ['m' => 100, 'cm' => 1],          // 1 m = 100 cm
+    ];
+
+    $grupo_desde = null;
+    $grupo_hacia = null;
+    foreach ($grupos as $g => $unidades) {
+        if (isset($unidades[$desde])) $grupo_desde = $g;
+        if (isset($unidades[$hacia])) $grupo_hacia = $g;
+    }
+
+    // Si no están en el mismo grupo o alguno no existe, devolveremos sin convertir
+    if ($grupo_desde !== $grupo_hacia) return $cantidad;
+
+    // Normalizar a la unidad base del grupo
+    $factor_desde = $grupos[$grupo_desde][$desde];
+    $factor_hacia = $grupos[$grupo_desde][$hacia];
+
+    // cantidad en desde → cantidad base → cantidad en hacia
+    $en_base = $cantidad * $factor_desde;
+    $resultado = $en_base / $factor_hacia;
+
+    return round($resultado, 4);  // Redondear a 4 decimales
 }

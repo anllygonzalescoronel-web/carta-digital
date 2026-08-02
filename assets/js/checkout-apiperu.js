@@ -21,8 +21,13 @@ class CheckoutAPIPeru {
             tipo_entrega: null,
             direccion: null,
             referencia: null,
+            mesa_id: null,
+            zona_id: null,
+            mesa_nombre: null,
             metodo_pago: null,
         };
+        this.zonasMesas = [];
+        this.refreshMesasTimer = null;
         this.consultandoDocumento = false;
         this.procesandoPagoOnline = false;
         this.init();
@@ -40,6 +45,9 @@ class CheckoutAPIPeru {
                 this.paso = 1;
                 this.mostrarPaso(1);
                 this.setupEventListeners();
+                this.configurarTiposEntrega();
+                this.cargarMesasDisponibles(true);
+                this.iniciarAutoRefreshMesas();
                 // Llenar nombre si se conoce
                 const nombre = document.getElementById('cliente-nombre');
                 if (nombre && !nombre.value) {
@@ -52,6 +60,10 @@ class CheckoutAPIPeru {
             const modal = document.getElementById('checkout-modal');
             if (modal) {
                 modal.classList.remove('activo');
+            }
+            if (this.refreshMesasTimer) {
+                clearInterval(this.refreshMesasTimer);
+                this.refreshMesasTimer = null;
             }
         }
 
@@ -97,9 +109,18 @@ class CheckoutAPIPeru {
             // PASO 3: Datos de entrega
             document.querySelectorAll('input[name="tipo_entrega"]')?.forEach(el => {
                 el.addEventListener('change', () => {
-                    const entrega = el.value;
-                    document.getElementById('seccion-direccion').style.display = entrega === 'delivery' ? 'block' : 'none';
+                    this.cambiarTipoEntregaUI(el.value);
                 });
+            });
+
+            document.getElementById('cliente-zona')?.addEventListener('change', (e) => {
+                this.renderMesasPorZona((e.target && e.target.value) ? Number(e.target.value) : 0, 0);
+            });
+
+            document.getElementById('cliente-mesa')?.addEventListener('change', (e) => {
+                const mesaId = Number((e.target && e.target.value) ? e.target.value : 0);
+                this.marcarMesaSeleccionadaEnMapa(mesaId);
+                this.sincronizarMesaSeleccionadaDesdeUI();
             });
 
             document.getElementById('paso-3-siguiente')?.addEventListener('click', () => {
@@ -166,7 +187,7 @@ class CheckoutAPIPeru {
                 return;
             }
             if (!tipoEntrega) {
-                this.mostrarError('Selecciona recojo o delivery');
+                this.mostrarError('Selecciona recojo, delivery o comer aqui');
                 return;
             }
 
@@ -183,6 +204,34 @@ class CheckoutAPIPeru {
                 }
                 this.datos.direccion = direccion;
                 this.datos.referencia = document.getElementById('cliente-referencia')?.value || null;
+                this.datos.mesa_id = null;
+                this.datos.zona_id = null;
+                this.datos.mesa_nombre = null;
+            } else if (tipoEntrega === 'comer_aqui') {
+                const zonaId = Number(document.getElementById('cliente-zona')?.value || 0);
+                const mesaSelect = document.getElementById('cliente-mesa');
+                const mesaId = Number(mesaSelect?.value || 0);
+                if (zonaId <= 0) {
+                    this.mostrarError('Selecciona una zona para comer aqui');
+                    return;
+                }
+                if (mesaId <= 0) {
+                    this.mostrarError('Selecciona una mesa disponible');
+                    return;
+                }
+
+                const opcion = mesaSelect.options[mesaSelect.selectedIndex];
+                this.datos.zona_id = zonaId;
+                this.datos.mesa_id = mesaId;
+                this.datos.mesa_nombre = opcion ? opcion.textContent : null;
+                this.datos.direccion = null;
+                this.datos.referencia = null;
+            } else {
+                this.datos.direccion = null;
+                this.datos.referencia = null;
+                this.datos.mesa_id = null;
+                this.datos.zona_id = null;
+                this.datos.mesa_nombre = null;
             }
 
             this.mostrarPaso(4);
@@ -199,6 +248,249 @@ class CheckoutAPIPeru {
         const seccionRuc = document.getElementById('seccion-ruc');
         if (seccionDni) seccionDni.style.display = this.datos.tipo_documento === 'dni' ? 'block' : 'none';
         if (seccionRuc) seccionRuc.style.display = this.datos.tipo_documento === 'ruc' ? 'block' : 'none';
+    }
+
+    configurarTiposEntrega() {
+        const cfg = window.APP_CONFIG || {};
+        const opciones = [
+            { id: 'entrega-recojo', activo: cfg.recojoActivo !== false },
+            { id: 'entrega-comer-aqui', activo: cfg.comerAquiActivo !== false },
+            { id: 'entrega-delivery', activo: cfg.deliveryActivo !== false },
+        ];
+
+        let primeraActiva = null;
+        opciones.forEach((op) => {
+            const input = document.getElementById(op.id);
+            if (!input) return;
+
+            const bloque = input.closest('.form-opcion');
+            input.disabled = !op.activo;
+            if (bloque) {
+                bloque.style.display = op.activo ? '' : 'none';
+            }
+            if (op.activo && !primeraActiva) {
+                primeraActiva = input;
+            }
+        });
+
+        const actual = document.querySelector('input[name="tipo_entrega"]:checked');
+        if (!actual || actual.disabled) {
+            if (primeraActiva) {
+                primeraActiva.checked = true;
+            }
+        }
+
+        const entrega = document.querySelector('input[name="tipo_entrega"]:checked')?.value || 'recojo';
+        this.cambiarTipoEntregaUI(entrega);
+    }
+
+    cambiarTipoEntregaUI(entrega) {
+        const seccionDireccion = document.getElementById('seccion-direccion');
+        const seccionMesa = document.getElementById('seccion-mesa');
+        if (seccionDireccion) {
+            seccionDireccion.style.display = entrega === 'delivery' ? 'block' : 'none';
+        }
+        if (seccionMesa) {
+            seccionMesa.style.display = entrega === 'comer_aqui' ? 'block' : 'none';
+        }
+    }
+
+    async cargarMesasDisponibles(conservarSeleccion = true) {
+        try {
+            const zonaSeleccionada = Number(document.getElementById('cliente-zona')?.value || this.datos.zona_id || 0);
+            const mesaSeleccionada = Number(document.getElementById('cliente-mesa')?.value || this.datos.mesa_id || 0);
+
+            const response = await fetch('api/mesas_disponibles.php', { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!data.ok) {
+                this.desactivarComerAquiPorDisponibilidad();
+                return;
+            }
+
+            this.zonasMesas = Array.isArray(data.zonas) ? data.zonas : [];
+            const selectZona = document.getElementById('cliente-zona');
+            if (!selectZona) {
+                return;
+            }
+
+            const opcionesZona = ['<option value="">Selecciona una zona</option>'];
+            this.zonasMesas.forEach((z) => {
+                opcionesZona.push(`<option value="${Number(z.id)}">${z.nombre}</option>`);
+            });
+            selectZona.innerHTML = opcionesZona.join('');
+
+            if (this.zonasMesas.length > 0) {
+                let zonaObjetivo = Number(this.zonasMesas[0].id);
+                if (conservarSeleccion && zonaSeleccionada > 0 && this.zonasMesas.some((z) => Number(z.id) === zonaSeleccionada)) {
+                    zonaObjetivo = zonaSeleccionada;
+                }
+
+                selectZona.value = String(zonaObjetivo);
+                this.renderMesasPorZona(zonaObjetivo, conservarSeleccion ? mesaSeleccionada : 0);
+            } else {
+                this.renderMesasPorZona(0, 0);
+                this.desactivarComerAquiPorDisponibilidad();
+            }
+        } catch (error) {
+            console.error('No se pudo cargar mesas disponibles:', error);
+            this.desactivarComerAquiPorDisponibilidad();
+        }
+    }
+
+    iniciarAutoRefreshMesas() {
+        if (this.refreshMesasTimer) {
+            clearInterval(this.refreshMesasTimer);
+        }
+
+        this.refreshMesasTimer = setInterval(() => {
+            const modal = document.getElementById('checkout-modal');
+            if (!modal || !modal.classList.contains('activo')) {
+                return;
+            }
+
+            const entregaActual = document.querySelector('input[name="tipo_entrega"]:checked')?.value || '';
+            if (entregaActual !== 'comer_aqui') {
+                return;
+            }
+
+            this.cargarMesasDisponibles(true).catch(() => {});
+        }, 12000);
+    }
+
+    desactivarComerAquiPorDisponibilidad() {
+        const radio = document.getElementById('entrega-comer-aqui');
+        if (!radio) {
+            return;
+        }
+
+        radio.disabled = true;
+        const bloque = radio.closest('.form-opcion');
+        if (bloque) {
+            bloque.style.display = 'none';
+        }
+
+        if (radio.checked) {
+            const recojo = document.getElementById('entrega-recojo');
+            const delivery = document.getElementById('entrega-delivery');
+            if (recojo && !recojo.disabled) {
+                recojo.checked = true;
+                this.cambiarTipoEntregaUI('recojo');
+            } else if (delivery && !delivery.disabled) {
+                delivery.checked = true;
+                this.cambiarTipoEntregaUI('delivery');
+            }
+        }
+    }
+
+    renderMesasPorZona(zonaId, mesaSeleccionada = 0) {
+        const selectMesa = document.getElementById('cliente-mesa');
+        if (!selectMesa) {
+            return;
+        }
+
+        const zona = this.zonasMesas.find((z) => Number(z.id) === Number(zonaId));
+        const opcionesMesa = ['<option value="">Selecciona una mesa</option>'];
+
+        this.renderMapaMesas(zona);
+
+        if (zona && Array.isArray(zona.mesas)) {
+            zona.mesas.forEach((m) => {
+                if (m.ocupada) {
+                    return;
+                }
+                const texto = `${m.nombre} · ${m.sillas || m.capacidad} sillas`;
+                opcionesMesa.push(`<option value="${Number(m.id)}">${texto}</option>`);
+            });
+        }
+
+        if (opcionesMesa.length === 1) {
+            opcionesMesa.push('<option value="" disabled>No hay mesas disponibles en esta zona</option>');
+        }
+
+        selectMesa.innerHTML = opcionesMesa.join('');
+
+        if (mesaSeleccionada > 0 && selectMesa.querySelector(`option[value="${mesaSeleccionada}"]`)) {
+            selectMesa.value = String(mesaSeleccionada);
+            this.marcarMesaSeleccionadaEnMapa(mesaSeleccionada);
+        } else {
+            selectMesa.value = '';
+            this.marcarMesaSeleccionadaEnMapa(0);
+        }
+
+        this.sincronizarMesaSeleccionadaDesdeUI();
+    }
+
+    renderMapaMesas(zona) {
+        const grid = document.getElementById('mesa-mapa-grid');
+        if (!grid) {
+            return;
+        }
+
+        if (!zona || !Array.isArray(zona.mesas) || zona.mesas.length === 0) {
+            grid.innerHTML = '<div class="mesa-mapa-empty">No hay mesas registradas en esta zona.</div>';
+            return;
+        }
+
+        grid.innerHTML = zona.mesas.map((m) => {
+            const estado = m.ocupada ? 'Ocupada' : 'Libre';
+            const claseOcupada = m.ocupada ? ' ocupada' : '';
+            return `
+                <button type="button" class="mesa-mapa-item${claseOcupada}" data-mesa-id="${Number(m.id)}" ${m.ocupada ? 'disabled' : ''}>
+                    <span class="mesa-titulo">${m.nombre}</span>
+                    <span class="mesa-meta">${m.sillas || m.capacidad} sillas · ${estado}</span>
+                </button>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.mesa-mapa-item').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const mesaId = Number(btn.dataset.mesaId || 0);
+                if (!mesaId) {
+                    return;
+                }
+
+                const selectMesa = document.getElementById('cliente-mesa');
+                if (selectMesa) {
+                    selectMesa.value = String(mesaId);
+                }
+                this.marcarMesaSeleccionadaEnMapa(mesaId);
+                this.sincronizarMesaSeleccionadaDesdeUI();
+            });
+        });
+    }
+
+    marcarMesaSeleccionadaEnMapa(mesaId) {
+        const grid = document.getElementById('mesa-mapa-grid');
+        if (!grid) {
+            return;
+        }
+
+        grid.querySelectorAll('.mesa-mapa-item').forEach((el) => {
+            const id = Number(el.getAttribute('data-mesa-id') || 0);
+            el.classList.toggle('seleccionada', id === Number(mesaId) && mesaId > 0);
+        });
+    }
+
+    sincronizarMesaSeleccionadaDesdeUI() {
+        const tipoEntrega = document.querySelector('input[name="tipo_entrega"]:checked')?.value || this.datos.tipo_entrega;
+        if (tipoEntrega !== 'comer_aqui') {
+            this.datos.mesa_id = null;
+            this.datos.zona_id = null;
+            this.datos.mesa_nombre = null;
+            return;
+        }
+
+        const zonaSelect = document.getElementById('cliente-zona');
+        const mesaSelect = document.getElementById('cliente-mesa');
+
+        const zonaId = Number(zonaSelect?.value || 0);
+        const mesaId = Number(mesaSelect?.value || 0);
+
+        this.datos.zona_id = zonaId > 0 ? zonaId : null;
+        this.datos.mesa_id = mesaId > 0 ? mesaId : null;
+
+        const opcion = mesaSelect && mesaSelect.selectedIndex >= 0 ? mesaSelect.options[mesaSelect.selectedIndex] : null;
+        this.datos.mesa_nombre = opcion && mesaId > 0 ? opcion.textContent : null;
     }
 
     /**
@@ -382,8 +674,8 @@ class CheckoutAPIPeru {
             this.mostrarError('Ingresa un teléfono válido');
             return;
         }
-        if (!tipoEntrega) {
-            this.mostrarError('Selecciona recojo o delivery');
+            if (!tipoEntrega) {
+                this.mostrarError('Selecciona recojo, delivery o comer aqui');
             return;
         }
 
@@ -561,6 +853,14 @@ class CheckoutAPIPeru {
         this.mostrarCargando(true, 'Procesando pedido...');
 
         try {
+            this.sincronizarMesaSeleccionadaDesdeUI();
+            if (this.datos.tipo_entrega === 'comer_aqui' && !this.datos.mesa_id) {
+                this.mostrarCargando(false);
+                this.mostrarError('Selecciona una mesa disponible para comer aqui antes de pagar.');
+                this.mostrarPaso(3);
+                return;
+            }
+
             const payload = {
                 items: carrito,
                 cliente_nombre: this.datos.cliente_nombre,
@@ -571,6 +871,7 @@ class CheckoutAPIPeru {
                 numero_documento: this.datos.numero_documento,
                 tipo_entrega: this.datos.tipo_entrega,
                 direccion: this.datos.tipo_entrega === 'delivery' ? this.datos.direccion : null,
+                mesa_id: this.datos.tipo_entrega === 'comer_aqui' ? this.datos.mesa_id : null,
                 referencia: this.datos.referencia || null,
                 metodo_pago: this.datos.metodo_pago,
                 notas: document.getElementById('notas-pedido')?.value || '',
@@ -677,7 +978,15 @@ class CheckoutAPIPeru {
             if (numero) numero.textContent = datos.codigo || '-';
             if (total) total.textContent = this.formatearPrecio(datos.total || 0);
             if (metodo) metodo.textContent = this.datos.metodo_pago === 'yape_plin' ? 'Yape / Plin' : (this.datos.metodo_pago || '-');
-            if (entrega) entrega.textContent = this.datos.tipo_entrega === 'delivery' ? 'Delivery' : 'Recojo';
+            if (entrega) {
+                if (this.datos.tipo_entrega === 'delivery') {
+                    entrega.textContent = 'Delivery';
+                } else if (this.datos.tipo_entrega === 'comer_aqui') {
+                    entrega.textContent = 'Comer aqui';
+                } else {
+                    entrega.textContent = 'Recojo';
+                }
+            }
 
             const btnWhatsapp = document.getElementById('btnAvisarWhatsappCheckout');
             const btnSeguimiento = document.getElementById('confirmacion-seguimiento');
@@ -779,7 +1088,7 @@ class CheckoutAPIPeru {
             total += item.precio * item.cantidad;
         });
         if (this.datos.tipo_entrega === 'delivery') {
-            total += 5.00; // Costo delivery (ajustar según config)
+            total += Number((window.APP_CONFIG && window.APP_CONFIG.costoDelivery) || 0);
         }
         return total;
     }

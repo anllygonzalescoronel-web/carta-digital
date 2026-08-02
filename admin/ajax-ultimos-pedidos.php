@@ -26,9 +26,13 @@ if (empty($pedidos)) {
     $filasHtml = '<tr><td colspan="7" style="text-align:center;color:#999;">Aún no hay pedidos.</td></tr>';
 } else {
     foreach ($pedidos as $p) {
-        $entrega = $p['tipo_entrega'] === 'delivery'
-            ? '<i class="ti ti-motorbike"></i> Delivery'
-            : '<i class="ti ti-home"></i> Recojo';
+        if ($p['tipo_entrega'] === 'delivery') {
+            $entrega = '<i class="ti ti-motorbike"></i> Delivery';
+        } elseif ($p['tipo_entrega'] === 'comer_aqui') {
+            $entrega = '<i class="ti ti-tools-kitchen-2"></i> Comer aqui';
+        } else {
+            $entrega = '<i class="ti ti-home"></i> Recojo';
+        }
         $pago = [
             'efectivo'  => '<i class="ti ti-cash"></i> Efectivo',
             'yape_plin' => '<i class="ti ti-device-mobile"></i> Yape (Culqi)',

@@ -336,8 +336,11 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                 <?php if ($rolActual === 'admin'): ?>
                 <a href="index.php" class="<?= $paginaActual === 'dashboard' ? 'activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
                 <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
+                <a href="pos.php" class="<?= $paginaActual === 'pos' ? 'activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS Ventas</a>
+                <a href="cajas.php" class="<?= $paginaActual === 'cajas' ? 'activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
                 <?php endif; ?>
                 <a href="cocina.php" class="<?= $paginaActual === 'cocina' ? 'activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina en Vivo</a>
+                <a href="estaciones.php" class="<?= $paginaActual === 'estaciones' ? 'activo' : '' ?>"><i class="ti ti-layout-board"></i> Estaciones</a>
             </div>
 
             <?php if ($rolActual === 'admin'): ?>
@@ -346,7 +349,9 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                 <a href="usuarios.php" class="<?= $paginaActual === 'usuarios' ? 'activo' : '' ?>"><i class="ti ti-users"></i> Usuarios</a>
                 <a href="categorias.php" class="<?= $paginaActual === 'categorias' ? 'activo' : '' ?>"><i class="ti ti-category"></i> Categorías</a>
                 <a href="productos.php" class="<?= $paginaActual === 'productos' ? 'activo' : '' ?>"><i class="ti ti-tools-kitchen-2"></i> Productos</a>
+                <a href="ingredientes.php" class="<?= $paginaActual === 'ingredientes' ? 'activo' : '' ?>"><i class="ti ti-packages"></i> Ingredientes / Stock</a>
                 <a href="opciones_producto.php" class="<?= $paginaActual === 'opciones' ? 'activo' : '' ?>"><i class="ti ti-adjustments-horizontal"></i> Toppings / Extras</a>
+                <a href="mesas.php" class="<?= $paginaActual === 'mesas' ? 'activo' : '' ?>"><i class="ti ti-armchair"></i> Mesas y Zonas</a>
             </div>
 
             <div class="admin-sidebar-section">
@@ -377,7 +382,10 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                     <a href="cocina.php" class="admin-quick-link<?= $paginaActual === 'cocina' ? ' activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina</a>
                     <?php if ($rolActual === 'admin'): ?>
                     <a href="pedidos.php" class="admin-quick-link<?= $paginaActual === 'pedidos' ? ' activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
+                    <a href="pos.php" class="admin-quick-link<?= $paginaActual === 'pos' ? ' activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS</a>
+                    <a href="cajas.php" class="admin-quick-link<?= $paginaActual === 'cajas' ? ' activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
                     <a href="productos.php" class="admin-quick-link<?= $paginaActual === 'productos' ? ' activo' : '' ?>"><i class="ti ti-tools-kitchen-2"></i> Productos</a>
+                    <a href="mesas.php" class="admin-quick-link<?= $paginaActual === 'mesas' ? ' activo' : '' ?>"><i class="ti ti-armchair"></i> Mesas</a>
                     <a href="usuarios.php" class="admin-quick-link<?= $paginaActual === 'usuarios' ? ' activo' : '' ?>"><i class="ti ti-users"></i> Usuarios</a>
                     <?php endif; ?>
                 </div>

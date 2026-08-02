@@ -502,7 +502,10 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
     window.APP_CONFIG = {
         culqiPublicKey: <?= json_encode($culqiPublicKey) ?>,
         costoDelivery: <?= (float) cfg('costo_delivery', '0') ?>,
-        nombreNegocio: <?= json_encode($nombreNegocio) ?>
+        nombreNegocio: <?= json_encode($nombreNegocio) ?>,
+        recojoActivo: <?= cfg('recojo_activo', '1') === '1' ? 'true' : 'false' ?>,
+        deliveryActivo: <?= cfg('delivery_activo', '1') === '1' ? 'true' : 'false' ?>,
+        comerAquiActivo: <?= cfg('comer_aqui_activo', '1') === '1' ? 'true' : 'false' ?>
     };
 </script>
 

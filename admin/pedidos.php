@@ -83,9 +83,13 @@ if (!empty($_GET['ver'])) {
 // Iconos por tipo de entrega y método de pago (mismos que usamos en el dashboard)
 function iconoEntrega(string $tipo): string
 {
-    return $tipo === 'delivery'
-        ? '<i class="ti ti-motorbike"></i> Delivery'
-        : '<i class="ti ti-home"></i> Recojo';
+    if ($tipo === 'delivery') {
+        return '<i class="ti ti-motorbike"></i> Delivery';
+    }
+    if ($tipo === 'comer_aqui') {
+        return '<i class="ti ti-tools-kitchen-2"></i> Comer aqui';
+    }
+    return '<i class="ti ti-home"></i> Recojo';
 }
 
 function iconoPago(string $metodo, bool $conTexto = false): string
@@ -120,7 +124,15 @@ function iconoPago(string $metodo, bool $conTexto = false): string
     <h3><i class="ti ti-receipt"></i> Detalle del pedido <?= limpiar($pedidoDetalle['codigo']) ?></h3>
     <div class="detalle-info">
         <p><i class="ti ti-user"></i> <b>Cliente:</b> <?= limpiar($pedidoDetalle['cliente_nombre']) ?> — <?= limpiar($pedidoDetalle['cliente_telefono']) ?></p>
-        <p><i class="ti ti-truck-delivery"></i> <b>Entrega:</b> <?= $pedidoDetalle['tipo_entrega'] === 'delivery' ? '<i class="ti ti-motorbike"></i> Delivery a ' . limpiar($pedidoDetalle['direccion']) : '<i class="ti ti-home"></i> Recojo en local' ?></p>
+        <p><i class="ti ti-truck-delivery"></i> <b>Entrega:</b>
+            <?php if ($pedidoDetalle['tipo_entrega'] === 'delivery'): ?>
+                <i class="ti ti-motorbike"></i> Delivery a <?= limpiar((string)$pedidoDetalle['direccion']) ?>
+            <?php elseif ($pedidoDetalle['tipo_entrega'] === 'comer_aqui'): ?>
+                <i class="ti ti-tools-kitchen-2"></i> Comer aqui<?= !empty($pedidoDetalle['mesa_nombre']) ? ' · ' . limpiar($pedidoDetalle['mesa_nombre']) : '' ?><?= !empty($pedidoDetalle['zona_nombre']) ? ' (Zona ' . limpiar($pedidoDetalle['zona_nombre']) . ')' : '' ?>
+            <?php else: ?>
+                <i class="ti ti-home"></i> Recojo en local
+            <?php endif; ?>
+        </p>
         <?php if ($pedidoDetalle['referencia']): ?><p><i class="ti ti-map-pin"></i> <b>Referencia:</b> <?= limpiar($pedidoDetalle['referencia']) ?></p><?php endif; ?>
         <p><i class="ti ti-credit-card"></i> <b>Pago:</b> <?= iconoPago($pedidoDetalle['metodo_pago'], true) ?>
             <?php if ($pedidoDetalle['culqi_charge_id']): ?> — ID cargo: <code><?= limpiar($pedidoDetalle['culqi_charge_id']) ?></code><?php endif; ?>

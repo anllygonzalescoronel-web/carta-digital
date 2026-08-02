@@ -411,7 +411,15 @@ function pintarOlas(): void
             <tr>
                 <td><a href="pedidos.php?ver=<?= $p['id'] ?>"><?= limpiar($p['codigo']) ?></a></td>
                 <td><?= limpiar($p['cliente_nombre']) ?></td>
-<td><?= $p['tipo_entrega'] === 'delivery' ? '<i class="ti ti-motorbike"></i> Delivery' : '<i class="ti ti-home"></i> Recojo' ?></td>
+<td><?php
+    if ($p['tipo_entrega'] === 'delivery') {
+        echo '<i class="ti ti-motorbike"></i> Delivery';
+    } elseif ($p['tipo_entrega'] === 'comer_aqui') {
+        echo '<i class="ti ti-tools-kitchen-2"></i> Comer aqui';
+    } else {
+        echo '<i class="ti ti-home"></i> Recojo';
+    }
+?></td>
 <td><?= ['efectivo'=>'<i class="ti ti-cash"></i> Efectivo','yape_plin'=>'<i class="ti ti-device-mobile"></i> Yape (Culqi)','tarjeta'=>'<i class="ti ti-credit-card"></i> Tarjeta'][$p['metodo_pago']] ?></td>
                 <td><?= formatoPrecio($p['total']) ?></td>
                 <td><span class="badge badge-<?= $p['estado'] ?>"><?= $p['estado'] ?></span></td>

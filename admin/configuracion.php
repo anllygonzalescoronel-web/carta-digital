@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST[$c])) guardarConfig($c, trim($_POST[$c]));
         }
 
-        $checkboxes = ['delivery_activo', 'recojo_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado', 'smtp_enabled'];
+        $checkboxes = ['delivery_activo', 'recojo_activo', 'comer_aqui_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado', 'smtp_enabled'];
         foreach ($checkboxes as $c) {
             guardarConfig($c, isset($_POST[$c]) ? '1' : '0');
         }
@@ -248,6 +248,10 @@ $colorFondo = c('color_fondo', '#f2f6f2');
         <div class="form-check">
             <input type="checkbox" name="delivery_activo" id="delivery_activo" <?= c('delivery_activo')==='1'?'checked':'' ?>>
             <label for="delivery_activo" style="margin:0;">Permitir delivery</label>
+        </div>
+        <div class="form-check">
+            <input type="checkbox" name="comer_aqui_activo" id="comer_aqui_activo" <?= c('comer_aqui_activo','1')==='1'?'checked':'' ?>>
+            <label for="comer_aqui_activo" style="margin:0;">Permitir comer aqui</label>
         </div>
         <div class="form-group">
             <label>Costo de delivery (S/)</label>
