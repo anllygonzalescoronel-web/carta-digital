@@ -365,7 +365,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">Varios</div>
                 <a href="../index.php" target="_blank"><i class="ti ti-world"></i> Ver carta pública</a>
-                <a href="logout.php" class="salir"><i class="ti ti-logout"></i> Cerrar sesión</a>
+                <a href="https://wa.me/51956761889?text=Hola%2C%20quiero%20reportar%20un%20bug%20en%20Carta%20Digital" target="_blank" rel="noopener" class="reporte-bug"><i class="ti ti-bug"></i> Reportar bug</a>
             </div>
         </nav>
 </aside>
@@ -398,6 +398,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                         <span><?= $saludo ?> · <?= limpiar(ucfirst($rolActual)) ?></span>
                     </div>
                 </div>
+                <a href="logout.php" class="btn-logout-header" title="Cerrar sesión"><i class="ti ti-logout"></i> Salir</a>
                 <button type="button" id="theme-toggle" class="theme-toggle" title="Cambiar tema" aria-label="Cambiar entre modo claro y oscuro"><i class="ti ti-moon"></i></button>
             </div>
         </header>

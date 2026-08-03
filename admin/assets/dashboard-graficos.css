@@ -1231,6 +1231,31 @@ body.modo-oscuro .modal-confirmar p {
     color: #d64545;
 }
 
+.admin-sidebar nav a.reporte-bug {
+    color: #0f766e;
+    border: 1px dashed rgba(13,148,136,.35);
+    background: rgba(204,251,241,.58);
+    border-left-color: transparent;
+}
+
+.btn-logout-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 11px;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: transform .12s ease, filter .15s ease;
+}
+
+.btn-logout-header:hover { filter: brightness(.97); }
+.btn-logout-header:active { transform: translateY(1px); }
+
 /* ===== Menú lateral: vuelve a oscuro en modo oscuro ===== */
 body.modo-oscuro .admin-sidebar {
     background: #1f2430 !important;
@@ -1251,6 +1276,18 @@ body.modo-oscuro .admin-sidebar nav a.activo {
 }
 body.modo-oscuro .admin-sidebar nav a.salir {
     color: #ff8a80;
+}
+
+body.modo-oscuro .admin-sidebar nav a.reporte-bug {
+    color: #5eead4;
+    border-color: rgba(45,212,191,.3);
+    background: rgba(19,78,74,.30);
+}
+
+body.modo-oscuro .btn-logout-header {
+    background: rgba(127,29,29,.30);
+    border-color: rgba(239,68,68,.35);
+    color: #fca5a5;
 }
 
 /* ===== Iconos del menú lateral ===== */
@@ -2270,4 +2307,55 @@ body.modo-oscuro .barra-eje-num { fill: #9aa0ac; }
 .leyenda-oculta {
     opacity: .4;
     text-decoration: line-through;
+}
+
+/* ===== Tema hover naranja (global admin) ===== */
+.admin-sidebar nav a:hover,
+.admin-sidebar nav a.activo,
+.admin-quick-link:hover,
+.admin-quick-link.activo,
+.btn-secundario:hover,
+.btn-soft:hover,
+.config-tab-btn:hover,
+.grafico-tabs button:hover,
+.top-periodo-btn:hover,
+.filtro-badge:hover {
+    border-color: #E8590C !important;
+    color: #E8590C !important;
+    background: rgba(232,89,12,.12) !important;
+}
+
+.btn-logout-header:hover,
+.btn-peligro-solido:hover,
+.btn-principal:hover,
+.btn-nuevo:hover,
+.btn-primario:hover {
+    background: #E8590C !important;
+    border-color: #E8590C !important;
+    color: #fff !important;
+}
+
+body.modo-oscuro .admin-sidebar nav a:hover,
+body.modo-oscuro .admin-sidebar nav a.activo,
+body.modo-oscuro .admin-quick-link:hover,
+body.modo-oscuro .admin-quick-link.activo,
+body.modo-oscuro .btn-secundario:hover,
+body.modo-oscuro .btn-soft:hover,
+body.modo-oscuro .config-tab-btn:hover,
+body.modo-oscuro .grafico-tabs button:hover,
+body.modo-oscuro .top-periodo-btn:hover,
+body.modo-oscuro .filtro-badge:hover {
+    border-color: #E8590C !important;
+    color: #ffd7c1 !important;
+    background: rgba(232,89,12,.22) !important;
+}
+
+body.modo-oscuro .btn-logout-header:hover,
+body.modo-oscuro .btn-peligro-solido:hover,
+body.modo-oscuro .btn-principal:hover,
+body.modo-oscuro .btn-nuevo:hover,
+body.modo-oscuro .btn-primario:hover {
+    background: #E8590C !important;
+    border-color: #E8590C !important;
+    color: #fff !important;
 }
