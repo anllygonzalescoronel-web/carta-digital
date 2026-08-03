@@ -35,6 +35,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 elseif ($m['tipo'] === 'egreso') $resumen['egresos'] += $monto;
                 elseif ($m['tipo'] === 'venta') $resumen['ventas'] += $monto;
             }
+
+            // Fallback: en algunos flujos la venta queda en pedidos.caja_turno_id
+            // pero no se inserta movimiento tipo "venta".
+            if ($resumen['ventas'] <= 0.0) {
+                $stmtVentasTurno = $db->prepare(
+                    "SELECT COALESCE(SUM(total), 0) AS total_ventas
+                     FROM pedidos
+                     WHERE caja_turno_id = :turno
+                       AND estado != 'cancelado'"
+                );
+                $stmtVentasTurno->execute(['turno' => (int)$turno['id']]);
+                $filaVentasTurno = $stmtVentasTurno->fetch();
+                $resumen['ventas'] = (float)($filaVentasTurno['total_ventas'] ?? 0);
+            }
+
             $resumen['saldo'] = (float)$turno['monto_apertura'] + $resumen['ingresos'] + $resumen['ventas'] - $resumen['egresos'];
         }
 

@@ -19,6 +19,27 @@ $ventasHoy = $db->query("SELECT COALESCE(SUM(total),0) t FROM pedidos WHERE DATE
 $pendientes = $db->query("SELECT COUNT(*) c FROM pedidos WHERE estado = 'pendiente'")->fetch()['c'];
 $totalProductos = $db->query("SELECT COUNT(*) c FROM productos WHERE disponible = 1")->fetch()['c'];
 
+$columnaAperturaCaja = 'creado_en';
+try {
+    $stmtColsCaja = $db->query("SHOW COLUMNS FROM cajas_turnos");
+    $columnasCaja = $stmtColsCaja ? $stmtColsCaja->fetchAll(PDO::FETCH_COLUMN, 0) : [];
+    if (in_array('abierta_en', $columnasCaja, true)) {
+        $columnaAperturaCaja = 'abierta_en';
+    } elseif (in_array('creado_en', $columnasCaja, true)) {
+        $columnaAperturaCaja = 'creado_en';
+    }
+} catch (Throwable $e) {
+    $columnaAperturaCaja = 'creado_en';
+}
+
+$turnoCajaActual = $db->query("SELECT id, estado, {$columnaAperturaCaja} AS fecha_apertura FROM cajas_turnos ORDER BY id DESC LIMIT 1")->fetch();
+$cajaAbierta = $turnoCajaActual && ($turnoCajaActual['estado'] ?? '') === 'abierta';
+$textoEstadoCaja = $cajaAbierta ? 'Caja abierta' : 'Caja cerrada';
+$detalleEstadoCaja = '';
+if ($cajaAbierta && !empty($turnoCajaActual['fecha_apertura'])) {
+    $detalleEstadoCaja = 'Desde ' . date('d/m H:i', strtotime($turnoCajaActual['fecha_apertura']));
+}
+
 // ----- Paginación de "Últimos pedidos" -----
 $pedidosPorPagina = 10;
 $paginaActual2 = max(1, (int) ($_GET['pagina'] ?? 1));
@@ -281,6 +302,35 @@ function pintarOlas(): void
 }
 ?>
 
+<div class="dashboard-welcome card">
+    <div class="dashboard-welcome-floaters" aria-hidden="true">
+        <i class="ti ti-chef-hat f1"></i>
+        <i class="ti ti-tools-kitchen-2 f2"></i>
+        <i class="ti ti-pizza f3"></i>
+        <i class="ti ti-cup f4"></i>
+        <i class="ti ti-ice-cream f5"></i>
+        <i class="ti ti-forklift f6"></i>
+        <i class="ti ti-bowl f7"></i>
+        <i class="ti ti-meat f8"></i>
+        <i class="ti ti-fish f9"></i>
+        <i class="ti ti-bread f10"></i>
+        <i class="ti ti-salad f11"></i>
+        <i class="ti ti-cookie f12"></i>
+    </div>
+    <div class="dashboard-welcome-icon"><i class="ti ti-sparkles"></i></div>
+    <div class="dashboard-welcome-text">
+        <h2>Bienvenido, <?= limpiar($nombreAdmin ?? 'Admin') ?></h2>
+        <p>Hoy es un buen día para vender más. Revisa tus métricas, pedidos y productos destacados.</p>
+        <div class="dashboard-caja-estado <?= $cajaAbierta ? 'is-open' : 'is-closed' ?>">
+            <span class="dashboard-caja-dot"></span>
+            <strong><?= limpiar($textoEstadoCaja) ?></strong>
+            <?php if ($detalleEstadoCaja !== ''): ?>
+                <small><?= limpiar($detalleEstadoCaja) ?></small>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
 <div class="grid-stats">
 
     <div class="stat-frame">
@@ -398,6 +448,112 @@ function pintarOlas(): void
 </div>
 
 </div>
+
+<div class="top-rankings-grid">
+
+    <!-- ── Top Productos más vendidos ── -->
+    <div class="card top-ranking-card">
+        <div class="top-ranking-head">
+            <div class="top-ranking-icon"><i class="ti ti-trophy"></i></div>
+            <div class="top-ranking-head-text">
+                <h3>Top productos vendidos</h3>
+                <p>Los 12 productos con más unidades despachadas</p>
+            </div>
+        </div>
+        <div class="top-ranking-periodos" data-tipo="productos">
+            <button type="button" class="top-periodo-btn" data-periodo="hoy">Hoy</button>
+            <button type="button" class="top-periodo-btn" data-periodo="semana">Semana</button>
+            <button type="button" class="top-periodo-btn top-periodo-btn-activo" data-periodo="mes">Mes</button>
+            <button type="button" class="top-periodo-btn" data-periodo="anio">Año</button>
+        </div>
+        <div class="top-ranking-scroll" id="top-productos-lista">
+            <div class="top-ranking-loading"><i class="ti ti-loader-2 top-spin"></i> Cargando…</div>
+        </div>
+    </div>
+
+    <!-- ── Top Categorías más vendidas ── -->
+    <div class="card top-ranking-card">
+        <div class="top-ranking-head">
+            <div class="top-ranking-icon top-ranking-icon-cat"><i class="ti ti-category"></i></div>
+            <div class="top-ranking-head-text">
+                <h3>Top categorías vendidas</h3>
+                <p>Categorías con mayor volumen de ventas</p>
+            </div>
+        </div>
+        <div class="top-ranking-periodos" data-tipo="categorias">
+            <button type="button" class="top-periodo-btn" data-periodo="hoy">Hoy</button>
+            <button type="button" class="top-periodo-btn" data-periodo="semana">Semana</button>
+            <button type="button" class="top-periodo-btn top-periodo-btn-activo" data-periodo="mes">Mes</button>
+            <button type="button" class="top-periodo-btn" data-periodo="anio">Año</button>
+        </div>
+        <div class="top-ranking-scroll" id="top-categorias-lista">
+            <div class="top-ranking-loading"><i class="ti ti-loader-2 top-spin"></i> Cargando…</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const FALLBACK_PROD = '<i class="ti ti-tools-kitchen-2"></i>';
+    const FALLBACK_CAT  = '<i class="ti ti-category"></i>';
+
+    function rankClass(r) {
+        return r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
+    }
+
+    function renderLista(contenedor, items, esCat) {
+        if (!items || items.length === 0) {
+            contenedor.innerHTML = '<div class="top-ranking-empty"><i class="ti ti-chart-bar-off"></i><span>Sin ventas en este período</span></div>';
+            return;
+        }
+        const fallback = esCat ? FALLBACK_CAT : FALLBACK_PROD;
+        const barClass = esCat ? 'top-ranking-bar top-ranking-bar-cat' : 'top-ranking-bar';
+        const html = items.map(item => {
+            // Imagen: mostramos ambos (img + fallback oculto) y con CSS/JS simple los alternamos
+            const imgHtml = item.imagen
+                ? `<img src="${item.imagen}" alt="" class="top-ranking-img" loading="lazy"
+                     onload="this.nextElementSibling.style.display='none'"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                   <div class="top-ranking-img top-ranking-img-fallback" style="display:none">${fallback}</div>`
+                : `<div class="top-ranking-img top-ranking-img-fallback">${fallback}</div>`;
+            return '<div class="top-ranking-item">'
+                + '<div class="top-rank-num ' + rankClass(item.rank) + '">' + item.rank + '</div>'
+                + imgHtml
+                + '<div class="top-ranking-info">'
+                + '<span class="top-ranking-name">' + item.nombre + '</span>'
+                + '<span class="top-ranking-qty"><i class="ti ti-package"></i> ' + item.total_vendido.toLocaleString('es-PE') + ' uds.</span>'
+                + '<div class="top-ranking-bar-wrap"><div class="' + barClass + '" style="width:' + item.pct + '%"></div></div>'
+                + '</div></div>';
+        }).join('');
+        contenedor.innerHTML = html;
+    }
+
+    function cargarTop(tipo, periodo) {
+        const contenedor = document.getElementById('top-' + tipo + '-lista');
+        contenedor.innerHTML = '<div class="top-ranking-loading"><i class="ti ti-loader-2 top-spin"></i> Cargando…</div>';
+        fetch('ajax-top-rankings.php?tipo=' + tipo + '&periodo=' + periodo)
+            .then(r => r.json())
+            .then(data => renderLista(contenedor, data.items, tipo === 'categorias'))
+            .catch(() => {
+                contenedor.innerHTML = '<div class="top-ranking-empty"><i class="ti ti-wifi-off"></i><span>Error al cargar datos</span></div>';
+            });
+    }
+
+    document.querySelectorAll('.top-ranking-periodos').forEach(function (barra) {
+        const tipo = barra.dataset.tipo;
+        barra.querySelectorAll('.top-periodo-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                barra.querySelectorAll('.top-periodo-btn').forEach(b => b.classList.remove('top-periodo-btn-activo'));
+                btn.classList.add('top-periodo-btn-activo');
+                cargarTop(tipo, btn.dataset.periodo);
+            });
+        });
+        // Carga inicial con el período activo (mes)
+        cargarTop(tipo, 'mes');
+    });
+})();
+</script>
 
 <div class="card">
     <h3>Últimos pedidos</h3>

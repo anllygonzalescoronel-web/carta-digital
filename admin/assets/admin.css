@@ -356,6 +356,611 @@ img.thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; ba
     line-height: 1.5;
 }
 
+/* ================================================================
+   MODO OSCURO — Cobertura completa de todos los módulos
+   ================================================================ */
+
+/* ── Base y componentes comunes ── */
+body.modo-oscuro {
+    background: var(--neu-base, #262a35);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .card {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+body.modo-oscuro .card h3,
+body.modo-oscuro .card h2 {
+    color: #f1f5f9;
+}
+
+body.modo-oscuro .stat-box {
+    background: #1e2535;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.modo-oscuro .stat-box .num  { color: #f97316; }
+body.modo-oscuro .stat-box .lbl  { color: #94a3b8; }
+
+/* ── Modal común ── */
+body.modo-oscuro .modal-box,
+body.modo-oscuro .modal-overlay .modal-box {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .modal-box h3,
+body.modo-oscuro .modal-box h4 {
+    color: #f1f5f9;
+}
+
+/* ── Formularios comunes ── */
+body.modo-oscuro .form-group label { color: #cbd5e1; }
+body.modo-oscuro .form-group input,
+body.modo-oscuro .form-group select,
+body.modo-oscuro .form-group textarea {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .btn-secundario { background: #2c3144; color: #e2e8f0; }
+
+body.modo-oscuro .alerta-error { background: rgba(192,57,43,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+body.modo-oscuro .alerta-ok    { background: rgba(30,132,73,0.2);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+
+/* ── Tabs de configuración ── */
+body.modo-oscuro .config-tab-btn {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.12);
+    color: #cbd5e1;
+}
+body.modo-oscuro .config-tab-btn:hover { background: #263045; }
+
+/* ── Grid dos cards ── */
+body.modo-oscuro .grid-dos-cards .card { background: #1e2535; }
+
+/* ================================================================
+   MÓDULO: Estaciones (est-*)
+   ================================================================ */
+body.modo-oscuro .est-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .est-card-footer { border-top-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .est-tag { background: #2c3144; color: #cbd5e1; }
+body.modo-oscuro .est-tag.cat   { background: rgba(30,64,175,0.3);  color: #93c5fd; }
+body.modo-oscuro .est-tag.usr   { background: rgba(22,101,52,0.3);  color: #86efac; }
+body.modo-oscuro .est-tag.empty { background: rgba(146,64,14,0.3);  color: #fde68a; }
+
+body.modo-oscuro .est-modal {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+body.modo-oscuro .est-modal-body { background: #1e2535; color: #e2e8f0; }
+body.modo-oscuro .est-modal-footer { border-top-color: rgba(255,255,255,0.08); }
+
+body.modo-oscuro .est-confirm-box {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+body.modo-oscuro .est-confirm-box p { color: #94a3b8; }
+
+body.modo-oscuro .ef-field label { color: #94a3b8; }
+body.modo-oscuro .ef-field input,
+body.modo-oscuro .ef-field select,
+body.modo-oscuro .ef-field textarea {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+body.modo-oscuro .est-check-item {
+    border-color: rgba(255,255,255,0.1);
+}
+body.modo-oscuro .est-check-item span { color: #cbd5e1; }
+body.modo-oscuro .est-check-item:hover { background: rgba(99,102,241,0.15); }
+body.modo-oscuro .est-check-item.checked { background: rgba(99,102,241,0.2); }
+
+body.modo-oscuro .icon-opt {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+}
+body.modo-oscuro .icon-opt:hover,
+body.modo-oscuro .icon-opt.selected { background: rgba(99,102,241,0.2); }
+
+body.modo-oscuro .btn-est-edit { background: #2c3144; color: #cbd5e1; }
+body.modo-oscuro .est-empty    { color: #4b5563; }
+body.modo-oscuro .est-empty h3 { color: #6b7280; }
+
+/* ================================================================
+   MÓDULO: Cajas (cj-*, turno-*, res-*, hist-*, arqueo-*)
+   ================================================================ */
+body.modo-oscuro .cj-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .cj-card-title { color: #f1f5f9; }
+body.modo-oscuro .cj-card-title i { color: #64748b; }
+
+body.modo-oscuro .cc-der {
+    background: #1e2535;
+    color: #e2e8f0;
+}
+body.modo-oscuro .cc-der h3 { color: #f1f5f9; }
+
+body.modo-oscuro .res-item {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .res-item .valor { color: #f1f5f9; }
+body.modo-oscuro .res-item .etiq  { color: #94a3b8; }
+body.modo-oscuro .res-item > i    { color: #64748b; }
+
+body.modo-oscuro .tabla-wrap {
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tabla-wrap thead tr { background: #1a1f2e; }
+body.modo-oscuro .tabla-wrap th {
+    background: #1a1f2e;
+    color: #94a3b8;
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tabla-wrap td {
+    color: #cbd5e1;
+    border-top-color: rgba(255,255,255,0.06);
+}
+body.modo-oscuro .tabla-wrap tbody tr:hover { background: #263045; }
+
+body.modo-oscuro .cj-field label { color: #94a3b8; }
+body.modo-oscuro .cj-field input,
+body.modo-oscuro .cj-field select,
+body.modo-oscuro .cj-field textarea {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .arqueo-row { color: #cbd5e1; border-bottom-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .arqueo-row.total { color: #f1f5f9; }
+body.modo-oscuro .arqueo-diff.ok   { background: rgba(22,101,52,0.2);   color: #86efac;  border-color: rgba(134,239,172,0.2); }
+body.modo-oscuro .arqueo-diff.warn { background: rgba(146,64,14,0.2);   color: #fde68a;  border-color: rgba(253,230,138,0.2); }
+body.modo-oscuro .arqueo-diff.bad  { background: rgba(185,28,28,0.2);   color: #fca5a5;  border-color: rgba(252,165,165,0.2); }
+
+body.modo-oscuro .hist-item {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .hi-num   { color: #f1f5f9; }
+body.modo-oscuro .hi-row   { color: #94a3b8; }
+body.modo-oscuro .hi-row.strong { color: #f1f5f9; }
+body.modo-oscuro .hi-sep   { border-top-color: rgba(255,255,255,0.08); }
+
+body.modo-oscuro .btn-soft { background: #2c3144; color: #cbd5e1; }
+body.modo-oscuro .chip-info { background: #2c3144; color: #cbd5e1; }
+
+/* ================================================================
+   MÓDULO: Ingredientes (ing-*)
+   ================================================================ */
+body.modo-oscuro .ing-stat {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .ing-stat-label { color: #94a3b8; }
+
+body.modo-oscuro .ing-table-wrap {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .ing-table thead { background: #1a1f2e; }
+body.modo-oscuro .ing-table th {
+    color: #94a3b8;
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .ing-table td { border-bottom-color: rgba(255,255,255,0.06); }
+body.modo-oscuro .ing-table tbody tr:hover { background: #263045; }
+
+body.modo-oscuro .ing-search {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .ing-modal {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+body.modo-oscuro .ing-modal h3 { color: #f1f5f9; }
+body.modo-oscuro .ing-modal-close { color: #64748b; }
+body.modo-oscuro .ing-modal-close:hover { color: #e2e8f0; }
+
+body.modo-oscuro .ing-label { color: #94a3b8; }
+body.modo-oscuro .ing-input,
+body.modo-oscuro .ing-select {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .stock-actual-display {
+    background: #1a1f2e;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+body.modo-oscuro .stock-actual-display .label { color: #94a3b8; }
+body.modo-oscuro .stock-actual-display .valor { color: #f1f5f9; }
+
+body.modo-oscuro .stock-tipo-btn {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.12);
+    color: #cbd5e1;
+}
+
+body.modo-oscuro .badge-unidad { background: #2c3144; color: #94a3b8; }
+
+body.modo-oscuro .hist-item.entrada { background: #1a1f2e; }
+body.modo-oscuro .hist-item.salida  { background: #1a1f2e; }
+body.modo-oscuro .hist-item.ajuste  { background: #1a1f2e; }
+body.modo-oscuro .hist-motivo { color: #94a3b8; }
+body.modo-oscuro .hist-fecha  { color: #64748b; }
+
+body.modo-oscuro .btn-ing-hist { background: #2c3144; color: #94a3b8; }
+
+/* ================================================================
+   MÓDULO: Usuarios (ug-*)
+   ================================================================ */
+body.modo-oscuro .ug-new-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .ug-new-card-head { border-bottom-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .ug-new-card h3  { color: #f1f5f9; }
+body.modo-oscuro .ug-new-card p   { color: #94a3b8; }
+
+body.modo-oscuro .ug-form-edit {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+
+body.modo-oscuro .ug-input-prefix,
+body.modo-oscuro .ug-input-eye {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+}
+body.modo-oscuro .ug-input-prefix span { background: #1a1f2e; color: #94a3b8; border-right-color: rgba(255,255,255,0.1); }
+
+body.modo-oscuro .ug-field label { color: #94a3b8; }
+body.modo-oscuro .ug-field input,
+body.modo-oscuro .ug-field select {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .ug-counter-total  { background: #1e2535; border-color: rgba(255,255,255,0.1); color: #f1f5f9; }
+body.modo-oscuro .ug-counter-admin  { background: rgba(30,64,175,0.2); border-color: rgba(96,165,250,0.2); }
+body.modo-oscuro .ug-counter-cook   { background: rgba(194,65,12,0.2);  border-color: rgba(253,186,116,0.2); }
+body.modo-oscuro .ug-counter-active { background: rgba(22,101,52,0.2);  border-color: rgba(134,239,172,0.2); }
+
+body.modo-oscuro .ug-header h1 { color: #f1f5f9; }
+body.modo-oscuro .ug-header p  { color: #94a3b8; }
+
+/* ================================================================
+   MÓDULO: Cocina (kn-*, k-card)
+   ================================================================ */
+body.modo-oscuro .kn-stat {
+    background: #1e2535 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+body.modo-oscuro .kn-stat .kn-st-label { color: #94a3b8; }
+body.modo-oscuro .kn-stat .kn-st-count { color: #f1f5f9 !important; }
+body.modo-oscuro .kn-stat.st-pendiente { border-color: rgba(251,191,36,0.4)   !important; background: rgba(146,64,14,0.2)  !important; }
+body.modo-oscuro .kn-stat.st-cocinando { border-color: rgba(249,115,22,0.4)   !important; background: rgba(154,52,18,0.2)  !important; }
+body.modo-oscuro .kn-stat.st-listo     { border-color: rgba(59,130,246,0.4)   !important; background: rgba(29,78,216,0.2)  !important; }
+body.modo-oscuro .kn-stat.st-entregado { border-color: rgba(34,197,94,0.4)    !important; background: rgba(22,101,52,0.2)  !important; }
+body.modo-oscuro .kn-stat.st-cancelado { border-color: rgba(239,68,68,0.4)    !important; background: rgba(185,28,28,0.2)  !important; }
+body.modo-oscuro .kn-stat.st-total     { border-color: rgba(148,163,184,0.3)  !important; background: #1e2535              !important; }
+body.modo-oscuro .kn-stat.st-pendiente .kn-st-count { color: #fbbf24 !important; }
+body.modo-oscuro .kn-stat.st-cocinando .kn-st-count { color: #fb923c !important; }
+body.modo-oscuro .kn-stat.st-listo     .kn-st-count { color: #93c5fd !important; }
+body.modo-oscuro .kn-stat.st-entregado .kn-st-count { color: #86efac !important; }
+body.modo-oscuro .kn-stat.st-cancelado .kn-st-count { color: #fca5a5 !important; }
+
+body.modo-oscuro .k-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+body.modo-oscuro .kn-col {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.08);
+}
+
+body.modo-oscuro .kn-periodo-label {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.08);
+    color: #94a3b8;
+}
+body.modo-oscuro .kn-periodo-label strong { color: #f1f5f9; }
+
+body.modo-oscuro .kn-btn-periodo {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.1);
+    color: #94a3b8;
+}
+body.modo-oscuro .kn-btn-periodo:hover { background: #263045; }
+
+body.modo-oscuro .kn-hero {
+    background: linear-gradient(135deg, #1e2535 0%, #1a1f2e 60%) !important;
+    border-color: rgba(232,89,12,0.2) !important;
+}
+body.modo-oscuro .kn-hero h2 { color: #f1f5f9; }
+body.modo-oscuro .kn-hero p  { color: #94a3b8; }
+
+/* ================================================================
+   MÓDULO: POS (pos-*)
+   ================================================================ */
+body.modo-oscuro .pos-top,
+body.modo-oscuro .pos-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .pos-card h3 { color: #f1f5f9; }
+
+body.modo-oscuro .pos-categoria-btn {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+    color: #cbd5e1;
+}
+body.modo-oscuro .pos-zona-btn {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+    color: #cbd5e1;
+}
+
+body.modo-oscuro .pos-mesa {
+    background: #1e2535;
+    border-color: #475569;
+}
+body.modo-oscuro .pos-mesa.libre   { background: rgba(22,101,52,0.2);  border-color: rgba(134,239,172,0.4); }
+body.modo-oscuro .pos-mesa.ocupada { background: rgba(146,64,14,0.2);  border-color: rgba(253,211,77,0.4); }
+body.modo-oscuro .pos-mesa .name   { color: #f1f5f9; }
+body.modo-oscuro .pos-mesa .meta   { color: #94a3b8; }
+
+body.modo-oscuro .pos-order-disabled {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+    color: #94a3b8;
+}
+
+body.modo-oscuro .pos-resumen {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .pos-resumen strong { color: #f1f5f9; }
+body.modo-oscuro .pos-resumen-item   { color: #cbd5e1; }
+
+body.modo-oscuro .pos-cart {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .pos-cart th,
+body.modo-oscuro .pos-cart td { border-bottom-color: rgba(255,255,255,0.07); }
+body.modo-oscuro .pos-cart-name { color: #f1f5f9; }
+body.modo-oscuro .pos-cart-unit,
+body.modo-oscuro .pos-cart-options li { color: #94a3b8; }
+
+body.modo-oscuro .pos-modal-box {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .pos-modal-box h4 { color: #f1f5f9; }
+
+body.modo-oscuro .pos-stepper {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+}
+body.modo-oscuro .pos-stepper-btn {
+    background: #263045;
+    border-color: rgba(255,255,255,0.12);
+    color: #f1f5f9;
+}
+body.modo-oscuro .pos-stepper-val { color: #f1f5f9; }
+
+body.modo-oscuro .pos-btn.soft { background: #2c3144; color: #cbd5e1; }
+body.modo-oscuro .pos-btn.warn { background: rgba(146,64,14,0.25); color: #fde68a; }
+body.modo-oscuro .pos-total    { color: #f1f5f9; }
+
+body.modo-oscuro .pos-field label { color: #94a3b8; }
+body.modo-oscuro .pos-field input,
+body.modo-oscuro .pos-field select,
+body.modo-oscuro .pos-field textarea {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .pos-chip    { background: #2c3144; color: #cbd5e1; }
+body.modo-oscuro .pos-mesa-activa { color: #cbd5e1; }
+
+body.modo-oscuro .pos-prod {
+    border-color: rgba(255,255,255,0.08);
+    background: #1a1f2e;
+}
+body.modo-oscuro .pos-prod strong { color: #f1f5f9; }
+body.modo-oscuro .pos-prod small  { color: #94a3b8; }
+body.modo-oscuro .pos-prod-img,
+body.modo-oscuro .pos-cart-thumb  { background: #111827; border-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .pos-prod-fallback,
+body.modo-oscuro .pos-cart-thumb-fallback {
+    background: linear-gradient(135deg, #1a1f2e, #263045);
+    border-color: rgba(255,255,255,0.08);
+    color: #64748b;
+}
+
+/* ================================================================
+   MÓDULO: Opciones/Toppings (tp-*)
+   ================================================================ */
+body.modo-oscuro .tp-panel {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+
+body.modo-oscuro .tp-group-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tp-group-head {
+    background: #1a1f2e;
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tp-group-title { color: #f1f5f9; }
+
+body.modo-oscuro .tp-edit-panel,
+body.modo-oscuro .tp-add-option-panel {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.08);
+}
+
+body.modo-oscuro .tp-product-card {
+    background: linear-gradient(145deg, #1e2535, #1a1f2e);
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tp-product-card:hover { border-color: rgba(147,197,253,0.35); }
+
+body.modo-oscuro .tp-product-name { color: #f1f5f9; }
+body.modo-oscuro .tp-product-meta { color: #94a3b8; }
+body.modo-oscuro .tp-picker-count  { background: #1a1f2e; color: #94a3b8; }
+
+body.modo-oscuro .tp-kpi {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tp-kpi span { color: #94a3b8; }
+
+body.modo-oscuro .tp-field label { color: #94a3b8; }
+body.modo-oscuro .tp-field input,
+body.modo-oscuro .tp-field select {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .tp-option-item {
+    background: linear-gradient(165deg, #1e2535, #1a1f2e);
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .tp-option-name { color: #f1f5f9; }
+
+body.modo-oscuro .tp-check { color: #cbd5e1; }
+body.modo-oscuro .tp-label { color: #94a3b8; }
+body.modo-oscuro .tp-btn-soft  { background: rgba(55,48,163,0.25); color: #a5b4fc; }
+body.modo-oscuro .tp-btn-warn  { background: rgba(194,65,12,0.2);  color: #fdba74; }
+body.modo-oscuro .tp-btn-danger{ background: rgba(185,28,28,0.2);  color: #fca5a5; }
+body.modo-oscuro .tp-btn-gray  { background: #2c3144; color: #cbd5e1; }
+
+body.modo-oscuro .tp-header {
+    background: linear-gradient(135deg, rgba(239,246,255,0.05), rgba(30,37,53,0.8) 62%) !important;
+    border-color: rgba(219,234,254,0.12) !important;
+}
+body.modo-oscuro .tp-header h2 { color: #f1f5f9; }
+body.modo-oscuro .tp-header p  { color: #94a3b8; }
+
+/* ================================================================
+   MÓDULO: Configuración (color-input-card, color-preview, etc.)
+   ================================================================ */
+body.modo-oscuro .color-input-card {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .color-input-card label { color: #cbd5e1; }
+body.modo-oscuro .color-hex {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+body.modo-oscuro .palette-btn {
+    background: #1e2535;
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .palette-name { color: #f1f5f9; }
+body.modo-oscuro .palette-label { color: #94a3b8; }
+body.modo-oscuro .color-preview { background: #1e2535; border-color: rgba(255,255,255,0.08); }
+
+/* ================================================================
+   MÓDULO: Dashboard (grafico-box, stat-frame)
+   ================================================================ */
+body.modo-oscuro .grafico-box {
+    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+body.modo-oscuro .grafico-header { color: #f1f5f9; }
+body.modo-oscuro .grafico-tabs button {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+    color: #94a3b8;
+}
+
+/* ================================================================
+   MÓDULO: Mesas (ya tiene dark mode propio, refuerzo general)
+   ================================================================ */
+body.modo-oscuro .mesas-segment button {
+    background: #1a1f2e;
+    border-color: rgba(255,255,255,0.1);
+    color: #cbd5e1;
+}
+body.modo-oscuro .mesas-badge { background: #2c3144; color: #cbd5e1; }
+
+/* ================================================================
+   MÓDULO: Productos, Categorías, Banners, Comprobantes, Pedidos
+   (usan .card y tabla comunes, ya cubiertos arriba)
+   ================================================================ */
+
+/* Badges de estado en tabla de pedidos */
+body.modo-oscuro .badge-pendiente       { background: rgba(138,109,59,0.25); color: #fde68a; }
+body.modo-oscuro .badge-pagado          { background: rgba(30,126,52,0.25);  color: #86efac; }
+body.modo-oscuro .badge-en_preparacion  { background: rgba(12,84,96,0.25);   color: #67e8f9; }
+body.modo-oscuro .badge-en_camino       { background: rgba(0,64,133,0.25);   color: #93c5fd; }
+body.modo-oscuro .badge-entregado       { background: rgba(83,54,29,0.25);   color: #fdba74; }
+body.modo-oscuro .badge-cancelado       { background: rgba(114,28,36,0.25);  color: #fca5a5; }
+
+/* SUNAT badges */
+body.modo-oscuro .badge-sunat-pendiente_configuracion { background: rgba(138,109,59,0.2); color: #fde68a; }
+body.modo-oscuro .badge-sunat-pendiente_envio         { background: rgba(30,64,175,0.2);  color: #93c5fd; }
+body.modo-oscuro .badge-sunat-aceptado                { background: rgba(22,101,52,0.2);  color: #86efac; }
+body.modo-oscuro .badge-sunat-observado               { background: rgba(154,52,18,0.2);  color: #fdba74; }
+body.modo-oscuro .badge-sunat-rechazado               { background: rgba(153,27,27,0.2);  color: #fca5a5; }
+body.modo-oscuro .badge-sunat-error                   { background: rgba(126,34,206,0.2); color: #d8b4fe; }
+
+/* Links de formularios de eliminar */
+body.modo-oscuro .btn-peligro { background: rgba(192,57,43,0.2); color: #fca5a5; }
+body.modo-oscuro .btn-exito   { background: rgba(30,132,73,0.2); color: #86efac; }
+
+/* Thumbnails */
+body.modo-oscuro img.thumb { background: #1a1f2e; }
+body.modo-oscuro .categoria-thumb { background: #1a1f2e; }
+
+/* Detalle modal de pedido */
+body.modo-oscuro .form-detalle-estado label { color: #94a3b8; }
+body.modo-oscuro .form-detalle-estado select {
+    background: #111827;
+    border-color: rgba(255,255,255,0.12);
+    color: #e2e8f0;
+}
+
+/* ================================================================
+   SEPARADORES Y BORDES GENERALES
+   ================================================================ */
+body.modo-oscuro hr {
+    border-color: rgba(255,255,255,0.08);
+}
+body.modo-oscuro .topbar-kicker { color: #64748b; }
+
 .codigo-sunat-ok { background: #dcfce7; color: #166534; }
 .codigo-sunat-warn { background: #ffedd5; color: #9a3412; }
 .codigo-sunat-bad { background: #fee2e2; color: #991b1b; }
