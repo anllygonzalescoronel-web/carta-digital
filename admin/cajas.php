@@ -16,12 +16,12 @@ require __DIR__ . '/_layout_top.php';
 
 /* ── Card base ── */
 .cj-card {
-    background: #fff;
-    border: 1px solid #e8edf5;
-    border-radius: 18px;
+    background: var(--neu-base);
+    border: none;
+    border-radius: 22px;
     padding: 24px;
     margin-bottom: 18px;
-    box-shadow: 0 1px 6px rgba(15,23,42,.05);
+    box-shadow: 10px 10px 22px var(--neu-sombra-oscura), -10px -10px 22px var(--neu-sombra-clara);
 }
 .cj-card-title {
     font-size: 14px;
@@ -40,10 +40,10 @@ require __DIR__ . '/_layout_top.php';
 .cc-hero {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    border-radius: 18px;
+    border-radius: 26px;
     overflow: hidden;
-    border: 1px solid #e8edf5;
-    box-shadow: 0 4px 20px rgba(15,23,42,.10);
+    border: none;
+    box-shadow: 10px 10px 24px var(--neu-sombra-oscura), -10px -10px 24px var(--neu-sombra-clara);
     margin-bottom: 18px;
 }
 @media (max-width: 700px) { .cc-hero { grid-template-columns: 1fr; } }
@@ -69,7 +69,7 @@ require __DIR__ . '/_layout_top.php';
 .cc-izq p  { color: #94a3b8; font-size: 13.5px; line-height: 1.7; margin: 0; }
 
 .cc-der {
-    background: #fff;
+    background: var(--neu-base);
     padding: 44px 40px;
     display: flex;
     flex-direction: column;
@@ -84,8 +84,8 @@ require __DIR__ . '/_layout_top.php';
 
 /* ── Header turno activo (fondo oscuro) ── */
 .turno-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-radius: 16px;
+    background: var(--neu-base);
+    border-radius: 20px;
     padding: 18px 24px;
     margin-bottom: 18px;
     display: flex;
@@ -93,38 +93,55 @@ require __DIR__ . '/_layout_top.php';
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
+    box-shadow: 6px 6px 14px var(--neu-sombra-oscura), -6px -6px 14px var(--neu-sombra-clara);
 }
 .turno-header .th-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.th-chip-open { background: rgba(134,239,172,.18); color: #86efac; border: 1px solid rgba(134,239,172,.25); }
-.th-chip-info { background: rgba(255,255,255,.09); color: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.12); }
+.th-chip-open { background: rgba(34,197,94,.14); color: #166534; border: 1px solid rgba(34,197,94,.25); }
+.th-chip-info { background: rgba(0,0,0,.05); color: #4a5160; border: 1px solid rgba(0,0,0,.06); }
+body.modo-oscuro .th-chip-open { background: rgba(134,239,172,.18); color: #86efac; border-color: rgba(134,239,172,.25); }
+body.modo-oscuro .th-chip-info { background: rgba(255,255,255,.09); color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.12); }
 
 /* ── Resumen 4 cards ── */
 .res-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
 @media (max-width: 840px) { .res-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.res-frame {
+    background: var(--neu-base);
+    border-radius: 22px;
+    padding: 10px;
+    box-shadow: inset 5px 5px 12px var(--neu-sombra-oscura), inset -5px -5px 12px var(--neu-sombra-clara);
+}
 .res-item {
-    background: #fff;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    padding: 18px 16px 14px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(15,23,42,.04);
+    border-radius: 16px;
+    padding: 18px 16px;
+    min-height: 110px;
+    color: #fff;
+    box-shadow: 4px 4px 10px rgba(0,0,0,.18);
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: pointer;
 }
-.res-item .ri-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 14px 14px 0 0; }
-.c-slate .ri-bar { background: linear-gradient(90deg,#334155,#64748b); }
-.c-blue  .ri-bar { background: linear-gradient(90deg,#1d4ed8,#3b82f6); }
-.c-amber .ri-bar { background: linear-gradient(90deg,#d97706,#f59e0b); }
-.c-green .ri-bar { background: linear-gradient(90deg,#16a34a,#22c55e); }
-.res-item > i { font-size: 20px; color: #94a3b8; margin-bottom: 8px; display: block; }
-.res-item .valor { font-size: 21px; font-weight: 800; color: #0f172a; line-height: 1; }
-.res-item .etiq  { font-size: 10.5px; color: #64748b; margin-top: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+.res-item:hover { transform: translateY(-4px) scale(1.02); box-shadow: 8px 12px 20px rgba(0,0,0,.25); }
+.res-item.c-slate { background: linear-gradient(135deg, #2a1b6a 0%, #5b4bd6 45%, #7ea8ff 100%); }
+.res-item.c-blue  { background: linear-gradient(135deg, #0f4c3a 0%, #1f9e6d 45%, #7fe0a8 100%); }
+.res-item.c-amber { background: linear-gradient(135deg, #7a2b0f 0%, #e8590c 45%, #ffb37a 100%); }
+.res-item.c-green { background: linear-gradient(135deg, #6a1b6a 0%, #c23b8a 45%, #ff7a9e 100%); }
+.res-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+.res-item .etiq { font-size: 11px; font-weight: 600; opacity: .9; text-transform: none; letter-spacing: 0; margin: 0; color: #fff; }
+.res-item .valor { font-size: 22px; font-weight: 800; line-height: 1.2; margin-top: 2px; color: #fff; }
 
 /* ── Tabla movimientos ── */
-.tabla-wrap { overflow: auto; border: 1px solid #e8edf5; border-radius: 12px; }
+.tabla-wrap { overflow: auto; border: none; border-radius: 14px; box-shadow: inset 4px 4px 10px var(--neu-sombra-oscura), inset -4px -4px 10px var(--neu-sombra-clara); }
 .tabla-wrap table { width: 100%; border-collapse: collapse; min-width: 480px; }
-.tabla-wrap thead tr { background: #f8fafc; }
-.tabla-wrap th { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid #e8edf5; }
-.tabla-wrap td { border-top: 1px solid #f1f5f9; padding: 10px 14px; font-size: 13px; color: #334155; }
+.tabla-wrap thead tr { background: transparent; }
+.tabla-wrap th { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: left; border-bottom: 3px solid #E8590C; }.tabla-wrap td { border-top: 1px solid #f1f5f9; padding: 10px 14px; font-size: 13px; color: #334155; }
 .tabla-wrap tbody tr:hover { background: #fafbfc; }
 .tag { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; }
 .tag-venta   { background: #dbeafe; color: #1e40af; }
@@ -136,12 +153,14 @@ require __DIR__ . '/_layout_top.php';
 .cj-field { flex: 1; min-width: 130px; }
 .cj-field label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
 .cj-field input, .cj-field select, .cj-field textarea {
-    width: 100%; border: 1px solid #cbd5e1; border-radius: 10px;
-    padding: 9px 11px; font-size: 13px; box-sizing: border-box; color: #0f172a; background: #fff;
-    transition: border-color .15s, box-shadow .15s;
+    width: 100%; border: none; border-radius: 10px;
+    padding: 9px 11px; font-size: 13px; box-sizing: border-box; color: #0f172a; background: var(--neu-base);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    transition: box-shadow .15s;
 }
 .cj-field input:focus, .cj-field select:focus, .cj-field textarea:focus {
-    outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    outline: none;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
 }
 .cj-field textarea { resize: vertical; }
 
@@ -155,10 +174,10 @@ require __DIR__ . '/_layout_top.php';
 .btn:hover   { opacity: .9; }
 .btn:active  { transform: scale(.98); }
 .btn:disabled{ opacity: .55; cursor: not-allowed; }
-.btn-primary { background: #0f172a; color: #fff; box-shadow: 0 2px 8px rgba(15,23,42,.2); }
-.btn-success { background: linear-gradient(135deg,#166534,#15803d); color: #fff; box-shadow: 0 2px 8px rgba(22,101,52,.22); }
-.btn-danger  { background: linear-gradient(135deg,#b91c1c,#dc2626); color: #fff; box-shadow: 0 2px 8px rgba(185,28,28,.22); }
-.btn-soft    { background: #f1f5f9; color: #334155; }
+.btn-primary { background: linear-gradient(135deg, #ff8a3d, #E8590C); color: #fff; box-shadow: 4px 4px 10px rgba(232,89,12,.35); }
+.btn-success { background: linear-gradient(135deg,#166534,#15803d); color: #fff; box-shadow: 4px 4px 10px rgba(22,101,52,.28); }
+.btn-danger  { background: linear-gradient(135deg,#b91c1c,#dc2626); color: #fff; box-shadow: 4px 4px 10px rgba(185,28,28,.28); }
+.btn-soft    { background: var(--neu-base); color: #4a5160; box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara); }
 .btn-sm      { padding: 7px 14px; font-size: 12px; }
 
 /* ── Modal cierre ── */
@@ -170,9 +189,9 @@ require __DIR__ . '/_layout_top.php';
     display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 .modal-box {
-    background: #fff; border-radius: 20px; padding: 30px;
+    background: var(--neu-base); border-radius: 24px; padding: 30px;
     max-width: 500px; width: 100%;
-    box-shadow: 0 24px 60px rgba(15,23,42,.22);
+    box-shadow: 14px 14px 32px rgba(0,0,0,.28), -8px -8px 24px var(--neu-sombra-clara);
 }
 .modal-box h3 { margin: 0 0 20px; font-size: 18px; display: flex; align-items: center; gap: 9px; }
 .arqueo-row {
@@ -193,9 +212,10 @@ require __DIR__ . '/_layout_top.php';
 /* ── Historial de turnos ── */
 .hist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 14px; }
 .hist-item {
-    background: #f8fafc; border: 1px solid #e8edf5;
-    border-radius: 14px; padding: 16px;
+    background: var(--neu-base); border: none;
+    border-radius: 18px; padding: 16px;
     position: relative; overflow: hidden;
+    box-shadow: inset 5px 5px 12px var(--neu-sombra-oscura), inset -5px -5px 12px var(--neu-sombra-clara);
 }
 .hist-item .hi-barra { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 14px 14px; }
 .hist-item.eq  .hi-barra { background: #f59e0b; }
@@ -225,6 +245,96 @@ require __DIR__ . '/_layout_top.php';
 .cj-msg { min-height: 18px; font-size: 13px; font-weight: 700; }
 .cj-msg.ok  { color: #166534; }
 .cj-msg.err { color: #b91c1c; }
+
+
+
+
+/* Fuerza los degradados de color incluso en modo oscuro */
+body.modo-oscuro .res-item.c-slate { background: linear-gradient(135deg, #2a1b6a 0%, #5b4bd6 45%, #7ea8ff 100%) !important; }
+body.modo-oscuro .res-item.c-blue  { background: linear-gradient(135deg, #0f4c3a 0%, #1f9e6d 45%, #7fe0a8 100%) !important; }
+body.modo-oscuro .res-item.c-amber { background: linear-gradient(135deg, #7a2b0f 0%, #e8590c 45%, #ffb37a 100%) !important; }
+body.modo-oscuro .res-item.c-green { background: linear-gradient(135deg, #6a1b6a 0%, #c23b8a 45%, #ff7a9e 100%) !important; }
+body.modo-oscuro .res-frame {
+    box-shadow: inset 5px 5px 12px var(--neu-sombra-oscura), inset -5px -5px 12px var(--neu-sombra-clara);
+}
+
+
+
+
+/* Fuerza texto e íconos blancos dentro de las tarjetas de color, sin importar el tema */
+.res-item, body.modo-oscuro .res-item {
+    color: #fff !important;
+}
+.res-item .etiq, body.modo-oscuro .res-item .etiq {
+    color: rgba(255,255,255,.92) !important;
+}
+.res-item .valor, body.modo-oscuro .res-item .valor {
+    color: #fff !important;
+}
+.res-item .res-icon, body.modo-oscuro .res-item .res-icon {
+    color: #fff !important;
+}
+.res-item .res-icon i {
+    color: #fff !important;
+}
+
+@keyframes entradaSuaveCaja {
+    from { opacity: 0; transform: translateY(24px) scale(.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.res-frame, .hist-item, .cj-card, .cc-hero {
+    animation: entradaSuaveCaja .6s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ===== Líneas de circuito decorativas dentro de las tarjetas de color ===== */
+.res-item {
+    position: relative;
+    isolation: isolate;
+}
+.res-circuito {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: .88;
+    pointer-events: none;
+}
+.res-circuito svg { width: 100%; height: 100%; display: block; }
+
+.res-circuito .linea-base {
+    fill: none;
+    stroke: rgba(255,255,255,.18);
+    stroke-width: 1.2;
+}
+.res-circuito .linea-brillo {
+    fill: none;
+    stroke: rgba(255,255,255,.95);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 3px rgba(255,255,255,.9));
+    stroke-dasharray: 26 400;
+    animation: recorrerCircuito 3s linear infinite;
+}
+.res-circuito .nodo {
+    fill: rgba(255,255,255,.5);
+}
+
+@keyframes recorrerCircuito {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -426; }
+}
+
+/* Que el ícono y el texto queden siempre por encima de las líneas */
+.res-item .res-icon,
+.res-item .etiq,
+.res-item .valor {
+    position: relative;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .res-circuito .linea-brillo { animation: none; }
+}
 </style>
 
 <div class="caja-wrap">
@@ -457,11 +567,26 @@ require __DIR__ . '/_layout_top.php';
             document.getElementById('chipUsuario').textContent = turno.usuario_nombre || 'Admin';
 
             const saldo = Number(turno.monto_apertura || 0) + Number(res.ventas || 0) + Number(res.ingresos || 0) - Number(res.egresos || 0);
+            function circuitoSVG(variante) {
+                const paths = [
+                    'M0,20 Q40,20 55,45 T110,60 L160,60',
+                    'M160,10 Q120,10 105,35 T50,50 L0,50',
+                    'M0,80 Q50,80 65,55 T120,40 L160,40',
+                ];
+                const d = paths[variante % paths.length];
+                return `<div class="res-circuito"><svg viewBox="0 0 160 100" preserveAspectRatio="none">
+                    <path class="linea-base" d="${d}"/>
+                    <path class="linea-brillo" d="${d}"/>
+                    <circle class="nodo" cx="0" cy="${variante === 1 ? 50 : (variante === 2 ? 80 : 20)}" r="2.2"/>
+                    <circle class="nodo" cx="160" cy="${variante === 1 ? 10 : (variante === 2 ? 40 : 60)}" r="2.2"/>
+                </svg></div>`;
+            }
+
             document.getElementById('resumenGrid').innerHTML = `
-                <div class="res-item c-slate"><div class="ri-bar"></div><i class="ti ti-cash"></i><div class="valor">${fmt(turno.monto_apertura)}</div><div class="etiq">Apertura</div></div>
-                <div class="res-item c-blue"><div class="ri-bar"></div><i class="ti ti-receipt"></i><div class="valor">${fmt(res.ventas)}</div><div class="etiq">Ventas del turno</div></div>
-                <div class="res-item c-amber"><div class="ri-bar"></div><i class="ti ti-arrows-exchange"></i><div class="valor">${fmt(Number(res.ingresos||0) - Number(res.egresos||0))}</div><div class="etiq">Otros movimientos</div></div>
-                <div class="res-item c-green"><div class="ri-bar"></div><i class="ti ti-chart-bar"></i><div class="valor">${fmt(saldo)}</div><div class="etiq">Saldo estimado</div></div>
+                <div class="res-frame"><div class="res-item c-slate">${circuitoSVG(0)}<i class="ti ti-cash res-icon"></i><div class="etiq">Apertura</div><div class="valor">${fmt(turno.monto_apertura)}</div></div></div>
+                <div class="res-frame"><div class="res-item c-blue">${circuitoSVG(1)}<i class="ti ti-receipt res-icon"></i><div class="etiq">Ventas del turno</div><div class="valor">${fmt(res.ventas)}</div></div></div>
+                <div class="res-frame"><div class="res-item c-amber">${circuitoSVG(2)}<i class="ti ti-arrows-exchange res-icon"></i><div class="etiq">Otros movimientos</div><div class="valor">${fmt(Number(res.ingresos||0) - Number(res.egresos||0))}</div></div></div>
+                <div class="res-frame"><div class="res-item c-green">${circuitoSVG(0)}<i class="ti ti-chart-bar res-icon"></i><div class="etiq">Saldo estimado</div><div class="valor">${fmt(saldo)}</div></div></div>
             `;
 
             const movs = Array.isArray(d.movimientos) ? d.movimientos : [];
