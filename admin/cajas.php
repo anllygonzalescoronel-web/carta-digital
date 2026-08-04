@@ -457,8 +457,7 @@ body.modo-oscuro .res-frame {
         <div id="arqResumen"></div>
 
         <div class="cj-field" style="margin:16px 0 8px;">
-            <label>💵 Efectivo contado físicamente (S/)</label>
-            <input type="number" step="0.01" id="montoCierre" placeholder="0.00" style="font-size:18px;font-weight:700;">
+<label><i class="ti ti-cash-banknote" style="color:#E8590C;margin-right:5px;"></i>Efectivo contado físicamente (S/)</label>            <input type="number" step="0.01" id="montoCierre" placeholder="0.00" style="font-size:18px;font-weight:700;">
         </div>
 
         <div id="arqDiferencia" class="arqueo-diff ok" style="display:none;"></div>
