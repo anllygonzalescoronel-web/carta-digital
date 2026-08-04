@@ -641,6 +641,38 @@ body.modo-oscuro .pos-shell {
 .pos-msg.ok { color: #1e8449; }
 .pos-msg.err { color: #b91c1c; }
 
+.pos-scroll-cart-btn {
+    position: fixed;
+    right: 16px;
+    bottom: 86px;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 999px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ff8a3d, var(--pos-primary));
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(232,89,12,.35);
+    z-index: 10002;
+}
+
+.pos-scroll-cart-btn.show {
+    display: inline-flex;
+}
+
+.pos-scroll-cart-btn i {
+    font-size: 24px;
+    line-height: 1;
+}
+
+@media (min-width: 681px) {
+    .pos-scroll-cart-btn {
+        bottom: 22px;
+    }
+}
+
 /* ----- Modales ----- */
 .pos-modal {
     display: none;
@@ -836,6 +868,10 @@ body.modo-oscuro .pos-shell {
     </div>
 </div>
 
+<button type="button" class="pos-scroll-cart-btn" id="btnIrCarritoAndroid" aria-label="Bajar al carrito">
+    <i class="ti ti-arrow-down"></i>
+</button>
+
 <div class="pos-modal" id="modalPrecuenta">
     <div class="pos-modal-box">
         <h4><i class="ti ti-file-invoice"></i> Precuenta de mesa</h4>
@@ -901,6 +937,7 @@ body.modo-oscuro .pos-shell {
     let timerRefresh = null;
     let productoOpcionesActual = null;
     let lastPrecuenta = null;
+    const isAndroid = /Android/i.test(navigator.userAgent || '');
 
     const ui = {
         zonas: document.getElementById('posZonas'),
@@ -927,11 +964,23 @@ body.modo-oscuro .pos-shell {
         opcionesGrupos: document.getElementById('posOpcionesGrupos'),
         opcionesTotal: document.getElementById('posOpcionesTotalTexto'),
         modalFacturacion: document.getElementById('modalFacturacionPos'),
+        btnIrCarritoAndroid: document.getElementById('btnIrCarritoAndroid'),
     };
+
+    function actualizarBotonCarritoAndroid() {
+        if (!ui.btnIrCarritoAndroid) {
+            return;
+        }
+
+        const hayProductos = carrito.length > 0;
+        const panelVisible = ui.orderPanel.style.display !== 'none';
+        ui.btnIrCarritoAndroid.classList.toggle('show', isAndroid && hayProductos && panelVisible);
+    }
 
     function mostrarVistaMesas() {
         ui.mesaSelectorView.style.display = '';
         ui.platosView.style.display = 'none';
+        actualizarBotonCarritoAndroid();
     }
 
     function mostrarVistaPlatos() {
@@ -940,6 +989,7 @@ body.modo-oscuro .pos-shell {
         ui.platosMesaLabel.textContent = mesaSeleccionada
             ? `Mesa activa: ${mesaSeleccionada.nombre}`
             : 'Mesa: -';
+        actualizarBotonCarritoAndroid();
     }
 
     function esc(t) {
@@ -1226,6 +1276,8 @@ body.modo-oscuro .pos-shell {
                 renderCatalogo();
             });
         });
+
+        actualizarBotonCarritoAndroid();
     }
 
     function rebotarCesta() {
@@ -1570,6 +1622,7 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
                 ui.orderDisabled.style.display = '';
                 ui.orderPanel.style.display = 'none';
                 mostrarVistaMesas();
+                actualizarBotonCarritoAndroid();
             }
         }
 
@@ -1864,6 +1917,13 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         ui.orderPanel.style.display = 'none';
         mostrarVistaMesas();
         renderBoard();
+        actualizarBotonCarritoAndroid();
+    });
+
+    ui.btnIrCarritoAndroid.addEventListener('click', () => {
+        if (ui.cart) {
+            ui.cart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     });
 
     ui.modalFacturacion.addEventListener('click', (e) => {
@@ -1880,6 +1940,7 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         try {
             await Promise.all([cargarMesasEstado(), cargarCatalogo()]);
             renderCarrito();
+            actualizarBotonCarritoAndroid();
             iniciarRefresh();
         } catch (e) {
             showMsg(e.message, true);

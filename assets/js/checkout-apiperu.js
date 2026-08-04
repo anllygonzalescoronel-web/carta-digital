@@ -41,6 +41,9 @@ class CheckoutAPIPeru {
         mostrarModal() {
             const modal = document.getElementById('checkout-modal');
             if (modal) {
+                if (typeof window.sincronizarClienteCheckout === 'function') {
+                    window.sincronizarClienteCheckout();
+                }
                 modal.classList.add('activo');
                 this.paso = 1;
                 this.mostrarPaso(1);
@@ -991,15 +994,28 @@ class CheckoutAPIPeru {
             const btnWhatsapp = document.getElementById('btnAvisarWhatsappCheckout');
             const btnSeguimiento = document.getElementById('confirmacion-seguimiento');
             const btnVolver = document.getElementById('confirmacion-volver');
-            const pdfWrap = document.getElementById('confirmacion-pdf-wrap');
-            const pdfFrame = document.getElementById('confirmacion-pdf-frame');
-            const pdfLink = document.getElementById('confirmacion-pdf-link');
+            const bloqueCuentaInvitado = document.getElementById('confirmacion-cuenta-invitado');
+            const bloqueCuentaLogueado = document.getElementById('confirmacion-cuenta-logueado');
+            const btnCrearCuenta = document.getElementById('confirmacion-crear-cuenta');
+            const btnGoogleLogin = document.getElementById('confirmacion-google-login');
+            const btnIrDashboard = document.getElementById('confirmacion-ir-dashboard');
+
+            if (window.__checkoutConfirmRedirectTimer) {
+                clearTimeout(window.__checkoutConfirmRedirectTimer);
+                window.__checkoutConfirmRedirectTimer = null;
+            }
 
             try {
                 if (this.datos.cliente_nombre) localStorage.setItem('cliente_nombre', this.datos.cliente_nombre);
                 if (this.datos.cliente_telefono) localStorage.setItem('cliente_telefono', this.datos.cliente_telefono);
             } catch (e) {
                 // Ignorar errores de almacenamiento local.
+            }
+
+            if (datos.fidelizacion && typeof window.renderizarClubFidelidad === 'function') {
+                window.renderizarClubFidelidad(datos.fidelizacion);
+            } else if (this.datos.cliente_telefono && typeof window.cargarResumenFidelidad === 'function') {
+                window.cargarResumenFidelidad(this.datos.cliente_telefono);
             }
 
             if (btnWhatsapp) {
@@ -1011,11 +1027,26 @@ class CheckoutAPIPeru {
                         e.preventDefault();
                         return;
                     }
+                    if (window.__checkoutConfirmRedirectTimer) {
+                        clearTimeout(window.__checkoutConfirmRedirectTimer);
+                        window.__checkoutConfirmRedirectTimer = null;
+                    }
                 };
             }
 
             if (btnVolver) {
                 btnVolver.onclick = () => {
+                    if (window.__checkoutConfirmRedirectTimer) {
+                        clearTimeout(window.__checkoutConfirmRedirectTimer);
+                        window.__checkoutConfirmRedirectTimer = null;
+                    }
+
+                    const clienteLogueado = !!(window.CLIENTE_WEB_ACTUAL && window.CLIENTE_WEB_ACTUAL.id);
+                    if (clienteLogueado) {
+                        window.location.href = 'cliente-dashboard.php';
+                        return;
+                    }
+
                     modal.style.display = 'none';
                     if (typeof window.limpiarCarritoCompleto === 'function') {
                         window.limpiarCarritoCompleto();
@@ -1038,13 +1069,39 @@ class CheckoutAPIPeru {
                 btnSeguimiento.href = 'estado-pedido.php' + (params.toString() ? ('?' + params.toString()) : '');
             }
 
-            const pdfUrl = datos.comprobante_pdf || '';
-            if (pdfUrl && pdfWrap && pdfFrame && pdfLink) {
-                pdfWrap.style.display = 'block';
-                pdfFrame.src = pdfUrl;
-                pdfLink.href = pdfUrl;
-            } else if (pdfWrap) {
-                pdfWrap.style.display = 'none';
+            const cuentasWebActivas = !!(window.APP_CONFIG && window.APP_CONFIG.clientesWebActivo);
+            const clienteLogueado = !!(window.CLIENTE_WEB_ACTUAL && window.CLIENTE_WEB_ACTUAL.id);
+
+            if (bloqueCuentaInvitado) bloqueCuentaInvitado.style.display = 'none';
+            if (bloqueCuentaLogueado) bloqueCuentaLogueado.style.display = 'none';
+
+            if (cuentasWebActivas) {
+                if (clienteLogueado) {
+                    if (bloqueCuentaLogueado) bloqueCuentaLogueado.style.display = 'block';
+                    if (btnVolver) btnVolver.innerHTML = '<i class="ti ti-layout-dashboard"></i> Ir a mi dashboard';
+                    if (btnIrDashboard) {
+                        btnIrDashboard.href = 'cliente-dashboard.php';
+                    }
+
+                    window.__checkoutConfirmRedirectTimer = setTimeout(() => {
+                        window.location.href = 'cliente-dashboard.php';
+                    }, 5000);
+                } else {
+                    if (btnVolver) btnVolver.innerHTML = '<i class="ti ti-home"></i> Volver al Inicio';
+                    const paramsLogin = new URLSearchParams();
+                    paramsLogin.set('from', 'pedido');
+                    if (datos.codigo) paramsLogin.set('codigo', String(datos.codigo));
+                    if (this.datos.cliente_telefono) paramsLogin.set('telefono', this.datos.cliente_telefono);
+                    if (this.datos.cliente_email) paramsLogin.set('email', this.datos.cliente_email);
+
+                    const loginUrl = 'cliente-login.php?' + paramsLogin.toString();
+
+                    if (bloqueCuentaInvitado) bloqueCuentaInvitado.style.display = 'block';
+                    if (btnCrearCuenta) btnCrearCuenta.href = loginUrl;
+                    if (btnGoogleLogin) btnGoogleLogin.href = loginUrl;
+                }
+            } else if (btnVolver) {
+                btnVolver.innerHTML = '<i class="ti ti-home"></i> Volver al Inicio';
             }
 
             modal.style.display = 'flex';

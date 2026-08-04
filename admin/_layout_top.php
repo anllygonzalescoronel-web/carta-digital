@@ -347,6 +347,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">Gestión</div>
                 <a href="usuarios.php" class="<?= $paginaActual === 'usuarios' ? 'activo' : '' ?>"><i class="ti ti-users"></i> Usuarios</a>
+                <a href="clientes.php" class="<?= $paginaActual === 'clientes' ? 'activo' : '' ?>"><i class="ti ti-user-circle"></i> Clientes Web</a>
                 <a href="categorias.php" class="<?= $paginaActual === 'categorias' ? 'activo' : '' ?>"><i class="ti ti-category"></i> Categorías</a>
                 <a href="productos.php" class="<?= $paginaActual === 'productos' ? 'activo' : '' ?>"><i class="ti ti-tools-kitchen-2"></i> Productos</a>
                 <a href="ingredientes.php" class="<?= $paginaActual === 'ingredientes' ? 'activo' : '' ?>"><i class="ti ti-packages"></i> Ingredientes / Stock</a>
@@ -358,6 +359,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                 <div class="admin-sidebar-section-title">Contenido</div>
                 <a href="banners.php" class="<?= $paginaActual === 'banners' ? 'activo' : '' ?>"><i class="ti ti-photo"></i> Banners</a>
                 <a href="ofertas_web.php" class="<?= $paginaActual === 'ofertas_web' ? 'activo' : '' ?>"><i class="ti ti-tag"></i> Ofertas Web</a>
+                <a href="popups.php" class="<?= $paginaActual === 'popups' ? 'activo' : '' ?>"><i class="ti ti-message-2"></i> Popups</a>
                 <a href="configuracion.php" class="<?= $paginaActual === 'configuracion' ? 'activo' : '' ?>"><i class="ti ti-settings"></i> Configuración</a>
                 <a href="comprobantes.php" class="<?= $paginaActual === 'comprobantes' ? 'activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
             </div>

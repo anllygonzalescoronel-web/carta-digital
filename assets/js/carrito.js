@@ -12,6 +12,19 @@ let culqiTokenActual = null;
 let terminoBusqueda = '';
 let categoriaActiva = null;
 const carruselesProductos = [];
+let resultadosBusquedaActual = [];
+
+function formatearMoneda(valor) {
+    return `S/ ${Number(valor || 0).toFixed(2)}`;
+}
+
+function normalizarTexto(texto) {
+    return String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
 
 function guardarCarrito() {
     localStorage.setItem('carrito', JSON.stringify(carrito));
@@ -41,12 +54,325 @@ function obtenerDatosProductoDesdeCard(card) {
     if (!id) return null;
 
     const nombre = cont.dataset.nombre || card.querySelector('h4')?.textContent?.trim() || 'Producto';
-    const descripcion = card.querySelector('.desc')?.textContent?.trim() || '';
+    const descripcion = cont.dataset.descripcion || card.querySelector('.desc')?.textContent?.trim() || '';
+    const categoria = cont.dataset.categoria || card.dataset.categoriaNombre || '';
     const precio = parseFloat(cont.dataset.precio || '0');
     const imgEl = card.querySelector('.producto-img');
     const imagen = imgEl ? (imgEl.currentSrc || imgEl.src || '') : '';
 
-    return { id, nombre, descripcion, precio, imagen };
+    return { id, nombre, descripcion, categoria, precio, imagen };
+}
+
+function obtenerTokensBusqueda(texto) {
+    return normalizarTexto(texto).split(/\s+/).filter(Boolean);
+}
+
+function puntuarCoincidencia(data, tokens) {
+    const nombre = normalizarTexto(data.nombre);
+    const descripcion = normalizarTexto(data.descripcion);
+    const categoria = normalizarTexto(data.categoria);
+    const precioTexto = String(Number(data.precio || 0).toFixed(2));
+    const compuesto = `${nombre} ${descripcion} ${categoria} ${precioTexto}`.trim();
+
+    if (!tokens.length) {
+        return { score: 0, matches: true, exacto: false };
+    }
+
+    let score = 0;
+    let matches = true;
+    let exacto = false;
+
+    tokens.forEach((token) => {
+        let tokenScore = 0;
+        if (nombre === token) {
+            tokenScore = 120;
+            exacto = true;
+        } else if (nombre.startsWith(token)) {
+            tokenScore = 90;
+        } else if (nombre.includes(token)) {
+            tokenScore = 70;
+        } else if (categoria.startsWith(token)) {
+            tokenScore = 52;
+        } else if (categoria.includes(token)) {
+            tokenScore = 42;
+        } else if (descripcion.includes(token)) {
+            tokenScore = 28;
+        } else if (compuesto.includes(token)) {
+            tokenScore = 16;
+        }
+
+        if (!tokenScore) {
+            matches = false;
+        }
+        score += tokenScore;
+    });
+
+    if (tokens.length > 1 && compuesto.includes(tokens.join(' '))) {
+        score += 35;
+    }
+
+    return { score, matches, exacto };
+}
+
+function quitarResaltadosBusqueda() {
+    document.querySelectorAll('.producto-card.busqueda-destacada').forEach((card) => {
+        card.classList.remove('busqueda-destacada', 'busqueda-top');
+    });
+}
+
+function resaltarResultadosBusqueda(resultados) {
+    quitarResaltadosBusqueda();
+    resultados.slice(0, 8).forEach((item, index) => {
+        item.card.classList.add('busqueda-destacada');
+        if (index === 0) {
+            item.card.classList.add('busqueda-top');
+        }
+    });
+}
+
+function actualizarEstadoBusqueda(total) {
+    const status = document.getElementById('searchStatus');
+    if (!status) return;
+
+    if (!terminoBusqueda) {
+        status.style.display = 'none';
+        status.textContent = '';
+        return;
+    }
+
+    status.style.display = 'block';
+    status.textContent = total > 0
+        ? `${total} resultado${total !== 1 ? 's' : ''} para "${terminoBusqueda}"`
+        : `Sin resultados para "${terminoBusqueda}"`;
+}
+
+function scrollAResultado(card) {
+    if (!card) return;
+    const seccion = card.closest('.seccion-categoria');
+    if (seccion && seccion.style.display === 'none') {
+        seccion.style.display = '';
+    }
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'start' });
+}
+
+function renderizarSugerenciasBusqueda(resultados) {
+    const box = document.getElementById('searchSuggestions');
+    if (!box) return;
+
+    if (!terminoBusqueda || !resultados.length) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+    }
+
+    box.innerHTML = resultados.slice(0, 6).map((item, index) => `
+        <button type="button" class="search-suggestion-item${index === 0 ? ' principal' : ''}" data-producto-id="${item.data.id}">
+            <span class="ssi-main">${escaparHtml(item.data.nombre)}</span>
+            <span class="ssi-meta">${escaparHtml(item.data.categoria || 'Carta')} · S/ ${Number(item.data.precio || 0).toFixed(2)}</span>
+        </button>
+    `).join('');
+    box.style.display = 'block';
+
+    box.querySelectorAll('[data-producto-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const encontrado = resultados.find((item) => Number(item.data.id) === Number(btn.dataset.productoId));
+            if (!encontrado) return;
+            scrollAResultado(encontrado.card);
+            box.style.display = 'none';
+        });
+    });
+}
+
+function buscarProductoPorNombre(nombreProducto) {
+    const objetivo = normalizarTexto(nombreProducto);
+    if (!objetivo) return null;
+
+    const cards = [...document.querySelectorAll('.producto-card, .item-card')];
+    return cards.find((card) => {
+        const nombre = normalizarTexto(card.querySelector('h4')?.textContent || '');
+        return nombre === objetivo || nombre.includes(objetivo) || objetivo.includes(nombre);
+    }) || null;
+}
+
+function renderizarClubFidelidad(data) {
+    const bloque = document.getElementById('clubFidelidad');
+    if (!bloque) return;
+
+    const titulo = document.getElementById('clubFidelidadTitulo');
+    const nivel = document.getElementById('clubFidelidadNivel');
+    const mensaje = document.getElementById('clubFidelidadMensaje');
+    const barra = document.getElementById('clubFidelidadBarra');
+    const meta = document.getElementById('clubFidelidadMeta');
+    const pedidos = document.getElementById('clubFidelidadPedidos');
+    const ticket = document.getElementById('clubFidelidadTicket');
+    const favorito = document.getElementById('clubFidelidadFavorito');
+    const btnFavorito = document.getElementById('clubFidelidadBtnFavorito');
+    const btnEstado = document.getElementById('clubFidelidadBtnEstado');
+
+    const resumen = data && typeof data === 'object' ? data : null;
+    const valido = !!(resumen && resumen.valido);
+    const objetivo = Number(resumen?.objetivo_premio || 3);
+    const progresoActual = Number(resumen?.progreso_actual || 0);
+    const porcentaje = Math.max(0, Math.min(100, (progresoActual / objetivo) * 100));
+    const nombreFavorito = String(resumen?.producto_favorito || '').trim();
+
+    bloque.dataset.visible = valido ? '1' : '0';
+    titulo.textContent = valido
+        ? (resumen.mensaje_principal || 'Tu historial ya empezo a trabajar para que vuelvas.')
+        : 'Haz tu primer pedido y empieza a volver con ventaja.';
+    nivel.textContent = valido ? (resumen.nivel || 'Nuevo') : 'Nuevo';
+    mensaje.textContent = valido
+        ? (resumen.mensaje_secundario || 'Tu historial y tus gustos apareceran aqui.')
+        : 'Cuando compres desde la web, guardaremos tu progreso, tu ticket promedio y el producto que mas repites.';
+    barra.style.width = `${porcentaje}%`;
+    meta.textContent = `${progresoActual} de ${objetivo} pedidos en tu ciclo actual`;
+    pedidos.textContent = String(Number(resumen?.pedidos_totales || 0));
+    ticket.textContent = formatearMoneda(resumen?.ticket_promedio || 0);
+    favorito.textContent = nombreFavorito || 'Aun estamos conociendo tu gusto.';
+
+    if (btnFavorito) {
+        btnFavorito.disabled = !nombreFavorito;
+        btnFavorito.textContent = nombreFavorito ? 'Pedir mi favorito' : 'Aun sin favorito';
+        btnFavorito.onclick = () => {
+            if (!nombreFavorito) return;
+            const card = buscarProductoPorNombre(nombreFavorito);
+            if (card) {
+                scrollAResultado(card);
+                card.classList.add('busqueda-top');
+                setTimeout(() => card.classList.remove('busqueda-top'), 1800);
+                return;
+            }
+
+            const inputBuscar = document.getElementById('inputBuscar');
+            if (inputBuscar) {
+                inputBuscar.value = nombreFavorito;
+                filtrarProductos(nombreFavorito);
+            }
+        };
+    }
+
+    if (btnEstado && valido && resumen.telefono) {
+        btnEstado.href = `estado-pedido.php?telefono=${encodeURIComponent(resumen.telefono)}`;
+    }
+}
+
+async function cargarResumenFidelidad(telefono) {
+    const telefonoNormalizado = String(telefono || '').trim();
+    if (!telefonoNormalizado) {
+        renderizarClubFidelidad(null);
+        return;
+    }
+
+    try {
+        const resp = await fetch(`api/fidelizacion.php?telefono=${encodeURIComponent(telefonoNormalizado)}`);
+        const data = await resp.json();
+        renderizarClubFidelidad(data?.fidelizacion || null);
+    } catch (error) {
+        renderizarClubFidelidad(null);
+    }
+}
+
+function actualizarResumenFidelidadConfirmacion(resumen) {
+    const wrap = document.getElementById('confirmacionFidelidad');
+    const nivel = document.getElementById('confirmacionFidelidadNivel');
+    const texto = document.getElementById('confirmacionFidelidadTexto');
+    if (!wrap || !nivel || !texto) return;
+
+    if (!resumen || !resumen.valido) {
+        wrap.style.display = 'none';
+        return;
+    }
+
+    nivel.textContent = `Nivel ${resumen.nivel || 'Nuevo'}`;
+    texto.textContent = resumen.mensaje_principal || 'Tu progreso de cliente frecuente ya fue actualizado.';
+    wrap.style.display = 'block';
+}
+
+function aplicarDatosClienteEnCampos(cliente) {
+    if (!cliente || typeof cliente !== 'object') {
+        return;
+    }
+
+    const nombre = String(cliente.nombre || '').trim();
+    const email = String(cliente.email || '').trim();
+    const telefono = String(cliente.telefono || '').trim();
+
+    [
+        { id: 'inputNombre', value: nombre },
+        { id: 'inputTelefono', value: telefono },
+        { id: 'inputEmail', value: email },
+        { id: 'cliente-nombre', value: nombre },
+        { id: 'cliente-telefono', value: telefono },
+        { id: 'cliente-email', value: email },
+        { id: 'cliente-nombre-paso3', value: nombre },
+        { id: 'cliente-telefono-paso3', value: telefono },
+        { id: 'cliente-email-paso3', value: email }
+    ].forEach((campo) => {
+        const el = document.getElementById(campo.id);
+        if (el && !String(el.value || '').trim()) {
+            el.value = campo.value;
+        }
+    });
+
+    if (nombre) localStorage.setItem('cliente_nombre', nombre);
+    if (telefono) localStorage.setItem('cliente_telefono', telefono);
+    if (email) localStorage.setItem('cliente_email', email);
+
+    if (window.checkout && window.checkout.datos) {
+        window.checkout.datos.cliente_nombre = nombre || window.checkout.datos.cliente_nombre;
+        window.checkout.datos.cliente_email = email || window.checkout.datos.cliente_email;
+        window.checkout.datos.cliente_telefono = telefono || window.checkout.datos.cliente_telefono;
+    }
+}
+
+async function cargarSesionClienteWeb() {
+    try {
+        const resp = await fetch('api/cliente_auth.php', { headers: { Accept: 'application/json' } });
+        const data = await resp.json();
+        if (!data || !data.ok || !data.autenticado || !data.cliente) {
+            window.CLIENTE_WEB_ACTUAL = null;
+            return null;
+        }
+
+        window.CLIENTE_WEB_ACTUAL = data.cliente;
+        aplicarDatosClienteEnCampos(data.cliente);
+        if (data.cliente.telefono) {
+            cargarResumenFidelidad(data.cliente.telefono);
+        }
+        return data.cliente;
+    } catch (error) {
+        window.CLIENTE_WEB_ACTUAL = null;
+        return null;
+    }
+}
+
+window.sincronizarClienteCheckout = function sincronizarClienteCheckout() {
+    const cliente = window.CLIENTE_WEB_ACTUAL || null;
+    if (cliente) {
+        aplicarDatosClienteEnCampos(cliente);
+        return;
+    }
+
+    aplicarDatosClienteEnCampos({
+        nombre: localStorage.getItem('cliente_nombre') || '',
+        telefono: localStorage.getItem('cliente_telefono') || '',
+        email: localStorage.getItem('cliente_email') || ''
+    });
+};
+
+function limpiarBusqueda() {
+    const inputBuscar = document.getElementById('inputBuscar');
+    if (inputBuscar) {
+        inputBuscar.value = '';
+        inputBuscar.focus();
+    }
+    terminoBusqueda = '';
+    resultadosBusquedaActual = [];
+    quitarResaltadosBusqueda();
+    renderizarSugerenciasBusqueda([]);
+    actualizarEstadoBusqueda(0);
+    aplicarFiltrosCatalogo();
 }
 
 function renderizarFavoritosModal() {
@@ -509,6 +835,89 @@ function quitarDelCarritoIdx(idx) {
 function abrirModal(id) { document.getElementById(id).classList.add('visible'); }
 function cerrarModal(id) { document.getElementById(id).classList.remove('visible'); }
 
+function cerrarPopupFrontend() {
+    const overlay = document.getElementById('overlayPopupFrontend');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+function mostrarPopupFrontend(popup) {
+    const overlay = document.getElementById('overlayPopupFrontend');
+    const titulo = document.getElementById('popupFrontendTitulo');
+    const contenido = document.getElementById('popupFrontendContenido');
+    const header = document.getElementById('popupFrontendHeader');
+
+    if (!overlay || !titulo || !contenido || !header || !popup) {
+        return;
+    }
+
+    titulo.textContent = popup.titulo || popup.nombre || 'Aviso';
+    header.style.display = (popup.titulo || popup.nombre) ? '' : 'none';
+
+    if (popup.tipo_contenido === 'html') {
+        contenido.className = '';
+        contenido.innerHTML = popup.contenido || '';
+
+        const styleId = `popup-css-${popup.id}`;
+        const scriptId = `popup-js-${popup.id}`;
+
+        const oldStyle = document.getElementById(styleId);
+        if (oldStyle) oldStyle.remove();
+        const oldScript = document.getElementById(scriptId);
+        if (oldScript) oldScript.remove();
+
+        if (popup.css_custom) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = popup.css_custom;
+            document.head.appendChild(style);
+        }
+
+        if (popup.js_custom) {
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.textContent = popup.js_custom;
+            document.body.appendChild(script);
+        }
+    } else {
+        contenido.className = 'popup-texto';
+        contenido.textContent = popup.contenido || '';
+    }
+
+    overlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    if (Number(popup.mostrar_una_vez) === 1) {
+        localStorage.setItem(`popup_frontend_visto_${popup.id}`, '1');
+    }
+}
+
+function inicializarPopupsFrontend() {
+    const popups = Array.isArray(window.FRONTEND_POPUPS) ? window.FRONTEND_POPUPS : [];
+    if (!popups.length) {
+        return;
+    }
+
+    const popup = popups.find((item) => {
+        if (Number(item.activo) !== 1) {
+            return false;
+        }
+        if (Number(item.mostrar_una_vez) === 1 && localStorage.getItem(`popup_frontend_visto_${item.id}`) === '1') {
+            return false;
+        }
+        return true;
+    });
+
+    if (!popup) {
+        return;
+    }
+
+    setTimeout(() => {
+        mostrarPopupFrontend(popup);
+    }, 600);
+}
+
 function resetearCheckout() {
     const ids = [
         'inputNombre',
@@ -565,10 +974,20 @@ function resetearCheckout() {
     limpiarErrorCheckout();
 }
 
-function mostrarConfirmacionVenta(codigoPedido, whatsappUrl) {
+function mostrarConfirmacionVenta(codigoPedido, whatsappUrl, fidelizacion = null) {
     const codigoEl = document.getElementById('confirmacionCodigo');
     const btnWhatsapp = document.getElementById('btnAvisarWhatsapp');
     const btnVolver = document.getElementById('btnVolverCarta');
+    const bloqueCuentaInvitado = document.getElementById('confirmacionCuentaInvitado');
+    const bloqueCuentaLogueado = document.getElementById('confirmacionCuentaLogueado');
+    const btnCrearCuenta = document.getElementById('confirmacionCrearCuenta');
+    const btnGoogleLogin = document.getElementById('confirmacionGoogleLogin');
+    const btnIrDashboard = document.getElementById('confirmacionIrDashboard');
+
+    if (window.__confirmacionRedirectTimer) {
+        clearTimeout(window.__confirmacionRedirectTimer);
+        window.__confirmacionRedirectTimer = null;
+    }
 
     if (codigoEl) {
         codigoEl.textContent = codigoPedido || '-';
@@ -583,15 +1002,71 @@ function mostrarConfirmacionVenta(codigoPedido, whatsappUrl) {
                 e.preventDefault();
                 return;
             }
+            if (window.__confirmacionRedirectTimer) {
+                clearTimeout(window.__confirmacionRedirectTimer);
+                window.__confirmacionRedirectTimer = null;
+            }
             cerrarModal('overlayConfirmacion');
         };
     }
 
     if (btnVolver) {
         btnVolver.onclick = () => {
+            if (window.__confirmacionRedirectTimer) {
+                clearTimeout(window.__confirmacionRedirectTimer);
+                window.__confirmacionRedirectTimer = null;
+            }
+
+            const clienteLogueado = !!(window.CLIENTE_WEB_ACTUAL && window.CLIENTE_WEB_ACTUAL.id);
+            if (clienteLogueado) {
+                window.location.href = 'cliente-dashboard.php';
+                return;
+            }
+
             cerrarModal('overlayConfirmacion');
             irHomeVisual(document.getElementById('navHome'));
         };
+    }
+
+    if (btnIrDashboard) {
+        btnIrDashboard.href = 'cliente-dashboard.php';
+    }
+
+    const cuentasWebActivas = !!(window.APP_CONFIG && window.APP_CONFIG.clientesWebActivo);
+    const clienteLogueado = !!(window.CLIENTE_WEB_ACTUAL && window.CLIENTE_WEB_ACTUAL.id);
+
+    if (bloqueCuentaInvitado) bloqueCuentaInvitado.style.display = 'none';
+    if (bloqueCuentaLogueado) bloqueCuentaLogueado.style.display = 'none';
+
+    if (cuentasWebActivas) {
+        if (clienteLogueado) {
+            if (bloqueCuentaLogueado) bloqueCuentaLogueado.style.display = 'block';
+            if (btnVolver) btnVolver.textContent = 'Ir a mi dashboard';
+            window.__confirmacionRedirectTimer = setTimeout(() => {
+                window.location.href = 'cliente-dashboard.php';
+            }, 5000);
+        } else {
+            if (btnVolver) btnVolver.textContent = 'Volver a la carta';
+            const paramsLogin = new URLSearchParams();
+            paramsLogin.set('from', 'pedido');
+            if (codigoPedido) paramsLogin.set('codigo', String(codigoPedido));
+            const telefono = document.getElementById('inputTelefono')?.value?.trim() || localStorage.getItem('cliente_telefono') || '';
+            const email = document.getElementById('inputEmail')?.value?.trim() || localStorage.getItem('cliente_email') || '';
+            if (telefono) paramsLogin.set('telefono', telefono);
+            if (email) paramsLogin.set('email', email);
+            const loginUrl = 'cliente-login.php?' + paramsLogin.toString();
+
+            if (bloqueCuentaInvitado) bloqueCuentaInvitado.style.display = 'block';
+            if (btnCrearCuenta) btnCrearCuenta.href = loginUrl;
+            if (btnGoogleLogin) btnGoogleLogin.href = loginUrl;
+        }
+    } else if (btnVolver) {
+        btnVolver.textContent = 'Volver a la carta';
+    }
+
+    actualizarResumenFidelidadConfirmacion(fidelizacion);
+    if (fidelizacion) {
+        renderizarClubFidelidad(fidelizacion);
     }
 
     abrirModal('overlayConfirmacion');
@@ -971,7 +1446,7 @@ async function enviarPedidoAlServidor() {
 
         cerrarCheckoutCulqi();
         resetearCheckout();
-        mostrarConfirmacionVenta(data.codigo, data.whatsapp_url);
+        mostrarConfirmacionVenta(data.codigo, data.whatsapp_url, data.fidelizacion || null);
 
     } catch (err) {
         cerrarCheckoutCulqi();
@@ -1080,6 +1555,7 @@ async function enviarPedidoAlServidor() {
     tracks.forEach((track) => {
         let autoplayTimer = null;
         let resumeTimer = null;
+        let dragging = false;
 
         const obtenerCardsVisibles = () =>
             Array.from(track.querySelectorAll('.producto-card')).filter((card) => card.style.display !== 'none');
@@ -1146,10 +1622,27 @@ async function enviarPedidoAlServidor() {
             }, 3000);
         };
 
-        track.addEventListener('pointerdown', pausarAutoplay, { passive: true });
-        track.addEventListener('pointerup', reanudarConEspera, { passive: true });
-        track.addEventListener('pointercancel', reanudarConEspera, { passive: true });
-        track.addEventListener('mouseleave', reanudarConEspera, { passive: true });
+        track.addEventListener('pointerdown', () => {
+            dragging = true;
+            pausarAutoplay();
+        }, { passive: true });
+        track.addEventListener('pointermove', () => {
+            if (dragging) {
+                pausarAutoplay();
+            }
+        }, { passive: true });
+        track.addEventListener('pointerup', () => {
+            dragging = false;
+            reanudarConEspera();
+        }, { passive: true });
+        track.addEventListener('pointercancel', () => {
+            dragging = false;
+            reanudarConEspera();
+        }, { passive: true });
+        track.addEventListener('mouseleave', () => {
+            dragging = false;
+            reanudarConEspera();
+        }, { passive: true });
         track.addEventListener('wheel', () => {
             pausarAutoplay();
             reanudarConEspera();
@@ -1180,7 +1673,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputBuscar = document.getElementById('inputBuscar');
     if (inputBuscar) {
         inputBuscar.addEventListener('input', (e) => filtrarProductos(e.target.value));
+        inputBuscar.addEventListener('focus', () => renderizarSugerenciasBusqueda(resultadosBusquedaActual));
+        inputBuscar.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && resultadosBusquedaActual.length) {
+                e.preventDefault();
+                scrollAResultado(resultadosBusquedaActual[0].card);
+                renderizarSugerenciasBusqueda([]);
+            }
+            if (e.key === 'Escape') {
+                limpiarBusqueda();
+            }
+        });
     }
+
+    const btnLimpiarBusqueda = document.getElementById('btnLimpiarBusqueda');
+    if (btnLimpiarBusqueda) {
+        btnLimpiarBusqueda.addEventListener('click', limpiarBusqueda);
+    }
+
+    document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('searchBarWrap');
+        const box = document.getElementById('searchSuggestions');
+        if (!wrap || !box) return;
+        if (!wrap.contains(e.target)) {
+            box.style.display = 'none';
+        }
+    });
 
     const navHome = document.getElementById('navHome');
     if (navHome) navHome.addEventListener('click', () => marcarNavActivo(navHome));
@@ -1197,37 +1715,116 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarFavoritosModal();
     sincronizarBotonesFavoritos();
     aplicarFiltrosCatalogo();
+    inicializarPopupsFrontend();
+    window.sincronizarClienteCheckout();
+    cargarResumenFidelidad(localStorage.getItem('cliente_telefono') || '');
+    cargarSesionClienteWeb();
+
+    const btnCerrarPopupFrontend = document.getElementById('btnCerrarPopupFrontend');
+    if (btnCerrarPopupFrontend) {
+        btnCerrarPopupFrontend.addEventListener('click', cerrarPopupFrontend);
+    }
+
+    const overlayPopupFrontend = document.getElementById('overlayPopupFrontend');
+    if (overlayPopupFrontend) {
+        overlayPopupFrontend.addEventListener('click', (e) => {
+            if (e.target === overlayPopupFrontend) {
+                cerrarPopupFrontend();
+            }
+        });
+    }
 });
 
 function filtrarProductos(texto) {
-    terminoBusqueda = (texto || '').trim().toLowerCase();
+    terminoBusqueda = normalizarTexto(texto);
     aplicarFiltrosCatalogo();
+}
+
+function reubicarSeccionOfertas() {
+    const sec = document.getElementById('seccionOfertasWeb');
+    if (!sec) return;
+
+    const secciones = Array.from(document.querySelectorAll('.seccion-categoria'));
+    const visibleActual = categoriaActiva && categoriaActiva !== 'all-products'
+        ? secciones.find((seccion) => seccion.id === categoriaActiva && seccion.style.display !== 'none')
+        : secciones.find((seccion) => seccion.style.display !== 'none');
+
+    const seccionDestino = visibleActual || secciones[0] || null;
+    if (!seccionDestino) return;
+
+    const grid = seccionDestino.querySelector('.grid-items');
+    if (!grid) return;
+
+    if (sec.parentElement !== seccionDestino || sec.previousElementSibling !== grid) {
+        grid.insertAdjacentElement('afterend', sec);
+    }
 }
 
 function aplicarFiltrosCatalogo() {
     const secciones = document.querySelectorAll('.seccion-categoria');
+    let totalVisibles = 0;
+    const tokens = obtenerTokensBusqueda(terminoBusqueda);
+    const resultados = [];
 
     secciones.forEach(seccion => {
         const cards = seccion.querySelectorAll('.producto-card');
-        const coincideCategoria = !categoriaActiva || categoriaActiva === 'all-products' || seccion.id === categoriaActiva;
+        const buscando = terminoBusqueda !== '';
+        const coincideCategoria = buscando || !categoriaActiva || categoriaActiva === 'all-products' || seccion.id === categoriaActiva;
         let visibles = 0;
 
         cards.forEach(card => {
-            const tituloEl = card.querySelector('h4');
-            const descEl = card.querySelector('.desc');
-            const textoCard = ((tituloEl ? tituloEl.textContent : '') + ' ' + (descEl ? descEl.textContent : '')).toLowerCase();
-            const coincide = terminoBusqueda === '' || textoCard.includes(terminoBusqueda);
+            const data = obtenerDatosProductoDesdeCard(card);
+            const evaluacion = puntuarCoincidencia(data || {}, tokens);
+            const coincide = terminoBusqueda === '' || evaluacion.matches;
             card.style.display = coincide ? '' : 'none';
-            if (coincide) visibles++;
+            if (coincide) {
+                visibles++;
+                if (data && terminoBusqueda !== '') {
+                    resultados.push({ card, data, score: evaluacion.score, exacto: evaluacion.exacto });
+                }
+            }
         });
 
         seccion.style.display = coincideCategoria && visibles > 0 ? '' : 'none';
+        totalVisibles += visibles;
     });
+
+    resultados.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.data.nombre.localeCompare(b.data.nombre, 'es');
+    });
+
+    resultadosBusquedaActual = resultados;
+    resaltarResultadosBusqueda(resultados);
+
+    reubicarSeccionOfertas();
+    renderizarMensajeSinResultados(totalVisibles === 0 && terminoBusqueda !== '');
+    actualizarEstadoBusqueda(resultados.length);
+    renderizarSugerenciasBusqueda(resultados);
 
     carruselesProductos.forEach((c) => {
         if (!document.body.contains(c.track)) return;
         c.iniciarAutoplay();
     });
+}
+
+function renderizarMensajeSinResultados(mostrar) {
+    let aviso = document.getElementById('sinResultadosBusqueda');
+    if (!mostrar) {
+        if (aviso) aviso.remove();
+        return;
+    }
+
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'sinResultadosBusqueda';
+        aviso.className = 'sin-resultados';
+        const main = document.querySelector('.main-content');
+        if (!main) return;
+        main.appendChild(aviso);
+    }
+
+    aviso.textContent = `No se encontraron productos para "${terminoBusqueda}".`;
 }
 
 function toggleFavoritoVisual(btn) {
@@ -1274,6 +1871,10 @@ function abrirFavoritosVisual(el) {
 
 function abrirPerfilVisual(el) {
     marcarNavActivo(el);
+    if (window.APP_CONFIG && window.APP_CONFIG.clientesWebActivo) {
+        window.location.href = 'cliente-dashboard.php';
+        return;
+    }
     abrirModal('overlayPerfil');
 }
 
@@ -1453,6 +2054,8 @@ function renderizarSeccionOfertasWeb(visible) {
                 ${tarjetas}${tarjetas}
             </div>
         </div>`;
+
+    reubicarSeccionOfertas();
 
     _initDragScroll(document.getElementById('ofertasWrap'), document.getElementById('ofertasMarquesina'));
 }

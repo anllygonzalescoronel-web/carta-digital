@@ -82,10 +82,74 @@ img{max-width:100%; display:block;}
   display:flex; align-items:center; gap:10px;
   box-shadow:0 14px 26px rgba(0,0,0,0.16);
   margin-top:18px; color:var(--color-muted);
+  position:relative;
 }
 .search-bar i{font-size:14px;}
 .search-bar input{
   border:none; outline:none; flex:1; font-size:13px; color:var(--color-texto); background:transparent;
+}
+.search-clear{
+  width:28px;
+  height:28px;
+  border:none;
+  border-radius:50%;
+  background:#edf3ee;
+  color:var(--color-muted);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.search-status{
+  margin-top:8px;
+  padding:0 4px;
+  font-size:12px;
+  color:rgba(255,255,255,.88);
+}
+.search-suggestions{
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 8px);
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 14px 30px rgba(0,0,0,.16);
+  padding:8px;
+  z-index:40;
+}
+.search-suggestion-item{
+  width:100%;
+  border:none;
+  background:#fff;
+  border-radius:12px;
+  padding:10px 12px;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.search-suggestion-item:hover,
+.search-suggestion-item.principal{
+  background:#eef7f0;
+}
+.ssi-main{
+  font-size:13px;
+  font-weight:700;
+  color:var(--color-texto);
+}
+.ssi-meta{
+  font-size:11px;
+  color:var(--color-muted);
+}
+.producto-card.busqueda-destacada{
+  box-shadow:0 8px 22px rgba(31,107,58,0.16);
+  outline:2px solid rgba(31,107,58,0.16);
+}
+.producto-card.busqueda-top{
+  outline:2px solid rgba(31,107,58,0.40);
 }
 
 .categorias-nav{
@@ -143,6 +207,154 @@ img{max-width:100%; display:block;}
 .banner-dots span{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer;}
 .banner-dots span.activo{background:#fff;}
 
+.club-fidelidad{
+  margin:0 0 22px;
+  padding:18px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,.38) 0, rgba(255,255,255,0) 34%),
+    linear-gradient(135deg, #133227 0%, #1f6b3a 52%, #48b66a 100%);
+  color:#fff;
+  box-shadow:0 16px 34px rgba(19,50,39,.18);
+  overflow:hidden;
+  position:relative;
+}
+.club-fidelidad::after{
+  content:'';
+  position:absolute;
+  right:-34px;
+  bottom:-34px;
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.club-fidelidad-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+  position:relative;
+  z-index:1;
+}
+.club-fidelidad-eyebrow{
+  display:inline-flex;
+  margin-bottom:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.club-fidelidad-head h2{
+  font-size:20px;
+  line-height:1.15;
+  max-width:420px;
+}
+.club-fidelidad-badge{
+  flex:0 0 auto;
+  padding:8px 12px;
+  border-radius:999px;
+  background:#fff;
+  color:#154d29;
+  font-size:12px;
+  font-weight:900;
+}
+.club-fidelidad-copy{
+  position:relative;
+  z-index:1;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(255,255,255,.92);
+  margin-bottom:14px;
+}
+.club-fidelidad-progress,
+.club-fidelidad-stats,
+.club-fidelidad-actions{
+  position:relative;
+  z-index:1;
+}
+.club-fidelidad-progress{
+  margin-bottom:14px;
+}
+.club-fidelidad-progress-bar{
+  width:100%;
+  height:12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  overflow:hidden;
+  margin-bottom:8px;
+}
+.club-fidelidad-progress-bar span{
+  display:block;
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg, #ffe48f 0%, #fff 100%);
+  transition:width .35s ease;
+}
+.club-fidelidad-progress strong{
+  font-size:12px;
+  color:#effbf2;
+}
+.club-fidelidad-stats{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.club-stat{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  padding:12px;
+  -webkit-backdrop-filter:blur(4px);
+  backdrop-filter:blur(4px);
+}
+.club-stat span{
+  display:block;
+  font-size:11px;
+  color:rgba(255,255,255,.82);
+  margin-bottom:5px;
+}
+.club-stat strong{
+  font-size:16px;
+  line-height:1.2;
+  display:block;
+}
+.club-stat-wide{
+  grid-column:1 / -1;
+}
+.club-fidelidad-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.club-btn{
+  border:none;
+  border-radius:999px;
+  padding:12px 16px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.club-btn-primary{
+  background:#fff;
+  color:#154d29;
+  box-shadow:0 12px 24px rgba(0,0,0,.14);
+}
+.club-btn-secondary{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.16);
+}
+
 .seccion{margin-bottom:26px; scroll-margin-top:20px;}
 .seccion-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
 .seccion-header h3{font-size:16px; font-weight:700;}
@@ -154,6 +366,7 @@ img{max-width:100%; display:block;}
   scroll-snap-type:x mandatory;
   scroll-behavior:smooth;
   padding:2px 2px 8px;
+  touch-action:pan-x;
 }
 .grid-items::-webkit-scrollbar{display:none;}
 .grid-items .item-card,
@@ -327,6 +540,20 @@ img{max-width:100%; display:block;}
   padding:6px 10px;
 }
 
+.modal-popup-frontend{
+  max-width:520px;
+}
+
+#popupFrontendContenido{
+  font-size:13px;
+  color:var(--color-texto);
+  line-height:1.6;
+}
+
+#popupFrontendContenido.popup-texto{
+  white-space:pre-wrap;
+}
+
 .carrito-item, .item-carrito{
   background:#fff; border-radius:14px; padding:10px 12px;
   display:flex; gap:10px; align-items:flex-start; margin-bottom:8px;
@@ -494,6 +721,65 @@ img{max-width:100%; display:block;}
   color:#335843;
 }
 .confirmacion-codigo strong{font-size:15px; color:#155b34;}
+.confirmacion-fidelidad{
+  margin:0 auto 16px;
+  max-width:290px;
+  background:#fff;
+  border-radius:14px;
+  padding:12px 14px;
+  box-shadow:0 10px 22px rgba(21,91,52,.10);
+}
+.confirmacion-fidelidad-pill{
+  display:inline-flex;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#eaf3ee;
+  color:#155b34;
+  font-size:11px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.confirmacion-fidelidad p{
+  font-size:12px;
+  color:#53705d;
+  line-height:1.45;
+}
+.confirmacion-cuenta{
+  margin:0 auto 14px;
+  max-width:290px;
+  background:#f8fbf9;
+  border:1px solid #dce8df;
+  border-radius:14px;
+  padding:12px 14px;
+  text-align:left;
+}
+.confirmacion-cuenta-head{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:800;
+  color:#185c35;
+  margin-bottom:6px;
+}
+.confirmacion-cuenta p{
+  margin:0;
+  font-size:12px;
+  color:#53705d;
+  line-height:1.45;
+}
+.confirmacion-cuenta-acciones{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.confirmacion-cuenta-acciones .btn-secundario,
+#confirmacionIrDashboard{
+  width:100%;
+  text-align:center;
+  text-decoration:none;
+}
 .acciones-confirmacion{display:grid; gap:10px; margin-top:4px;}
 .btn-whatsapp{
   text-decoration:none;
@@ -557,6 +843,202 @@ img{max-width:100%; display:block;}
   vertical-align: middle;
 }
 @keyframes girar { to { transform: rotate(360deg); } }
+
+@media (max-width: 560px) {
+  .categorias-nav{
+    gap:8px;
+    padding:14px 12px 4px;
+  }
+
+  .cat-btn{
+    padding:8px 14px;
+    font-size:12px;
+  }
+
+  .quickcats{
+    gap:8px;
+    padding:4px 12px 16px;
+  }
+
+  .quickcat-item{
+    gap:4px;
+    width:calc((100% - 40px) / 6);
+    min-width:calc((100% - 40px) / 6);
+  }
+
+  .quickcat-circle{
+    width:42px;
+    height:42px;
+    font-size:16px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.10);
+  }
+
+  .quickcat-item span{
+    font-size:10px;
+    line-height:1.1;
+    text-align:center;
+    max-width:100%;
+    white-space:normal;
+    word-break:break-word;
+  }
+
+  .main-content{
+    padding:0 12px;
+  }
+
+  .club-fidelidad{
+    padding:16px;
+    border-radius:20px;
+    margin-bottom:18px;
+  }
+
+  .club-fidelidad-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .club-fidelidad-head h2{
+    font-size:17px;
+  }
+
+  .club-fidelidad-stats{
+    grid-template-columns:1fr;
+  }
+
+  .club-fidelidad-actions{
+    flex-direction:column;
+  }
+
+  .club-btn{
+    width:100%;
+  }
+
+  .search-bar{
+    padding:12px 12px;
+    gap:8px;
+  }
+
+  .search-clear{
+    width:24px;
+    height:24px;
+    font-size:16px;
+  }
+
+  .search-suggestions{
+    border-radius:14px;
+    padding:6px;
+  }
+
+  .search-suggestion-item{
+    padding:9px 10px;
+  }
+
+  .ssi-main{
+    font-size:12px;
+  }
+
+  .ssi-meta{
+    font-size:10px;
+  }
+
+  .seccion{
+    margin-bottom:20px;
+  }
+
+  .seccion-header{
+    margin-bottom:8px;
+  }
+
+  .grid-items{
+    gap:8px;
+    padding:2px 1px 6px;
+    scroll-padding-left:1px;
+  }
+
+  .grid-items .item-card,
+  .grid-items .producto-card{
+    flex:0 0 calc((100% - 10px) / 2.85);
+  }
+
+  .item-card, .producto-card{
+    border-radius:14px;
+  }
+
+  .item-img-wrap{
+    aspect-ratio:1/1;
+  }
+
+  .btn-fav{
+    top:6px;
+    right:6px;
+    width:22px;
+    height:22px;
+    font-size:10px;
+  }
+
+  .badge-agotado,
+  .badge-destacado,
+  .badge-tiempo{
+    font-size:8px;
+    padding:2px 6px;
+  }
+
+  .item-info, .producto-info{
+    padding:6px 7px 8px;
+  }
+
+  .item-info h4, .producto-info h4{
+    font-size:10px;
+    margin-bottom:2px;
+  }
+
+  .item-rating{
+    font-size:9px;
+    gap:2px;
+    margin-bottom:4px;
+  }
+
+  .precio-oferta-tachado, .item-precio .tachado{
+    font-size:8px;
+    margin-right:2px;
+  }
+
+  .precio, .item-precio .precio{
+    font-size:10px;
+  }
+
+  .item-footer, .producto-precios{
+    gap:4px;
+    align-items:flex-end;
+  }
+
+  .btn-agregar{
+    min-width:54px;
+    height:24px;
+    padding:0 8px;
+    font-size:9px;
+  }
+
+  .stepper{
+    padding:2px 4px;
+    gap:4px;
+  }
+
+  .stepper button{
+    width:18px;
+    height:18px;
+    font-size:10px;
+  }
+
+  .stepper span{
+    font-size:10px;
+    min-width:10px;
+  }
+
+  .confirmacion-cuenta-acciones{
+    grid-template-columns:1fr;
+  }
+}
 
 @media (min-width: 760px) {
   body {

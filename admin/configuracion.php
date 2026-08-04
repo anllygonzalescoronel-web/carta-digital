@@ -22,12 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'nubefact_ruta', 'nubefact_token',
             'nubefact_serie_boleta', 'nubefact_serie_factura',
             'apiperu_token',
+            'google_client_id',
         ];
         foreach ($campos as $c) {
             if (isset($_POST[$c])) guardarConfig($c, trim($_POST[$c]));
         }
 
-        $checkboxes = ['delivery_activo', 'recojo_activo', 'comer_aqui_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado', 'smtp_enabled'];
+        $checkboxes = ['delivery_activo', 'recojo_activo', 'comer_aqui_activo', 'efectivo_activo', 'yape_plin_activo', 'tarjeta_activo', 'apiperu_habilitado', 'smtp_enabled', 'clientes_web_activo', 'google_login_activo'];
         foreach ($checkboxes as $c) {
             guardarConfig($c, isset($_POST[$c]) ? '1' : '0');
         }
@@ -118,6 +119,7 @@ $colorFondo = c('color_fondo', '#f2f6f2');
     <button type="button" class="config-tab-btn" data-tab="smtp"><i class="ti ti-mail"></i> SMTP</button>
     <button type="button" class="config-tab-btn" data-tab="facturacion"><i class="ti ti-file-invoice"></i> Facturación</button>
     <button type="button" class="config-tab-btn" data-tab="apiperu"><i class="ti ti-api"></i> APIPERU</button>
+    <button type="button" class="config-tab-btn" data-tab="clientes"><i class="ti ti-user-circle"></i> Clientes</button>
 </div>
 
 <div class="grid-dos-cards">
@@ -550,6 +552,37 @@ $colorFondo = c('color_fondo', '#f2f6f2');
         <?php else: ?>
             <div class="alerta-error" style="margin-top:10px;">
                 <i class="ti ti-alert-triangle"></i> Token APIPERU no configurado. Ingresa un token para activar la validación.
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="card config-card" data-tab="clientes">
+        <h3><i class="ti ti-users-group"></i> Cuentas de clientes</h3>
+        <p style="color:#666;margin-top:-6px;">Permite que tus clientes creen cuenta, consulten su historial, fidelización y entren con Google.</p>
+
+        <div class="form-check">
+            <input type="checkbox" name="clientes_web_activo" id="clientes_web_activo" value="1" <?= c('clientes_web_activo', '1')==='1'?'checked':'' ?>>
+            <label for="clientes_web_activo" style="margin:0;">Habilitar cuentas de clientes en la web</label>
+        </div>
+
+        <div class="form-check">
+            <input type="checkbox" name="google_login_activo" id="google_login_activo" value="1" <?= c('google_login_activo', '0')==='1'?'checked':'' ?>>
+            <label for="google_login_activo" style="margin:0;">Permitir acceso con Google</label>
+        </div>
+
+        <div class="form-group">
+            <label>Google Client ID</label>
+            <input type="text" name="google_client_id" value="<?= limpiar(c('google_client_id')) ?>" placeholder="1234567890-abcxyz.apps.googleusercontent.com">
+            <small style="color:#666;display:block;margin-top:6px;">Crea una credencial OAuth Web en Google Cloud y pega aquí el Client ID. El login social funcionará cuando este valor exista y la opción esté activada.</small>
+        </div>
+
+        <?php if (c('google_login_activo') === '1' && c('google_client_id')): ?>
+            <div class="alerta-ok" style="margin-top:10px;">
+                <i class="ti ti-check"></i> Google Login listo para mostrarse en la web.
+            </div>
+        <?php else: ?>
+            <div class="alerta-error" style="margin-top:10px;">
+                <i class="ti ti-alert-triangle"></i> Si quieres acceso con Google, activa la opción y configura tu Client ID.
             </div>
         <?php endif; ?>
     </div>

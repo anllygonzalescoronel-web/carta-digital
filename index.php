@@ -5,6 +5,13 @@ $db = getDB();
 
 $banners = $db->query('SELECT * FROM banners WHERE activo = 1 ORDER BY orden ASC')->fetchAll();
 $categorias = $db->query('SELECT * FROM categorias WHERE activo = 1 ORDER BY orden ASC')->fetchAll();
+$popupsFrontend = [];
+
+try {
+    $popupsFrontend = obtenerPopupsFrontendActivos();
+} catch (Throwable $e) {
+    $popupsFrontend = [];
+}
 
 // Cargar ofertas web activas con sus productos
 $ofertasWeb = [];
@@ -133,6 +140,11 @@ if (!empty($banners)) {
         ],
     ];
 }
+
+$styleVersion = (string) (@filemtime(__DIR__ . '/assets/css/style.css') ?: time());
+$checkoutStyleVersion = (string) (@filemtime(__DIR__ . '/assets/css/checkout-apiperu.css') ?: time());
+$checkoutScriptVersion = (string) (@filemtime(__DIR__ . '/assets/js/checkout-apiperu.js') ?: time());
+$carritoScriptVersion = (string) (@filemtime(__DIR__ . '/assets/js/carrito.js') ?: time());
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -141,8 +153,8 @@ if (!empty($banners)) {
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title><?= limpiar($nombreNegocio) ?> - Carta Digital</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/checkout-apiperu.css">
+<link rel="stylesheet" href="assets/css/style.css?v=<?= limpiar($styleVersion) ?>">
+<link rel="stylesheet" href="assets/css/checkout-apiperu.css?v=<?= limpiar($checkoutStyleVersion) ?>">
 <script src="https://checkout.culqi.com/js/v4"></script>
 <script>
 // Ofertas web (solo delivery y recojo)
@@ -184,6 +196,7 @@ const PRODUCTOS_MAP = <?php
 }
 /* ----- Ofertas Web Marquesina delgada ----- */
 .ofertas-web-seccion {
+    margin-top: 10px;
     margin-bottom: 14px;
     border-radius: 14px;
     overflow: hidden;
@@ -327,10 +340,13 @@ const PRODUCTOS_MAP = <?php
             <div class="logo logo-fallback"><i class="fa-solid fa-utensils"></i></div>
         <?php endif; ?>
     </div>
-    <div class="search-bar">
+    <div class="search-bar" id="searchBarWrap">
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="inputBuscar" placeholder="Buscar en la carta...">
+        <button type="button" class="search-clear" id="btnLimpiarBusqueda" aria-label="Limpiar busqueda">&times;</button>
+        <div class="search-suggestions" id="searchSuggestions" style="display:none;"></div>
     </div>
+    <div class="search-status" id="searchStatus" style="display:none;"></div>
 </header>
 
 <main class="main-content">
@@ -354,9 +370,6 @@ const PRODUCTOS_MAP = <?php
         <div class="banner-dots" id="bannerDots"></div>
     </div>
 
-    <!-- Ofertas web marquesina (solo visible en delivery/recojo) -->
-    <div id="seccionOfertasWeb" style="display:none" class="ofertas-web-seccion"></div>
-
     <nav class="quickcats" id="quickCats">
         <button class="quickcat-item activo" type="button" data-target="all-products">
             <span class="quickcat-circle"><i class="fa-solid fa-layer-group"></i></span>
@@ -376,7 +389,9 @@ const PRODUCTOS_MAP = <?php
         <?php endforeach; ?>
     </nav>
 
-    <?php foreach ($categorias as $cat): ?>
+    <div id="seccionOfertasWeb" style="display:none" class="ofertas-web-seccion"></div>
+
+    <?php foreach ($categorias as $index => $cat): ?>
     <section class="seccion seccion-categoria" id="cat-<?= $cat['id'] ?>">
         <div class="seccion-header">
             <div class="categoria-hero" style="display:flex;align-items:center;gap:12px;">
@@ -389,7 +404,7 @@ const PRODUCTOS_MAP = <?php
         </div>
         <div class="grid-items">
         <?php foreach ($productosPorCategoria[$cat['id']] as $p): ?>
-        <article class="item-card producto-card <?= !$p['disponible'] ? 'no-disponible' : '' ?>">
+        <article class="item-card producto-card <?= !$p['disponible'] ? 'no-disponible' : '' ?>" data-categoria-nombre="<?= limpiar($cat['nombre']) ?>">
             <div class="item-img-wrap">
                 <img class="producto-img" src="<?= limpiar(rutaImagenProducto($p['imagen'] ?? '')) ?>" alt="<?= limpiar($p['nombre']) ?>" onerror="this.style.visibility='hidden'">
                 <button class="btn-fav" type="button" onclick="toggleFavoritoVisual(this); event.stopPropagation();">
@@ -412,6 +427,8 @@ const PRODUCTOS_MAP = <?php
                     </div>
                     <div class="control-cantidad" data-id="<?= $p['id'] ?>"
                          data-nombre="<?= limpiar($p['nombre']) ?>"
+                        data-descripcion="<?= limpiar($p['descripcion'] ?? '') ?>"
+                        data-categoria="<?= limpiar($cat['nombre']) ?>"
                          data-precio="<?= $p['precio_oferta'] ?: $p['precio'] ?>"
                          data-tiene-opciones="<?= isset($opcionesProductos[$p['id']]) ? '1' : '0' ?>"
                          data-imagen="<?= limpiar(rutaImagenProducto($p['imagen'] ?? '')) ?>">
@@ -431,6 +448,7 @@ const PRODUCTOS_MAP = <?php
 <!-- JSON de opciones de productos -->
 <script>
 window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_UNICODE) ?>;
+window.FRONTEND_POPUPS = <?= json_encode($popupsFrontend, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 </script>
 
 <!-- Modal detalle de producto -->
@@ -532,8 +550,12 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
         </div>
         <div class="perfil-card">
             <div class="perfil-avatar"><i class="fa-solid fa-user"></i></div>
-            <h4>Invitado</h4>
-            <p>Pronto podras guardar tus direcciones y revisar tu historial de pedidos.</p>
+            <h4>Tu cuenta cliente</h4>
+            <p>Ingresa para ver tu dashboard, tus pedidos, tu progreso de fidelización y tus datos guardados.</p>
+            <div style="display:grid;gap:10px;margin-top:14px;">
+                <a class="btn-principal" href="cliente-login.php">Entrar o crear cuenta</a>
+                <a class="btn-secundario" href="cliente-dashboard.php">Ir a mi dashboard</a>
+            </div>
         </div>
     </div>
 </div>
@@ -660,6 +682,25 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
             <h3>Pedido confirmado</h3>
             <p>Tu pedido fue procesado correctamente. Elige como deseas continuar.</p>
             <div class="confirmacion-codigo">Codigo de pedido: <strong id="confirmacionCodigo">-</strong></div>
+            <div class="confirmacion-fidelidad" id="confirmacionFidelidad" style="display:none;">
+                <div class="confirmacion-fidelidad-pill" id="confirmacionFidelidadNivel">Nivel Nuevo</div>
+                <p id="confirmacionFidelidadTexto"></p>
+            </div>
+
+            <div class="confirmacion-cuenta" id="confirmacionCuentaLogueado" style="display:none;">
+                <div class="confirmacion-cuenta-head"><i class="fa-solid fa-user-check"></i> Cuenta detectada</div>
+                <p>Tu pedido ya se guardó en tu cuenta. Te llevamos al dashboard en unos segundos.</p>
+                <a class="btn-secundario" id="confirmacionIrDashboard" href="cliente-dashboard.php">Ir ahora al dashboard</a>
+            </div>
+
+            <div class="confirmacion-cuenta" id="confirmacionCuentaInvitado" style="display:none;">
+                <div class="confirmacion-cuenta-head"><i class="fa-solid fa-user-plus"></i> ¿Quieres ver este pedido en tu panel?</div>
+                <p>Crea tu cuenta o entra con Google para guardar tus pedidos y comprobantes en el dashboard.</p>
+                <div class="confirmacion-cuenta-acciones">
+                    <a class="btn-secundario" id="confirmacionCrearCuenta" href="cliente-login.php">Crear cuenta</a>
+                    <a class="btn-secundario" id="confirmacionGoogleLogin" href="cliente-login.php">Entrar con Google</a>
+                </div>
+            </div>
 
             <div class="acciones-confirmacion">
                 <a class="btn-principal btn-whatsapp" id="btnAvisarWhatsapp" href="#" target="_self" rel="noopener noreferrer">
@@ -671,6 +712,16 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
     </div>
 </div>
 
+<div class="overlay" id="overlayPopupFrontend">
+    <div class="modal modal-popup-frontend" id="modalPopupFrontendBox">
+        <div class="modal-header" id="popupFrontendHeader">
+            <h3 id="popupFrontendTitulo">Aviso</h3>
+            <button type="button" id="btnCerrarPopupFrontend" aria-label="Cerrar">&times;</button>
+        </div>
+        <div id="popupFrontendContenido"></div>
+    </div>
+</div>
+
 <script>
     window.APP_CONFIG = {
         culqiPublicKey: <?= json_encode($culqiPublicKey) ?>,
@@ -678,7 +729,8 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
         nombreNegocio: <?= json_encode($nombreNegocio) ?>,
         recojoActivo: <?= cfg('recojo_activo', '1') === '1' ? 'true' : 'false' ?>,
         deliveryActivo: <?= cfg('delivery_activo', '1') === '1' ? 'true' : 'false' ?>,
-        comerAquiActivo: <?= cfg('comer_aqui_activo', '1') === '1' ? 'true' : 'false' ?>
+        comerAquiActivo: <?= cfg('comer_aqui_activo', '1') === '1' ? 'true' : 'false' ?>,
+        clientesWebActivo: <?= cfg('clientes_web_activo', '1') === '1' ? 'true' : 'false' ?>
     };
 </script>
 
@@ -686,7 +738,7 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
     <?php include 'template frontend/checkout-modal.html'; ?>
 
     <!-- Scripts de Checkout -->
-    <script src="assets/js/checkout-apiperu.js"></script>
+    <script src="assets/js/checkout-apiperu.js?v=<?= limpiar($checkoutScriptVersion) ?>"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar checkout cuando el DOM esté listo
@@ -694,6 +746,6 @@ window.OPCIONES_PRODUCTOS = <?= json_encode($opcionesProductos, JSON_UNESCAPED_U
     });
     </script>
 
-<script src="assets/js/carrito.js"></script>
+<script src="assets/js/carrito.js?v=<?= limpiar($carritoScriptVersion) ?>"></script>
 </body>
 </html>

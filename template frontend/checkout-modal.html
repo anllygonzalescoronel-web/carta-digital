@@ -12,7 +12,7 @@
                 <h2><i class="ti ti-shopping-cart"></i> Finalizar Pedido</h2>
                 <p class="checkout-header-step">Paso <span id="paso-actual">1</span> de 4</p>
             </div>
-            <button class="checkout-close" id="checkout-cerrar">
+            <button class="checkout-close" id="checkout-cerrar" title="Cerrar checkout" aria-label="Cerrar checkout">
                 <i class="ti ti-x"></i>
             </button>
         </div>
@@ -446,13 +446,25 @@
             </div>
         </div>
 
-        <!-- Comprobante PDF -->
-        <div class="confirmacion-pdf" id="confirmacion-pdf-wrap" style="display:none;">
-            <h3><i class="ti ti-file-pdf"></i> Comprobante PDF</h3>
-            <iframe id="confirmacion-pdf-frame" title="Vista previa del comprobante" style="width:100%;height:350px;border: 1px solid #e5e7eb;border-radius:10px;background:#fff;"></iframe>
-            <a id="confirmacion-pdf-link" class="btn-secundario" href="#" target="_blank" rel="noopener noreferrer">
-                <i class="ti ti-download"></i> Descargar Comprobante
+        <div class="confirmacion-cuenta" id="confirmacion-cuenta-logueado">
+            <div class="confirmacion-cuenta-head"><i class="ti ti-user-check"></i> Cuenta detectada</div>
+            <p>Tu pedido ya está asociado a tu cuenta. En unos segundos te llevamos a tu dashboard.</p>
+            <a class="btn-secundario" id="confirmacion-ir-dashboard" href="cliente-dashboard.php">
+                <i class="ti ti-layout-dashboard"></i> Ir ahora al dashboard
             </a>
+        </div>
+
+        <div class="confirmacion-cuenta" id="confirmacion-cuenta-invitado">
+            <div class="confirmacion-cuenta-head"><i class="ti ti-user-plus"></i> ¿Quieres ver este pedido en tu panel?</div>
+            <p>Crea tu cuenta o entra con Google para guardar historial, comprobantes y seguimiento en tu dashboard.</p>
+            <div class="confirmacion-cuenta-acciones">
+                <a class="btn-secundario" id="confirmacion-crear-cuenta" href="cliente-login.php">
+                    <i class="ti ti-user-plus"></i> Crear cuenta
+                </a>
+                <a class="btn-secundario" id="confirmacion-google-login" href="cliente-login.php">
+                    <i class="ti ti-brand-google"></i> Entrar con Google
+                </a>
+            </div>
         </div>
 
         <!-- Botones de Acción -->

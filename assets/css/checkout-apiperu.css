@@ -1098,32 +1098,47 @@
     font-weight: 600;
 }
 
-.confirmacion-pdf {
-    margin: 20px 0;
-    padding: 16px;
-    background: var(--checkout-bg);
+.confirmacion-cuenta {
+    display: none;
+    margin: 16px 0;
+    padding: 14px;
     border-radius: 12px;
+    border: 1px solid var(--checkout-border);
+    background: #f9fbfa;
+    text-align: left;
 }
 
-.confirmacion-pdf h3 {
-    margin: 0 0 12px 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--checkout-primary);
+.confirmacion-cuenta-head {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--checkout-primary);
+    margin-bottom: 7px;
 }
 
-.confirmacion-pdf h3 i {
-    color: var(--checkout-accent);
+.confirmacion-cuenta p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--checkout-text-light);
 }
 
-#confirmacion-pdf-link {
-    display: inline-flex !important;
+.confirmacion-cuenta-acciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.confirmacion-cuenta-acciones .btn-secundario,
+#confirmacion-ir-dashboard {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    margin-top: 12px;
+    text-decoration: none;
 }
 
 .confirmacion-botones {
@@ -1233,6 +1248,10 @@
 
     .confirmacion-botones {
         flex-direction: column;
+    }
+
+    .confirmacion-cuenta-acciones {
+        grid-template-columns: 1fr;
     }
 
     .checkout-steps {

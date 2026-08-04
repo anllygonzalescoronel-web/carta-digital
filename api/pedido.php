@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/culqi.php';
 require_once __DIR__ . '/../includes/facturacion.php';
 require_once __DIR__ . '/../includes/facturacion_nubefact_bridge.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/cliente_auth.php';
 
 // Migrar clave legada 'facturacion_driver_activo' → 'facturacion_driver' si aún existe
 try {
@@ -50,6 +51,8 @@ $tipoComprobante = strtolower(trim((string)($body['tipo_comprobante'] ?? 'boleta
 $tipoDocumento   = strtolower(trim((string)($body['tipo_documento'] ?? 'dni')));
 $numeroDocumento = normalizarNumeroDocumento((string)($body['numero_documento'] ?? ''));
 $origen          = strtolower(trim((string)($body['origen'] ?? 'web')));
+$clienteSesionId = clienteActualId();
+$clienteSesion = $clienteSesionId ? obtenerClienteWebPorId($clienteSesionId) : null;
 
 if ($origen === 'pos') {
     requerirRol(['admin']);
@@ -360,7 +363,21 @@ try {
     if (isset($columnasPedido['cliente_email'])) {
         $camposInsert[] = 'cliente_email';
         $placeholders[] = ':cliente_email';
-        $paramsPedido['cliente_email'] = $clienteEmail;
+        $paramsPedido['cliente_email'] = $clienteSesion['email'] ?? $clienteEmail;
+    }
+
+    if (isset($columnasPedido['cliente_id'])) {
+        $camposInsert[] = 'cliente_id';
+        $placeholders[] = ':cliente_id';
+        $paramsPedido['cliente_id'] = $clienteSesionId ?: null;
+    }
+
+    if (isset($columnasPedido['origen_cliente'])) {
+        $camposInsert[] = 'origen_cliente';
+        $placeholders[] = ':origen_cliente';
+        $paramsPedido['origen_cliente'] = $clienteSesion
+            ? (($clienteSesion['proveedor'] ?? 'local') === 'google' ? 'google' : 'cuenta')
+            : 'anonimo';
     }
 
     if (isset($columnasPedido['cliente_dni'])) {
@@ -398,6 +415,10 @@ try {
     $stmtPedido = $db->prepare($sqlPedido);
     $stmtPedido->execute($paramsPedido);
     $pedidoId = $db->lastInsertId();
+
+    if ($clienteSesionId) {
+        vincularPedidosCliente((int)$clienteSesionId, $clienteSesion['email'] ?? $clienteEmail, $clienteSesion['telefono'] ?? $clienteTelefono, $clienteSesion['proveedor'] ?? 'cuenta');
+    }
 
     $columnasDetalle = [];
     $stmtColsDetalle = $db->prepare(
@@ -552,6 +573,8 @@ try {
         ]);
     }
 
+    $resumenFidelizacion = obtenerResumenFidelizacionCliente($clienteTelefono);
+
     jsonResponse([
         'ok' => true,
         'codigo' => $codigo,
@@ -563,6 +586,7 @@ try {
         'comprobante_xml' => $comprobante['xml'] ?? null,
         'correo_enviado' => $mailResultado['ok'],
         'correo_mensaje' => $mailResultado['mensaje'] ?? '',
+        'fidelizacion' => $resumenFidelizacion,
     ]);
 
 } catch (CulqiException $e) {
