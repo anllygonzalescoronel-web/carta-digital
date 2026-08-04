@@ -794,6 +794,38 @@ body.modo-oscuro .pos-shell {
     color: var(--pos-primary);
     font-size: 16px;
 }
+/* Forzar estilos de botones POS en modo oscuro, por si un estilo global los sobrescribe */
+body.modo-oscuro .pos-btn.warn {
+    background: linear-gradient(135deg, #ff8a3d, var(--pos-primary)) !important;
+    color: #fff !important;
+    box-shadow: 4px 4px 10px rgba(232,89,12,.4) !important;
+    border: none !important;
+}
+
+body.modo-oscuro .pos-btn.dark {
+    background: linear-gradient(135deg, #3a3f52, #1f2430) !important;
+    color: #fff !important;
+    box-shadow: 4px 4px 10px rgba(0,0,0,.3) !important;
+    border: none !important;
+}
+
+body.modo-oscuro .pos-btn.soft {
+background: #2c3144 !important;    color: var(--pos-texto) !important;
+    box-shadow: 4px 4px 10px var(--pos-sombra-oscura), -4px -4px 10px var(--pos-sombra-clara) !important;
+    border: none !important;
+}
+
+body.modo-oscuro .pos-zona-btn.activa,
+body.modo-oscuro .pos-categoria-btn.activa .pos-categoria-img-wrap {
+    background: linear-gradient(135deg, #ff8a3d, var(--pos-primary)) !important;
+    border: none !important;
+}
+
+body.modo-oscuro .pos-prod-badge {
+    background: linear-gradient(135deg, #ff8a3d, var(--pos-primary)) !important;
+    color: #fff !important;
+    border: none !important;
+}
 </style>
 
 <div class="pos-shell">

@@ -764,7 +764,8 @@ body.modo-oscuro .pos-stepper {
     border-color: rgba(255,255,255,0.1);
 }
 body.modo-oscuro .pos-stepper-btn {
-    background: #263045;
+    background: #e8590c;
+
     border-color: rgba(255,255,255,0.12);
     color: #f1f5f9;
 }
