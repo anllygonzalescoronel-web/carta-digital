@@ -357,6 +357,7 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">Contenido</div>
                 <a href="banners.php" class="<?= $paginaActual === 'banners' ? 'activo' : '' ?>"><i class="ti ti-photo"></i> Banners</a>
+                <a href="ofertas_web.php" class="<?= $paginaActual === 'ofertas_web' ? 'activo' : '' ?>"><i class="ti ti-tag"></i> Ofertas Web</a>
                 <a href="configuracion.php" class="<?= $paginaActual === 'configuracion' ? 'activo' : '' ?>"><i class="ti ti-settings"></i> Configuración</a>
                 <a href="comprobantes.php" class="<?= $paginaActual === 'comprobantes' ? 'activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
             </div>

@@ -6,6 +6,18 @@ $db = getDB();
 $banners = $db->query('SELECT * FROM banners WHERE activo = 1 ORDER BY orden ASC')->fetchAll();
 $categorias = $db->query('SELECT * FROM categorias WHERE activo = 1 ORDER BY orden ASC')->fetchAll();
 
+// Cargar ofertas web activas con sus productos
+$ofertasWeb = [];
+try {
+    $ofertasRaw = $db->query('SELECT * FROM ofertas_web WHERE activo = 1 ORDER BY orden ASC')->fetchAll();
+    foreach ($ofertasRaw as $ow) {
+        $pids = $db->prepare('SELECT producto_id FROM oferta_web_productos WHERE oferta_id = :oid');
+        $pids->execute(['oid' => $ow['id']]);
+        $ow['productos'] = array_column($pids->fetchAll(), 'producto_id');
+        $ofertasWeb[] = $ow;
+    }
+} catch (Throwable $e) { /* tabla aún no existe */ }
+
 $stmtProductos = $db->prepare('SELECT * FROM productos WHERE categoria_id = :cat ORDER BY orden ASC, id ASC');
 $productosPorCategoria = [];
 foreach ($categorias as $cat) {
@@ -132,6 +144,36 @@ if (!empty($banners)) {
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/checkout-apiperu.css">
 <script src="https://checkout.culqi.com/js/v4"></script>
+<script>
+// Ofertas web (solo delivery y recojo)
+const OFERTAS_WEB = <?= json_encode(array_map(fn($o) => [
+    'id'             => (int)$o['id'],
+    'titulo'         => $o['titulo'],
+    'color_fondo'    => $o['color_fondo'],
+    'tipo_descuento' => $o['tipo_descuento'],
+    'valor_descuento'=> (float)$o['valor_descuento'],
+    'productos'      => array_map('intval', $o['productos']),
+], $ofertasWeb), JSON_UNESCAPED_UNICODE) ?>;
+
+// Mapa global de productos para marquesina de ofertas
+const PRODUCTOS_MAP = <?php
+    $mapaProductos = [];
+    foreach ($productosPorCategoria as $plist) {
+        foreach ($plist as $p) {
+            $mapaProductos[(int)$p['id']] = [
+                'id'            => (int)$p['id'],
+                'nombre'        => $p['nombre'],
+                'precio'        => (float)($p['precio_oferta'] ?: $p['precio']),
+                'precio_base'   => (float)$p['precio'],
+                'imagen'        => rutaImagenProducto($p['imagen'] ?? ''),
+                'disponible'    => (bool)$p['disponible'],
+                'tiene_opciones'=> isset($opcionesProductos[$p['id']]) ? 1 : 0,
+            ];
+        }
+    }
+    echo json_encode($mapaProductos, JSON_UNESCAPED_UNICODE);
+?>;
+</script>
 <style>
 :root {
     --color-primario: <?= limpiar(cfg('color_primario', '#E8590C')) ?>;
@@ -139,6 +181,134 @@ if (!empty($banners)) {
     --color-secundario: <?= limpiar(cfg('color_secundario', '#FFC107')) ?>;
     --color-texto: <?= limpiar(cfg('color_texto', '#212121')) ?>;
     --color-fondo: <?= limpiar(cfg('color_fondo', '#FFF8F0')) ?>;
+}
+/* ----- Ofertas Web Marquesina delgada ----- */
+.ofertas-web-seccion {
+    margin-bottom: 14px;
+    border-radius: 14px;
+    overflow: hidden;
+}
+.ofertas-web-header {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 14px 4px;
+}
+.ofertas-web-header .owh-icono {
+    font-size: 13px; color: #fff; flex-shrink: 0;
+    animation: pulseBolt .9s ease-in-out infinite alternate;
+}
+@keyframes pulseBolt {
+    from { transform: scale(1); opacity: .85; }
+    to   { transform: scale(1.25); opacity: 1; }
+}
+.ofertas-web-header h3 {
+    font-size: 12px; font-weight: 800; margin: 0; flex: 1; color: #fff;
+    text-shadow: 0 1px 5px rgba(0,0,0,.30); letter-spacing: .3px;
+}
+.ofertas-web-header .owh-sub {
+    font-size: 10px; color: rgba(255,255,255,.80);
+    background: rgba(0,0,0,.15); padding: 2px 8px;
+    border-radius: 999px;
+}
+
+/* Wrapper scroll libre */
+.ofertas-marquesina-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 14px 11px;
+    scrollbar-width: none;
+    cursor: grab;
+}
+.ofertas-marquesina-wrap:active { cursor: grabbing; }
+.ofertas-marquesina-wrap::-webkit-scrollbar { display: none; }
+
+/* Track flex (sin animación CSS) */
+.ofertas-marquesina {
+    display: flex;
+    gap: 10px;
+    width: max-content;
+}
+
+/* Card horizontal compacto */
+.oferta-card {
+    flex: 0 0 200px;
+    border-radius: 11px; overflow: hidden;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 3px 12px rgba(0,0,0,.14);
+    display: flex; flex-direction: row;
+    align-items: stretch; height: 68px;
+    position: relative;
+    transition: box-shadow .2s;
+}
+.oferta-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.20); }
+
+/* Imagen */
+.oferta-card-img {
+    width: 68px; height: 68px; object-fit: cover;
+    display: block; flex-shrink: 0;
+    border-radius: 11px 0 0 11px;
+}
+.oferta-card-img-placeholder {
+    width: 68px; height: 68px; background: #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    color: #bbb; font-size: 22px; flex-shrink: 0;
+    border-radius: 11px 0 0 11px;
+}
+
+/* Badge descuento */
+.oferta-desc-badge {
+    position: absolute; top: 5px; left: 5px;
+    font-size: 9px; font-weight: 900; color: #fff;
+    padding: 2px 6px; border-radius: 999px;
+    background: linear-gradient(135deg,#ff4500,#ff003c);
+    box-shadow: 0 1px 5px rgba(255,0,60,.4);
+    pointer-events: none; line-height: 1.4;
+}
+
+/* Info derecha */
+.oferta-card-info {
+    padding: 8px 10px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    flex: 1; min-width: 0;
+}
+.oferta-card-nombre {
+    font-size: 11.5px; font-weight: 700; line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: #1a1a1a;
+}
+.oferta-card-precios {
+    display: flex; align-items: baseline; gap: 4px;
+    margin-top: 1px;
+}
+.oferta-card-precio-antes {
+    font-size: 9.5px; color: #b0b0b0; text-decoration: line-through;
+}
+.oferta-card-precio-ahora {
+    font-size: 13px; font-weight: 900; color: var(--color-primario);
+    line-height: 1;
+}
+.oferta-card-btn {
+    align-self: flex-start;
+    padding: 4px 9px; border: none;
+    border-radius: 7px; background: var(--color-primario);
+    color: #fff; font-size: 10px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center;
+    gap: 4px; white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    transition: transform .12s, opacity .12s;
+}
+.oferta-card-btn:hover  { transform: scale(1.05); }
+.oferta-card-btn:active { opacity: .75; transform: scale(.97); }
+
+/* Badge en las cards normales del catálogo */
+.badge-oferta-web {
+    position: absolute; bottom: 8px; right: 8px;
+    background: linear-gradient(135deg,#ff4500,#ff003c);
+    color: #fff; font-size: 10px; font-weight: 800;
+    padding: 2px 8px; border-radius: 999px; pointer-events: none;
+}
+.precio-original-tachado {
+    font-size: 10px; color: #aaa; text-decoration: line-through; margin-right: 3px;
 }
 </style>
 </head>
@@ -184,6 +354,9 @@ if (!empty($banners)) {
         <div class="banner-dots" id="bannerDots"></div>
     </div>
 
+    <!-- Ofertas web marquesina (solo visible en delivery/recojo) -->
+    <div id="seccionOfertasWeb" style="display:none" class="ofertas-web-seccion"></div>
+
     <nav class="quickcats" id="quickCats">
         <button class="quickcat-item activo" type="button" data-target="all-products">
             <span class="quickcat-circle"><i class="fa-solid fa-layer-group"></i></span>
@@ -227,7 +400,7 @@ if (!empty($banners)) {
             </div>
             <div class="producto-info">
                 <h4><?= limpiar($p['nombre']) ?></h4>
-                <p class="desc"><?= limpiar($p['descripcion']) ?></p>
+                <div class="item-rating"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
                 <div class="item-footer producto-precios">
                     <div>
                         <?php if ($p['precio_oferta']): ?>

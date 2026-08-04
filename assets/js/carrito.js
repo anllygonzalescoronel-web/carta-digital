@@ -173,33 +173,32 @@ function agregarProducto(btnEl) {
 }
 
 function _agregarAlCarritoDirecto(cont, opcionesSeleccionadas) {
-    const imgProducto = obtenerImagenDeControl(cont);
+    const imgEl = obtenerImagenDeControl(cont);
+    const imagen = cont.dataset.imagen || imgEl?.currentSrc || imgEl?.src || '';
     const id = parseInt(cont.dataset.id, 10);
     const nombre = cont.dataset.nombre;
     const precioBase = parseFloat(cont.dataset.precio);
 
     if (opcionesSeleccionadas && opcionesSeleccionadas.length > 0) {
-        // Calcular precio total con extras
         const extraTotal = opcionesSeleccionadas.reduce((s, o) => s + o.precio_extra, 0);
         const precioTotal = precioBase + extraTotal;
-        // Usar key única por combinación de opciones
         const key = id + '_' + opcionesSeleccionadas.map(o => o.opcion_id).sort().join('_');
         let item = carrito.find(i => i.key === key);
         if (item) {
             item.cantidad++;
         } else {
-            carrito.push({ id, key, nombre, precio: precioTotal, precioBase, opciones: opcionesSeleccionadas, cantidad: 1 });
+            carrito.push({ id, key, nombre, precio: precioTotal, precioBase, imagen, opciones: opcionesSeleccionadas, cantidad: 1 });
         }
     } else {
         let item = carrito.find(i => i.id === id && !i.key);
         if (item) {
             item.cantidad++;
         } else {
-            carrito.push({ id, nombre, precio: precioBase, cantidad: 1 });
+            carrito.push({ id, nombre, precio: precioBase, imagen, cantidad: 1 });
         }
     }
     guardarCarrito();
-    volarAlCarrito(imgProducto);
+    volarAlCarrito(imgEl);
     renderizarStepper(cont, id);
 }
 
@@ -650,11 +649,16 @@ function renderizarCarritoModal() {
 
     lista.innerHTML = carrito.map((i, idx) => `
         <div class="carrito-item">
+            ${i.imagen ? `<img src="${escaparHtml(i.imagen)}" class="carrito-item-img" alt="${escaparHtml(i.nombre)}" onerror="this.style.display='none'">` : '<div class="carrito-item-img carrito-item-img-ph"><i class="fa-solid fa-utensils"></i></div>'}
             <div class="info">
-                <h5>${i.cantidad}x ${i.nombre}</h5>
-                ${i.opciones && i.opciones.length > 0 ? '<ul class="carrito-opciones">' + i.opciones.map(o => `<li>${o.grupo_nombre}: <strong>${o.opcion_nombre}</strong>${o.precio_extra > 0 ? ' +S/ '+o.precio_extra.toFixed(2) : ''}</li>`).join('') + '</ul>' : ''}
+                <h5>${escaparHtml(i.nombre)}</h5>
+                ${i.opciones && i.opciones.length > 0 ? '<ul class="carrito-opciones">' + i.opciones.map(o => `<li>${escaparHtml(o.grupo_nombre)}: <strong>${escaparHtml(o.opcion_nombre)}</strong>${o.precio_extra > 0 ? ' +S/ '+o.precio_extra.toFixed(2) : ''}</li>`).join('') + '</ul>' : ''}
                 <div class="p-unit">S/ ${i.precio.toFixed(2)} c/u</div>
-                <button class="btn-quitar" onclick="quitarDelCarritoIdx(${idx})">Quitar</button>
+                <div class="carrito-item-controles">
+                    <button class="carrito-btn-menos" onclick="cambiarCantidadCarrito(${idx}, -1)">−</button>
+                    <span class="carrito-cantidad">${i.cantidad}</span>
+                    <button class="carrito-btn-mas" onclick="cambiarCantidadCarrito(${idx}, 1)">+</button>
+                </div>
             </div>
             <div class="subtotal-item">S/ ${(i.precio * i.cantidad).toFixed(2)}</div>
         </div>
@@ -670,6 +674,20 @@ function renderizarCarritoModal() {
 function irACheckout() {
     cerrarModal('overlayCarrito');
     abrirModal('overlayCheckout');
+}
+
+function cambiarCantidadCarrito(idx, delta) {
+    const item = carrito[idx];
+    if (!item) return;
+    item.cantidad += delta;
+    if (item.cantidad <= 0) {
+        carrito.splice(idx, 1);
+        // Sincronizar stepper en la carta
+        const cont = document.querySelector(`.control-cantidad[data-id="${item.id}"]`);
+        if (cont) renderizarStepper(cont, item.id);
+    }
+    guardarCarrito();
+    renderizarCarritoModal();
 }
 
     // Nueva versión: Abrir checkout con APIPERU
@@ -1257,4 +1275,278 @@ function abrirFavoritosVisual(el) {
 function abrirPerfilVisual(el) {
     marcarNavActivo(el);
     abrirModal('overlayPerfil');
+}
+
+/* ================================================================
+   OFERTAS WEB - solo aplican en delivery y recojo (no comer_aqui)
+   ================================================================ */
+
+// Mapa: producto_id → descuento calculado { original, descuento, nuevo }
+let descuentosActivos = {};
+
+function calcularDescuentoProducto(precioOriginal, oferta) {
+    if (oferta.tipo_descuento === 'porcentaje') {
+        const d = precioOriginal * oferta.valor_descuento / 100;
+        return Math.min(d, precioOriginal);
+    }
+    return Math.min(oferta.valor_descuento, precioOriginal);
+}
+
+function aplicarOfertasWeb() {
+    const ofertas = (typeof OFERTAS_WEB !== 'undefined') ? OFERTAS_WEB : [];
+    const esWebDescuentable = (entregaSeleccionada === 'delivery' || entregaSeleccionada === 'recojo');
+
+    descuentosActivos = {};
+
+    if (esWebDescuentable && ofertas.length) {
+        ofertas.forEach(oferta => {
+            oferta.productos.forEach(pid => {
+                // Solo registramos el primer descuento que aplique (mayor primero si varios)
+                if (!descuentosActivos[pid]) {
+                    descuentosActivos[pid] = {
+                        tipo: oferta.tipo_descuento,
+                        valor: oferta.valor_descuento,
+                        ofertaId: oferta.id,
+                    };
+                }
+            });
+        });
+    }
+
+    // Actualizar badges visuales y precio en las cards
+    document.querySelectorAll('.producto-card, .item-card').forEach(card => {
+        const cont = card.querySelector('.control-cantidad');
+        if (!cont) return;
+        const pid = parseInt(cont.dataset.id || '0', 10);
+        const precioBase = parseFloat(cont.dataset.precioBase || cont.dataset.precio || '0');
+
+        // Guardar precio base original
+        if (!cont.dataset.precioBase) cont.dataset.precioBase = precioBase;
+
+        const desc = descuentosActivos[pid];
+        const wrap = card.querySelector('.item-img-wrap');
+        let badge = card.querySelector('.badge-oferta-web');
+
+        const precioFinal = card.querySelector('.precio');
+        let spanOriginal = card.querySelector('.precio-original-tachado');
+
+        if (desc && precioBase > 0) {
+            const montoDesc = calcularDescuentoProducto(precioBase, { tipo_descuento: desc.tipo, valor_descuento: desc.valor });
+            const precioNuevo = Math.max(0, precioBase - montoDesc);
+
+            // Actualizar el precio del dataset para que el carrito use el precio con descuento
+            cont.dataset.precio = precioNuevo.toFixed(2);
+
+            // Badge visual
+            if (!badge && wrap) {
+                badge = document.createElement('span');
+                badge.className = 'badge-oferta-web';
+                wrap.appendChild(badge);
+            }
+            if (badge) {
+                badge.textContent = desc.tipo === 'porcentaje'
+                    ? `-${desc.valor}%`
+                    : `-S/${desc.valor.toFixed(2)}`;
+            }
+
+            // Precio tachado
+            if (precioFinal) {
+                if (!spanOriginal) {
+                    spanOriginal = document.createElement('span');
+                    spanOriginal.className = 'precio-original-tachado';
+                    precioFinal.parentNode.insertBefore(spanOriginal, precioFinal);
+                }
+                spanOriginal.textContent = `S/${precioBase.toFixed(2)}`;
+                precioFinal.textContent = `S/${precioNuevo.toFixed(2)}`;
+            }
+        } else {
+            // Sin descuento: restaurar
+            cont.dataset.precio = precioBase;
+            if (badge) badge.remove();
+            if (spanOriginal) spanOriginal.remove();
+            if (precioFinal) precioFinal.textContent = `S/${precioBase.toFixed(2)}`;
+        }
+    });
+
+    // Renderizar strips de ofertas
+    renderizarSeccionOfertasWeb(esWebDescuentable);
+}
+
+function renderizarSeccionOfertasWeb(visible) {
+    const sec = document.getElementById('seccionOfertasWeb');
+    if (!sec) return;
+    const ofertas = (typeof OFERTAS_WEB !== 'undefined') ? OFERTAS_WEB : [];
+    const productos = (typeof PRODUCTOS_MAP !== 'undefined') ? PRODUCTOS_MAP : {};
+
+    if (!visible || !ofertas.length) {
+        sec.style.display = 'none';
+        return;
+    }
+
+    const itemsMarquesina = [];
+    const vistosIds = new Set();
+    ofertas.forEach(oferta => {
+        oferta.productos.forEach(pid => {
+            if (vistosIds.has(pid)) return;
+            const prod = productos[pid];
+            if (!prod || !prod.disponible) return;
+            vistosIds.add(pid);
+            const precioBase = prod.precio;
+            const montoDesc = oferta.tipo_descuento === 'porcentaje'
+                ? precioBase * oferta.valor_descuento / 100
+                : Math.min(oferta.valor_descuento, precioBase);
+            const precioNuevo = Math.max(0, precioBase - montoDesc);
+            const labelDesc = oferta.tipo_descuento === 'porcentaje'
+                ? `-${oferta.valor_descuento}%`
+                : `-S/${oferta.valor_descuento.toFixed(2)}`;
+            itemsMarquesina.push({ prod, precioNuevo, labelDesc });
+        });
+    });
+
+    if (!itemsMarquesina.length) { sec.style.display = 'none'; return; }
+
+    const colorFondo = ofertas[0].color_fondo;
+    const tituloSeccion = ofertas.length === 1 ? ofertas[0].titulo : '⚡ Ofertas especiales';
+
+    function cardHtml({ prod, precioNuevo, labelDesc }) {
+        const imgHtml = prod.imagen
+            ? `<img class="oferta-card-img" src="${escaparHtml(prod.imagen)}" alt="${escaparHtml(prod.nombre)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            : '';
+        const phStyle = prod.imagen ? 'display:none' : '';
+        return `<div class="oferta-card">
+            ${imgHtml}
+            <div class="oferta-card-img-placeholder" style="${phStyle}"><i class="fa-solid fa-utensils"></i></div>
+            <span class="oferta-desc-badge">${labelDesc}</span>
+            <div class="oferta-card-info">
+                <div class="oferta-card-nombre">${escaparHtml(prod.nombre)}</div>
+                <div class="oferta-card-precios">
+                    <span class="oferta-card-precio-antes">S/${prod.precio.toFixed(2)}</span>
+                    <span class="oferta-card-precio-ahora">S/${precioNuevo.toFixed(2)}</span>
+                </div>
+                <button class="oferta-card-btn"
+                    data-id="${prod.id}"
+                    data-nombre="${escaparHtml(prod.nombre)}"
+                    data-precio="${precioNuevo.toFixed(2)}"
+                    data-imagen="${escaparHtml(prod.imagen || '')}"
+                    data-tiene-opciones="${prod.tiene_opciones}"
+                    onclick="agregarDesdeOferta(this)">
+                    <i class="fa-solid fa-cart-plus"></i> Agregar
+                </button>
+            </div>
+        </div>`;
+    }
+
+    // Duplicar para loop seamless
+    const tarjetas = itemsMarquesina.map(cardHtml).join('');
+    const duracion = Math.max(14, itemsMarquesina.length * 5);
+
+    sec.style.display = 'block';
+    sec.style.background = colorFondo;
+    sec.innerHTML = `
+        <div class="ofertas-web-header">
+            <span class="owh-icono"><i class="fa-solid fa-bolt"></i></span>
+            <h3>${escaparHtml(tituloSeccion)}</h3>
+            <span class="owh-sub">${itemsMarquesina.length} promo${itemsMarquesina.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="ofertas-marquesina-wrap" id="ofertasWrap">
+            <div class="ofertas-marquesina" id="ofertasMarquesina">
+                ${tarjetas}${tarjetas}
+            </div>
+        </div>`;
+
+    _initDragScroll(document.getElementById('ofertasWrap'), document.getElementById('ofertasMarquesina'));
+}
+
+function _initDragScroll(wrap, track) {
+    if (!wrap || !track) return;
+
+    const mitad = () => track.scrollWidth / 2;
+
+    // --- Auto-scroll continuo con RAF ---
+    let rafId = null;
+    let velocidad = 0.55; // px por frame
+    let pausado = false;
+
+    function tick() {
+        if (!pausado) {
+            wrap.scrollLeft += velocidad;
+            // Loop seamless: cuando llega a la mitad, vuelve al inicio
+            if (wrap.scrollLeft >= mitad()) {
+                wrap.scrollLeft -= mitad();
+            }
+        }
+        rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+
+    // Pausar en hover (desktop)
+    wrap.addEventListener('mouseenter', () => { pausado = true; });
+    wrap.addEventListener('mouseleave', () => { pausado = false; });
+
+    // Pausar mientras el usuario arrastra / toca
+    let touching = false;
+    wrap.addEventListener('pointerdown', () => { touching = true; pausado = true; }, { passive: true });
+    wrap.addEventListener('pointerup',   () => { touching = false; setTimeout(() => { if (!touching) pausado = false; }, 800); });
+    wrap.addEventListener('pointercancel', () => { touching = false; setTimeout(() => { pausado = false; }, 800); });
+}
+
+// Hook: cuando cambia tipo de entrega, recalcular ofertas
+const _seleccionarEntregaOriginal = seleccionarEntrega;
+seleccionarEntrega = function(el) {
+    _seleccionarEntregaOriginal(el);
+    aplicarOfertasWeb();
+};
+
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(aplicarOfertasWeb, 200);
+});
+
+function agregarDesdeOferta(btn) {
+    const id       = parseInt(btn.dataset.id, 10);
+    const nombre   = btn.dataset.nombre;
+    const precio   = parseFloat(btn.dataset.precio);
+    const imagen   = btn.dataset.imagen || '';
+    const tieneOpc = parseInt(btn.dataset.tieneOpciones || '0', 10);
+
+    if (tieneOpc) {
+        const cardReal  = document.querySelector(`.control-cantidad[data-id="${id}"]`);
+        if (cardReal) {
+            const btnAgregar = cardReal.closest('article')?.querySelector('.btn-agregar');
+            if (btnAgregar) { agregarProducto(btnAgregar); return; }
+        }
+    }
+
+    // Animación: volar imagen al carrito
+    const imgEl = btn.closest('.oferta-card')?.querySelector('.oferta-card-img');
+    if (imgEl) {
+        volarAlCarrito(imgEl);
+    } else if (imagen) {
+        // Crear imagen temporal para la animación
+        const tmpImg = document.createElement('img');
+        tmpImg.src = imagen;
+        tmpImg.style.cssText = 'position:fixed;opacity:0;pointer-events:none;width:1px;height:1px';
+        document.body.appendChild(tmpImg);
+        const rect = btn.getBoundingClientRect();
+        tmpImg.style.left = rect.left + 'px';
+        tmpImg.style.top  = rect.top  + 'px';
+        tmpImg.style.width  = '40px';
+        tmpImg.style.height = '40px';
+        tmpImg.style.opacity = '1';
+        volarAlCarrito(tmpImg);
+        setTimeout(() => tmpImg.remove(), 900);
+    }
+
+    carrito.push({ id, nombre, precio, imagen, cantidad: 1, opciones: [] });
+    guardarCarrito();
+    actualizarBadgeCarrito();
+
+    // Feedback visual en el botón
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Agregado';
+    btn.style.background = '#22c55e';
+    setTimeout(() => {
+        btn.innerHTML = textoOriginal;
+        btn.style.background = '';
+    }, 1200);
 }
