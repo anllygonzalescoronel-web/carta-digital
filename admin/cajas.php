@@ -49,11 +49,35 @@ require __DIR__ . '/_layout_top.php';
 @media (max-width: 700px) { .cc-hero { grid-template-columns: 1fr; } }
 
 .cc-izq {
-    background: linear-gradient(140deg, #0f172a 0%, #1e293b 70%, #0f172a 100%);
+    background: linear-gradient(140deg, #334155 0%, #31425e 35%, #312e81 60%, #1e293b 85%, #0f172a 100%);
+    background-size: 300% 300%;
+    animation: fondoCajaCerrada 3.5s ease infinite;
     padding: 52px 44px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes fondoCajaCerrada {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.cc-izq .cc-icon-wrap {
+    animation: pulsoCandado 2.6s ease-in-out infinite;
+}
+
+@keyframes pulsoCandado {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(148,163,184,.25); }
+    50%      { box-shadow: 0 0 0 12px rgba(148,163,184,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cc-izq { animation: none; }
+    .cc-izq .cc-icon-wrap { animation: none; }
 }
 @media (max-width: 700px) { .cc-izq { padding: 36px 28px; } }
 .cc-izq .cc-icon-wrap {

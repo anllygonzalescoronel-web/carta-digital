@@ -48,7 +48,17 @@ require __DIR__ . '/_layout_top.php';
     </div>
 
 </div>
-
+<div class="kn-modal-overlay" id="knModalConfirm">
+    <div class="kn-modal-box">
+        <div class="kn-modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3>¿Confirmas cancelar este pedido?</h3>
+        <p>Esta acción no se puede deshacer.</p>
+        <div class="kn-modal-actions">
+            <button type="button" class="kn-modal-btn cancelar" id="knModalCancelar">Volver</button>
+            <button type="button" class="kn-modal-btn confirmar" id="knModalConfirmar">Sí, cancelar</button>
+        </div>
+    </div>
+</div>
 <!-- TOAST -->
 <div class="kn-toast" id="knToast"></div>
 
@@ -444,6 +454,72 @@ require __DIR__ . '/_layout_top.php';
     opacity: .45;
 }
 
+.kn-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.55);
+    backdrop-filter: blur(3px);
+    z-index: 9500;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.kn-modal-overlay.show { display: flex; }
+.kn-modal-box {
+    background: var(--neu-base);
+    border-radius: 22px;
+    padding: 28px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 14px 14px 32px rgba(0,0,0,.28), -8px -8px 24px var(--neu-sombra-clara);
+}
+.kn-modal-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+}
+.kn-modal-box h3 { font-size: 16px; margin: 0 0 6px; color: #0f172a; }
+.kn-modal-box p { font-size: 13px; color: #64748b; margin: 0 0 20px; }
+.kn-modal-actions { display: flex; gap: 10px; }
+.kn-modal-btn {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+}
+.kn-modal-btn.cancelar {
+    background: var(--neu-base);
+    color: #4a5160;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+}
+.kn-modal-btn.confirmar {
+    background: linear-gradient(135deg,#ef4444,#dc2626);
+    color: #fff;
+    box-shadow: 4px 4px 10px rgba(220,38,38,.35);
+}
+body.modo-oscuro .kn-modal-icon {
+    background: rgba(220,38,38,.18);
+    color: #fca5a5;
+}
+body.modo-oscuro .kn-modal-box h3 {
+    color: #f2f2f4;
+}
+body.modo-oscuro .kn-modal-box p {
+    color: #9aa0ac;
+}
+body.modo-oscuro .kn-modal-btn.cancelar {
+    color: #e8e8ec;
+}
+
 /* â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .kn-toast {    position: fixed;
     bottom: 28px;
@@ -776,6 +852,28 @@ body.modo-oscuro .k-items-list li.otra-estacion {
         }
     }
 
+let pedidoIdACancelar = null;
+
+    function abrirModalCancelar(id) {
+        pedidoIdACancelar = id;
+        document.getElementById('knModalConfirm').classList.add('show');
+    }
+
+    function cerrarModalCancelar() {
+        pedidoIdACancelar = null;
+        document.getElementById('knModalConfirm').classList.remove('show');
+    }
+
+    document.getElementById('knModalCancelar').addEventListener('click', cerrarModalCancelar);
+    document.getElementById('knModalConfirmar').addEventListener('click', () => {
+        const id = pedidoIdACancelar;
+        cerrarModalCancelar();
+        if (id) cambiarEstado(id, 'cancelado');
+    });
+    document.getElementById('knModalConfirm').addEventListener('click', (e) => {
+        if (e.target.id === 'knModalConfirm') cerrarModalCancelar();
+    });
+
     // â”€â”€ Cambiar estado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function cambiarEstado(id, estado) {
         try {
@@ -801,7 +899,7 @@ body.modo-oscuro .k-items-list li.otra-estacion {
         if (!id) return;
         if (btn.dataset.action==='avanzar') cambiarEstado(id, btn.dataset.next);
         else if (btn.dataset.action==='cancelar') {
-            if (confirm('Â¿Confirmas cancelar este pedido?')) cambiarEstado(id, 'cancelado');
+            abrirModalCancelar(id);
         }
     });
 
