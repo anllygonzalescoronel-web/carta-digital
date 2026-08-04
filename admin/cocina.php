@@ -14,9 +14,9 @@ require __DIR__ . '/_layout_top.php';
     <!-- HERO -->
     <section class="kn-hero card">
         <div class="kn-hero-left">
-            <p class="kn-kicker"><i class="fa-solid fa-fire-burner"></i> OperaciÃ³n en vivo</p>
+            <p class="kn-kicker"><i class="fa-solid fa-fire-burner"></i> Operación en vivo</p>
             <h2>Panel de Cocina</h2>
-            <p>Los pedidos entran automÃ¡ticamente Â· Actualiza el estado con un clic Â· Se refresca solo cada 8 s</p>
+            <p>Los pedidos entran automaticamente· Actualiza el estado con un clic. Se refresca solo cada 8 s</p>
         </div>
         <div class="kn-hero-right">
             <div class="kn-filtros-periodo">
@@ -29,7 +29,7 @@ require __DIR__ . '/_layout_top.php';
                 <button class="btn btn-primario kn-btn-refresh" id="btnRefrescarCocina" type="button">
                     <i class="fa-solid fa-rotate"></i> Refrescar
                 </button>
-                <span class="kn-last-update">Ãšltima actualizaciÃ³n: <strong id="kn-hora-update">--:--:--</strong></span>
+                <span class="kn-last-update">Ultima actualización: <strong id="kn-hora-update">--:--:--</strong></span>
             </div>
         </div>
     </section>
@@ -63,9 +63,10 @@ require __DIR__ . '/_layout_top.php';
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
-    background: linear-gradient(135deg, #fff8f2 0%, #ffffff 60%);
-    border: 1px solid #ffe5cc;
-    box-shadow: 0 10px 28px rgba(232,89,12,.08);
+    background: var(--neu-base);
+    border: none;
+    border-radius: 22px;
+    box-shadow: 10px 10px 22px var(--neu-sombra-oscura), -10px -10px 22px var(--neu-sombra-clara);
 }
 .kn-kicker {
     color: #e8590c;
@@ -93,40 +94,41 @@ require __DIR__ . '/_layout_top.php';
     margin-bottom: 10px;
 }
 .kn-btn-periodo {
-    border: 1.5px solid #e2e8f0;
-    background: #fff;
+    border: none;
+    background: var(--neu-base);
     border-radius: 999px;
-    padding: 7px 14px;
+    padding: 8px 16px;
     font-size: 12px;
     font-weight: 700;
-    color: #475569;
+    color: #4a5160;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background .15s, color .15s, border-color .15s;
+    box-shadow: 4px 4px 9px var(--neu-sombra-oscura), -4px -4px 9px var(--neu-sombra-clara);
+    transition: box-shadow .15s, color .15s;
 }
 .kn-btn-periodo:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
+    box-shadow: 2px 2px 6px var(--neu-sombra-oscura), -2px -2px 6px var(--neu-sombra-clara);
 }
-.kn-btn-periodo.activo {
-    background: #e8590c;
-    border-color: #e8590c;
-    color: #fff;
+.kn-filtros-periodo .kn-btn-periodo.activo {
+    background: linear-gradient(135deg, #ff8a3d, #E8590C) !important;
+    color: #fff !important;
+    box-shadow: inset 3px 3px 7px rgba(0,0,0,.25) !important;
 }
 
 /* â”€â”€ Label periodo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .kn-periodo-label {
     font-size: 13px;
-    color: #64748b;
+    color: #666d7a;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 14px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    padding: 10px 16px;
+    background: var(--neu-base);
+    border: none;
+    border-radius: 14px;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara);
 }
 .kn-periodo-label strong { color: #0f172a; }
 .kn-periodo-label.is-hoy strong { color: #e8590c; }
@@ -138,33 +140,64 @@ require __DIR__ . '/_layout_top.php';
     gap: 10px;
 }
 .kn-stat {
-    border-radius: 14px;
+    border-radius: 16px;
     padding: 14px;
-    border: 2px solid transparent;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    border: none;
+    background: var(--neu-base);
+    box-shadow: 6px 6px 14px var(--neu-sombra-oscura), -6px -6px 14px var(--neu-sombra-clara);
     display: grid;
     gap: 4px;
     cursor: pointer;
     transition: transform .15s, box-shadow .15s;
 }
-.kn-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.1); }
+.kn-stat:hover { transform: translateY(-3px); box-shadow: 8px 10px 18px var(--neu-sombra-oscura), -6px -6px 14px var(--neu-sombra-clara); }
 .kn-stat .kn-st-icon { font-size: 20px; margin-bottom: 2px; }
 .kn-stat .kn-st-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
 .kn-stat .kn-st-count { font-size: 26px; font-weight: 800; line-height: 1; }
 /* colores por columna */
-.kn-stat.st-pendiente   { border-color: #fbbf24; background: #fffbeb; }
-.kn-stat.st-pendiente   .kn-st-count { color: #b45309; }
-.kn-stat.st-cocinando   { border-color: #f97316; background: #fff7ed; }
-.kn-stat.st-cocinando   .kn-st-count { color: #c2410c; }
-.kn-stat.st-listo       { border-color: #3b82f6; background: #eff6ff; }
-.kn-stat.st-listo       .kn-st-count { color: #1d4ed8; }
-.kn-stat.st-entregado   { border-color: #22c55e; background: #f0fdf4; }
-.kn-stat.st-entregado   .kn-st-count { color: #15803d; }
-.kn-stat.st-cancelado   { border-color: #ef4444; background: #fef2f2; }
-.kn-stat.st-cancelado   .kn-st-count { color: #b91c1c; }
-.kn-stat.st-total       { border-color: #94a3b8; background: #f8fafc; }
-.kn-stat.st-total       .kn-st-count { color: #0f172a; }
+.kn-stat.st-total {
+    background: linear-gradient(135deg, #2a1b6a 0%, #5b4bd6 45%, #7ea8ff 100%);
+}
+.kn-stat.st-pendiente {
+    background: linear-gradient(135deg, #7a2b0f 0%, #e8590c 45%, #ffb37a 100%);
+}
+.kn-stat.st-cocinando {
+    background: linear-gradient(135deg, #6a1b6a 0%, #c23b8a 45%, #ff7a9e 100%);
+}
+.kn-stat.st-listo {
+    background: linear-gradient(135deg, #0f4c3a 0%, #1f9e6d 45%, #7fe0a8 100%);
+}
+.kn-stat.st-entregado {
+    background: linear-gradient(135deg, #14532d 0%, #16a34a 55%, #86efac 100%);
+}
+.kn-stat.st-cancelado {
+    background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 55%, #fca5a5 100%);
+}
+
+.kn-stat.st-total .kn-st-label,
+.kn-stat.st-pendiente .kn-st-label,
+.kn-stat.st-cocinando .kn-st-label,
+.kn-stat.st-listo .kn-st-label,
+.kn-stat.st-entregado .kn-st-label,
+.kn-stat.st-cancelado .kn-st-label {
+    color: rgba(255,255,255,.85);
+}
+.kn-stat.st-total .kn-st-count,
+.kn-stat.st-pendiente .kn-st-count,
+.kn-stat.st-cocinando .kn-st-count,
+.kn-stat.st-listo .kn-st-count,
+.kn-stat.st-entregado .kn-st-count,
+.kn-stat.st-cancelado .kn-st-count {
+    color: #fff;
+}
+.kn-stat.st-total .kn-st-icon i,
+.kn-stat.st-pendiente .kn-st-icon i,
+.kn-stat.st-cocinando .kn-st-icon i,
+.kn-stat.st-listo .kn-st-icon i,
+.kn-stat.st-entregado .kn-st-icon i,
+.kn-stat.st-cancelado .kn-st-icon i {
+    color: #fff;
+}
 
 /* â”€â”€ Board Kanban â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .kn-board {
@@ -174,10 +207,11 @@ require __DIR__ . '/_layout_top.php';
     align-items: start;
 }
 .kn-col {
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    background: #f4f6f9;
-    border: 1px solid #e2e8f0;
+    background: var(--neu-base);
+    border: none;
+    box-shadow: inset 5px 5px 12px var(--neu-sombra-oscura), inset -5px -5px 12px var(--neu-sombra-clara);
 }
 .kn-col-head {
     display: flex;
@@ -192,7 +226,8 @@ require __DIR__ . '/_layout_top.php';
     min-width: 22px;
     height: 22px;
     border-radius: 999px;
-    background: rgba(255,255,255,.7);
+    background: rgba(255,255,255,.55);
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,.12);
     font-size: 11px;
     font-weight: 700;
     display: inline-flex;
@@ -201,10 +236,10 @@ require __DIR__ . '/_layout_top.php';
     padding: 0 6px;
 }
 /* colores cabeceras */
-.kn-col.col-pendiente .kn-col-head  { background: #fef3c7; color: #92400e; }
-.kn-col.col-cocinando .kn-col-head  { background: #fed7aa; color: #9a3412; }
-.kn-col.col-listo     .kn-col-head  { background: #dbeafe; color: #1e40af; }
-.kn-col.col-entregado .kn-col-head  { background: #dcfce7; color: #166534; }
+.kn-col.col-pendiente .kn-col-head  { background: #f8e38c; color: #8b3a07; }
+.kn-col.col-cocinando .kn-col-head  { background: #ffae51; color: #9a3412; }
+.kn-col.col-listo     .kn-col-head  { background: #79b3ff; color: #1e40af; }
+.kn-col.col-entregado .kn-col-head  { background: #8bfdb3; color: #166534; }
 
 .kn-col-body {
     padding: 10px;
@@ -216,20 +251,23 @@ require __DIR__ . '/_layout_top.php';
 
 /* â”€â”€ Card de pedido â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .k-card {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #e5ebf4;
+    background: var(--neu-base);
+    border-radius: 16px;
+    border: none;
     padding: 14px;
-    box-shadow: 0 4px 12px rgba(15,23,42,.07);
+    box-shadow: 5px 5px 12px var(--neu-sombra-oscura), -5px -5px 12px var(--neu-sombra-clara);
     display: grid;
     gap: 10px;
     animation: kIn .22s ease;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.k-card:hover {
+    transform: translateY(-2px);
 }
 @keyframes kIn { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* urgencia: rojo si > 15 min pendiente */
-.k-card.urgente { border-color: #fca5a5; box-shadow: 0 0 0 2px #fee2e2, 0 4px 12px rgba(239,68,68,.15); }
-
+.k-card.urgente { box-shadow: 0 0 0 2px #fca5a5, 5px 5px 12px var(--neu-sombra-oscura), -5px -5px 12px var(--neu-sombra-clara); }
 .k-card-top {
     display: flex;
     justify-content: space-between;
@@ -242,8 +280,9 @@ require __DIR__ . '/_layout_top.php';
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 999px;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--neu-base);
+    box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura), inset -2px -2px 4px var(--neu-sombra-clara);
+    color: #666d7a;
     white-space: nowrap;
 }
 .k-timer.urgente { background: #fef2f2; color: #dc2626; }
@@ -258,9 +297,9 @@ require __DIR__ . '/_layout_top.php';
     font-size: 11px;
     padding: 3px 8px;
     border-radius: 999px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #475569;
+    background: var(--neu-base);
+    box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura), inset -2px -2px 4px var(--neu-sombra-clara);
+    color: #4a5160;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -270,10 +309,11 @@ require __DIR__ . '/_layout_top.php';
 .k-items-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; }
 .k-items-list li {
     font-size: 12px;
-    color: #374151;
-    background: #f8fafc;
-    border: 1px solid #e5ebf4;
-    border-radius: 8px;
+    color: #4a5160;
+    background: var(--neu-base);
+    border: none;
+    border-radius: 10px;
+    box-shadow: inset 2px 2px 5px var(--neu-sombra-oscura), inset -2px -2px 5px var(--neu-sombra-clara);
     padding: 6px 10px;
     display: flex;
     align-items: center;
@@ -299,10 +339,9 @@ require __DIR__ . '/_layout_top.php';
     gap: 8px;
     transition: opacity .15s, transform .1s;
 }
-.k-btn-avanzar:active { transform: scale(.97); }
-.k-btn-avanzar.btn-pendiente  { background: #f97316; color: #fff; }
-.k-btn-avanzar.btn-cocinando  { background: #3b82f6; color: #fff; }
-.k-btn-avanzar.btn-listo      { background: #22c55e; color: #fff; }
+.k-btn-avanzar.btn-pendiente  { background: linear-gradient(135deg,#fb923c,#f97316); color: #fff; box-shadow: 3px 3px 8px rgba(249,115,22,.35); }
+.k-btn-avanzar.btn-cocinando  { background: linear-gradient(135deg,#60a5fa,#3b82f6); color: #fff; box-shadow: 3px 3px 8px rgba(59,130,246,.35); }
+.k-btn-avanzar.btn-listo      { background: linear-gradient(135deg,#4ade80,#22c55e); color: #fff; box-shadow: 3px 3px 8px rgba(34,197,94,.35); }
 .k-btn-avanzar:disabled       { opacity: .45; cursor: default; }
 .k-btn-cancelar {
     width: 100%;
@@ -312,8 +351,9 @@ require __DIR__ . '/_layout_top.php';
     font-weight: 700;
     font-size: 12px;
     cursor: pointer;
-    background: #fef2f2;
-    color: #b91c1c;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
+    color: #c0392b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -338,11 +378,11 @@ require __DIR__ . '/_layout_top.php';
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    background: var(--neu-base);
+    border: none;
+    border-radius: 18px;
     padding: 10px 14px;
-    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    box-shadow: 6px 6px 14px var(--neu-sombra-oscura), -6px -6px 14px var(--neu-sombra-clara);
 }
 .est-tab {
     display: inline-flex;
@@ -350,15 +390,16 @@ require __DIR__ . '/_layout_top.php';
     gap: 8px;
     padding: 8px 16px;
     border-radius: 12px;
-    border: 1.5px solid #e2e8f0;
-    background: #f8fafc;
-    color: #334155;
+    border: none;
+    background: var(--neu-base);
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara);
+    color: #4a5160;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: background .15s, border-color .15s, color .15s;
+    transition: box-shadow .15s, color .15s;
 }
-.est-tab:hover { background: #f1f5f9; border-color: #94a3b8; }
+.est-tab:hover { box-shadow: 1px 1px 4px var(--neu-sombra-oscura), -1px -1px 4px var(--neu-sombra-clara); }
 .est-tab.activo {
     color: #fff;
     border-color: transparent;
@@ -407,13 +448,13 @@ require __DIR__ . '/_layout_top.php';
 .kn-toast {    position: fixed;
     bottom: 28px;
     right: 24px;
-    background: #0f172a;
-    color: #fff;
+    background: var(--neu-base);
+    color: #4a5160;
     padding: 12px 18px;
-    border-radius: 12px;
+    border-radius: 14px;
     font-size: 13px;
     font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    box-shadow: 8px 8px 20px rgba(0,0,0,.22), -4px -4px 14px var(--neu-sombra-clara);
     opacity: 0;
     transform: translateY(10px);
     pointer-events: none;
@@ -424,8 +465,8 @@ require __DIR__ . '/_layout_top.php';
     gap: 8px;
 }
 .kn-toast.visible { opacity: 1; transform: translateY(0); }
-.kn-toast.toast-ok  { background: #166534; }
-.kn-toast.toast-err { background: #991b1b; }
+.kn-toast.toast-ok  { background: #166534; color: #fff; }
+.kn-toast.toast-err { background: #991b1b; color: #fff; }
 
 /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1180px) {
@@ -437,6 +478,86 @@ require __DIR__ . '/_layout_top.php';
     .kn-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .kn-hero { flex-direction: column; align-items: flex-start; }
     .kn-hero-right { align-items: flex-start; }
+}
+
+
+
+
+
+
+
+
+
+/* ===== Modo oscuro: cocina ===== */
+body.modo-oscuro .kn-hero h2,
+body.modo-oscuro .kn-col-title,
+body.modo-oscuro .k-code,
+body.modo-oscuro .k-client,
+body.modo-oscuro .k-total { color: #f2f2f4; }
+body.modo-oscuro .kn-hero p,
+body.modo-oscuro .kn-last-update,
+body.modo-oscuro .kn-periodo-label { color: #9aa0ac; }
+body.modo-oscuro .kn-st-label { color: #9aa0ac; }
+body.modo-oscuro .k-meta-chip,
+body.modo-oscuro .k-timer,
+body.modo-oscuro .est-tab:not(.activo) { color: #cfd3dc; }
+body.modo-oscuro .k-items-list li { color: #cfd3dc; }
+body.modo-oscuro .kn-col-empty { color: #7d8492; }
+
+/* Encabezados de columna Kanban en modo oscuro: fondo saturado + texto blanco */
+body.modo-oscuro .kn-col.col-pendiente .kn-col-head {
+    background: linear-gradient(135deg, #92400e, #b45309);
+    color: #fff;
+}
+body.modo-oscuro .kn-col.col-cocinando .kn-col-head {
+    background: linear-gradient(135deg, #9a3412, #ea580c);
+    color: #fff;
+}
+body.modo-oscuro .kn-col.col-listo .kn-col-head {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #fff;
+}
+body.modo-oscuro .kn-col.col-entregado .kn-col-head {
+    background: linear-gradient(135deg, #14532d, #16a34a);
+    color: #fff;
+}
+body.modo-oscuro .kn-col-head .kn-col-badge {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+}
+
+/* Tabs de estaciones activos: texto blanco garantizado */
+body.modo-oscuro .est-tab.activo {
+    color: #fff !important;
+}
+
+/* Chips de tipo de entrega (Delivery / Recojo / Comer aquí) en modo oscuro */
+body.modo-oscuro .k-meta-chip.delivery {
+    background: rgba(59,130,246,.18);
+    border-color: rgba(59,130,246,.3);
+    color: #93c5fd;
+}
+body.modo-oscuro .k-meta-chip.recojo {
+    background: rgba(34,197,94,.18);
+    border-color: rgba(34,197,94,.3);
+    color: #86efac;
+}
+/* Timer urgente (+15 min) en modo oscuro */
+body.modo-oscuro .k-timer.urgente {
+    background: rgba(220,38,38,.2);
+    color: #fca5a5;
+}
+
+/* Items resaltados por estación (ej: "1x La Clásica Burger") en modo oscuro */
+body.modo-oscuro .k-items-list li.de-esta-estacion {
+    background: rgba(245,158,11,.18);
+    color: #fcd34d;
+}
+body.modo-oscuro .k-items-list li.de-esta-estacion::before {
+    background: #f59e0b;
+}
+body.modo-oscuro .k-items-list li.otra-estacion {
+    opacity: .35;
 }
 </style>
 
@@ -568,7 +689,7 @@ require __DIR__ . '/_layout_top.php';
         const urgente = col.id==='pendiente' && mins>15;
         let entregaChip = `<span class="k-meta-chip recojo"><i class="fa-solid fa-house"></i> Recojo</span>`;
         if (p.tipo_entrega==='delivery')   entregaChip = `<span class="k-meta-chip delivery"><i class="fa-solid fa-motorcycle"></i> Delivery</span>`;
-        if (p.tipo_entrega==='comer_aqui') entregaChip = `<span class="k-meta-chip recojo"><i class="fa-solid fa-utensils"></i> Comer aquÃ­</span>`;
+        if (p.tipo_entrega==='comer_aqui') entregaChip = `<span class="k-meta-chip recojo"><i class="fa-solid fa-utensils"></i> Comer aqui</span>`;
         const metodoPago = p.metodo_pago==='tarjeta' ? '<i class="fa-solid fa-credit-card"></i>' : p.metodo_pago==='efectivo' ? '<i class="fa-solid fa-money-bill-wave"></i>' : '<i class="fa-brands fa-whatsapp"></i>';
         const mesaChip   = p.tipo_entrega==='comer_aqui'&&p.mesa_nombre
             ? `<span class="k-meta-chip"><i class="fa-solid fa-chair"></i> ${esc(p.mesa_nombre)}${p.zona_nombre?' Â· '+esc(p.zona_nombre):''}</span>` : '';
