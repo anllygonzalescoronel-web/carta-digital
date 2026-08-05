@@ -6,8 +6,46 @@ requerirRol(['admin']);
 
 $db = getDB();
 
+function asegurarColumnaMesaLayout(PDO $db, string $tabla, string $columna, string $definicion, string $after = ''): void {
+    $stmt = $db->prepare(
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tabla AND COLUMN_NAME = :columna"
+    );
+    $stmt->execute(['tabla' => $tabla, 'columna' => $columna]);
+    if ((int)$stmt->fetchColumn() === 0) {
+        $sql = 'ALTER TABLE ' . $tabla . ' ADD COLUMN ' . $columna . ' ' . $definicion;
+        if ($after !== '') {
+            $sql .= ' AFTER ' . $after;
+        }
+        $db->exec($sql);
+    }
+}
+
+function asegurarEsquemaMesasLayout(PDO $db): void {
+    asegurarColumnaMesaLayout($db, 'zonas_mesas', 'nombre', "VARCHAR(80) NOT NULL", 'id');
+    asegurarColumnaMesaLayout($db, 'zonas_mesas', 'ancho', "INT NOT NULL DEFAULT 1000", 'nombre');
+    asegurarColumnaMesaLayout($db, 'zonas_mesas', 'alto', "INT NOT NULL DEFAULT 620", 'ancho');
+    asegurarColumnaMesaLayout($db, 'zonas_mesas', 'orden', "INT NOT NULL DEFAULT 0", 'alto');
+    asegurarColumnaMesaLayout($db, 'zonas_mesas', 'activa', "TINYINT(1) NOT NULL DEFAULT 1", 'orden');
+
+    asegurarColumnaMesaLayout($db, 'mesas', 'zona_id', "INT NOT NULL", 'id');
+    asegurarColumnaMesaLayout($db, 'mesas', 'nombre', "VARCHAR(80) NOT NULL", 'zona_id');
+    asegurarColumnaMesaLayout($db, 'mesas', 'capacidad', "INT NOT NULL DEFAULT 4", 'nombre');
+    asegurarColumnaMesaLayout($db, 'mesas', 'sillas', "INT NOT NULL DEFAULT 4", 'capacidad');
+    asegurarColumnaMesaLayout($db, 'mesas', 'pos_x', "INT NOT NULL DEFAULT 80", 'sillas');
+    asegurarColumnaMesaLayout($db, 'mesas', 'pos_y', "INT NOT NULL DEFAULT 80", 'pos_x');
+    asegurarColumnaMesaLayout($db, 'mesas', 'ancho', "INT NOT NULL DEFAULT 120", 'pos_y');
+    asegurarColumnaMesaLayout($db, 'mesas', 'alto', "INT NOT NULL DEFAULT 74", 'ancho');
+    asegurarColumnaMesaLayout($db, 'mesas', 'forma', "ENUM('rectangular','redonda') NOT NULL DEFAULT 'rectangular'", 'alto');
+    asegurarColumnaMesaLayout($db, 'mesas', 'activa', "TINYINT(1) NOT NULL DEFAULT 1", 'forma');
+    asegurarColumnaMesaLayout($db, 'mesas', 'orden', "INT NOT NULL DEFAULT 0", 'activa');
+    asegurarColumnaMesaLayout($db, 'mesas', 'decoraciones_json', "LONGTEXT DEFAULT NULL", 'orden');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
+        asegurarEsquemaMesasLayout($db);
+
         $zonas = $db->query(
             'SELECT id, nombre, ancho, alto, orden, activa
              FROM zonas_mesas
@@ -15,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         )->fetchAll();
 
         $mesas = $db->query(
-            'SELECT id, zona_id, nombre, capacidad, sillas, pos_x, pos_y, forma, activa, orden
+            'SELECT id, zona_id, nombre, capacidad, sillas, pos_x, pos_y, ancho, alto, forma, activa, orden, decoraciones_json
              FROM mesas
              ORDER BY zona_id ASC, orden ASC, id ASC'
         )->fetchAll();
@@ -34,9 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'sillas' => (int)$m['sillas'],
                 'pos_x' => (int)$m['pos_x'],
                 'pos_y' => (int)$m['pos_y'],
+                'ancho' => max(80, (int)($m['ancho'] ?? 120)),
+                'alto' => max(60, (int)($m['alto'] ?? 74)),
                 'forma' => (string)$m['forma'],
                 'activa' => (int)$m['activa'],
                 'orden' => (int)$m['orden'],
+                'decoraciones' => json_decode((string)($m['decoraciones_json'] ?? '[]'), true) ?: [],
             ];
         }
 
@@ -64,6 +105,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['ok' => false, 'mensaje' => 'Metodo no permitido'], 405);
 }
 
+if (isset($_POST['accion']) && $_POST['accion'] === 'elemento_subir_imagen') {
+    try {
+        asegurarEsquemaMesasLayout($db);
+
+        $carpeta = __DIR__ . '/../uploads/mesas';
+        if (!is_dir($carpeta)) {
+            mkdir($carpeta, 0775, true);
+        }
+
+        $nombreArchivo = subirImagen('archivo', $carpeta);
+        if (!$nombreArchivo) {
+            jsonResponse(['ok' => false, 'mensaje' => 'Selecciona una imagen válida.'], 400);
+        }
+
+        jsonResponse(['ok' => true, 'ruta' => '/uploads/mesas/' . $nombreArchivo]);
+    } catch (Throwable $e) {
+        jsonResponse(['ok' => false, 'mensaje' => $e->getMessage()], 400);
+    }
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 if (!is_array($data)) {
     jsonResponse(['ok' => false, 'mensaje' => 'JSON invalido'], 400);
@@ -72,11 +133,13 @@ if (!is_array($data)) {
 $accion = (string)($data['accion'] ?? '');
 
 try {
+    asegurarEsquemaMesasLayout($db);
+
     switch ($accion) {
         case 'zona_crear': {
             $nombre = trim((string)($data['nombre'] ?? ''));
-            $ancho = max(800, min(2400, (int)($data['ancho'] ?? 1200)));
-            $alto = max(500, min(1600, (int)($data['alto'] ?? 700)));
+            $ancho = max(800, min(2400, (int)($data['ancho'] ?? 1000)));
+            $alto = max(500, min(1600, (int)($data['alto'] ?? 620)));
             if ($nombre === '') {
                 jsonResponse(['ok' => false, 'mensaje' => 'Nombre de zona requerido.'], 400);
             }
@@ -84,15 +147,15 @@ try {
             $orden = (int)$db->query('SELECT COALESCE(MAX(orden),0)+1 FROM zonas_mesas')->fetchColumn();
             $stmt = $db->prepare('INSERT INTO zonas_mesas (nombre, ancho, alto, orden, activa) VALUES (:n, :w, :h, :o, 1)');
             $stmt->execute(['n' => $nombre, 'w' => $ancho, 'h' => $alto, 'o' => $orden]);
-            jsonResponse(['ok' => true]);
+            jsonResponse(['ok' => true, 'zona_id' => (int)$db->lastInsertId()]);
             break;
         }
 
         case 'zona_actualizar': {
             $id = (int)($data['id'] ?? 0);
             $nombre = trim((string)($data['nombre'] ?? ''));
-            $ancho = max(800, min(2400, (int)($data['ancho'] ?? 1200)));
-            $alto = max(500, min(1600, (int)($data['alto'] ?? 700)));
+            $ancho = max(800, min(2400, (int)($data['ancho'] ?? 1000)));
+            $alto = max(500, min(1600, (int)($data['alto'] ?? 620)));
             $activa = ((int)($data['activa'] ?? 1)) === 1 ? 1 : 0;
             if ($id <= 0 || $nombre === '') {
                 jsonResponse(['ok' => false, 'mensaje' => 'Datos de zona invalidos.'], 400);
@@ -119,10 +182,13 @@ try {
             $nombre = trim((string)($data['nombre'] ?? ''));
             $capacidad = max(1, min(20, (int)($data['capacidad'] ?? 4)));
             $sillas = max(1, min(20, (int)($data['sillas'] ?? $capacidad)));
+            $ancho = max(80, min(420, (int)($data['ancho'] ?? 120)));
+            $alto = max(60, min(320, (int)($data['alto'] ?? 74)));
             $forma = (string)($data['forma'] ?? 'rectangular');
             $forma = in_array($forma, ['rectangular', 'redonda'], true) ? $forma : 'rectangular';
             $posX = max(0, (int)($data['pos_x'] ?? 80));
             $posY = max(0, (int)($data['pos_y'] ?? 80));
+            $decoracionesJson = json_encode(is_array($data['decoraciones'] ?? null) ? $data['decoraciones'] : [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             if ($zonaId <= 0 || $nombre === '') {
                 jsonResponse(['ok' => false, 'mensaje' => 'Datos de mesa invalidos.'], 400);
@@ -133,8 +199,8 @@ try {
             $orden = (int)$ordenStmt->fetchColumn();
 
             $stmt = $db->prepare(
-                'INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, forma, activa, orden)
-                 VALUES (:zona, :nombre, :capacidad, :sillas, :x, :y, :forma, 1, :orden)'
+                'INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, ancho, alto, forma, activa, orden, decoraciones_json)
+                 VALUES (:zona, :nombre, :capacidad, :sillas, :x, :y, :ancho, :alto, :forma, 1, :orden, :decoraciones_json)'
             );
             $stmt->execute([
                 'zona' => $zonaId,
@@ -143,8 +209,11 @@ try {
                 'sillas' => $sillas,
                 'x' => $posX,
                 'y' => $posY,
+                'ancho' => $ancho,
+                'alto' => $alto,
                 'forma' => $forma,
                 'orden' => $orden,
+                'decoraciones_json' => $decoracionesJson,
             ]);
             jsonResponse(['ok' => true]);
             break;
@@ -157,8 +226,11 @@ try {
             $inicio = max(1, (int)($data['inicio'] ?? 1));
             $capacidad = max(1, min(20, (int)($data['capacidad'] ?? 4)));
             $sillas = max(1, min(20, (int)($data['sillas'] ?? $capacidad)));
+            $ancho = max(80, min(420, (int)($data['ancho'] ?? 120)));
+            $alto = max(60, min(320, (int)($data['alto'] ?? 74)));
             $forma = (string)($data['forma'] ?? 'rectangular');
             $forma = in_array($forma, ['rectangular', 'redonda'], true) ? $forma : 'rectangular';
+            $decoracionesJson = json_encode(is_array($data['decoraciones'] ?? null) ? $data['decoraciones'] : [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             if ($zonaId <= 0 || $prefijo === '') {
                 jsonResponse(['ok' => false, 'mensaje' => 'Datos inválidos para crear mesas en lote.'], 400);
@@ -184,8 +256,8 @@ try {
             $columnas = max(1, (int)floor(max(1, $anchoZona - $inicioX - 40) / $separacionX));
 
             $stmt = $db->prepare(
-                'INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, forma, activa, orden)
-                 VALUES (:zona, :nombre, :capacidad, :sillas, :x, :y, :forma, 1, :orden)'
+                'INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, ancho, alto, forma, activa, orden, decoraciones_json)
+                 VALUES (:zona, :nombre, :capacidad, :sillas, :x, :y, :ancho, :alto, :forma, 1, :orden, :decoraciones_json)'
             );
 
             $creadas = 0;
@@ -207,8 +279,11 @@ try {
                     'sillas' => $sillas,
                     'x' => $posX,
                     'y' => $posY,
+                    'ancho' => $ancho,
+                    'alto' => $alto,
                     'forma' => $forma,
                     'orden' => $ordenBase + $i + 1,
+                    'decoraciones_json' => $decoracionesJson,
                 ]);
                 $creadas++;
             }
@@ -222,9 +297,12 @@ try {
             $nombre = trim((string)($data['nombre'] ?? ''));
             $capacidad = max(1, min(20, (int)($data['capacidad'] ?? 4)));
             $sillas = max(1, min(20, (int)($data['sillas'] ?? $capacidad)));
+            $ancho = max(80, min(420, (int)($data['ancho'] ?? 120)));
+            $alto = max(60, min(320, (int)($data['alto'] ?? 74)));
             $forma = (string)($data['forma'] ?? 'rectangular');
             $forma = in_array($forma, ['rectangular', 'redonda'], true) ? $forma : 'rectangular';
             $activa = ((int)($data['activa'] ?? 1)) === 1 ? 1 : 0;
+            $decoracionesJson = json_encode(is_array($data['decoraciones'] ?? null) ? $data['decoraciones'] : [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             if ($id <= 0 || $nombre === '') {
                 jsonResponse(['ok' => false, 'mensaje' => 'Datos de mesa invalidos.'], 400);
@@ -232,15 +310,18 @@ try {
 
             $stmt = $db->prepare(
                 'UPDATE mesas
-                 SET nombre = :nombre, capacidad = :capacidad, sillas = :sillas, forma = :forma, activa = :activa
+                 SET nombre = :nombre, capacidad = :capacidad, sillas = :sillas, ancho = :ancho, alto = :alto, forma = :forma, activa = :activa, decoraciones_json = :decoraciones_json
                  WHERE id = :id'
             );
             $stmt->execute([
                 'nombre' => $nombre,
                 'capacidad' => $capacidad,
                 'sillas' => $sillas,
+                'ancho' => $ancho,
+                'alto' => $alto,
                 'forma' => $forma,
                 'activa' => $activa,
+                'decoraciones_json' => $decoracionesJson,
                 'id' => $id,
             ]);
             jsonResponse(['ok' => true]);
@@ -279,7 +360,7 @@ try {
                 jsonResponse(['ok' => false, 'mensaje' => 'Datos de layout invalidos.'], 400);
             }
 
-            $stmt = $db->prepare('UPDATE mesas SET pos_x = :x, pos_y = :y, orden = :orden WHERE id = :id AND zona_id = :zona_id');
+            $stmt = $db->prepare('UPDATE mesas SET pos_x = :x, pos_y = :y, ancho = :ancho, alto = :alto, orden = :orden, decoraciones_json = :decoraciones_json WHERE id = :id AND zona_id = :zona_id');
             foreach ($mesas as $idx => $m) {
                 $idMesa = (int)($m['id'] ?? 0);
                 if ($idMesa <= 0) {
@@ -287,11 +368,17 @@ try {
                 }
                 $posX = max(0, (int)($m['pos_x'] ?? 0));
                 $posY = max(0, (int)($m['pos_y'] ?? 0));
+                $ancho = max(80, min(420, (int)($m['ancho'] ?? 120)));
+                $alto = max(60, min(320, (int)($m['alto'] ?? 74)));
                 $orden = max(0, (int)($m['orden'] ?? $idx));
+                $decoracionesJson = json_encode(is_array($m['decoraciones'] ?? null) ? $m['decoraciones'] : [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 $stmt->execute([
                     'x' => $posX,
                     'y' => $posY,
+                    'ancho' => $ancho,
+                    'alto' => $alto,
                     'orden' => $orden,
+                    'decoraciones_json' => $decoracionesJson,
                     'id' => $idMesa,
                     'zona_id' => $zonaId,
                 ]);

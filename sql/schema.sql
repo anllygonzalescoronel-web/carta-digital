@@ -494,9 +494,12 @@ CREATE TABLE IF NOT EXISTS `mesas` (
   `sillas` int NOT NULL DEFAULT '4',
   `pos_x` int NOT NULL DEFAULT '80',
   `pos_y` int NOT NULL DEFAULT '80',
+	`ancho` int NOT NULL DEFAULT '120',
+	`alto` int NOT NULL DEFAULT '74',
   `forma` enum('rectangular','redonda') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'rectangular',
   `activa` tinyint(1) NOT NULL DEFAULT '1',
   `orden` int NOT NULL DEFAULT '0',
+	`decoraciones_json` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -878,8 +881,8 @@ CREATE TABLE `v_comprobantes_pendientes` (
 CREATE TABLE IF NOT EXISTS `zonas_mesas` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ancho` int NOT NULL DEFAULT '1200',
-  `alto` int NOT NULL DEFAULT '700',
+	`ancho` int NOT NULL DEFAULT '1000',
+	`alto` int NOT NULL DEFAULT '620',
   `orden` int NOT NULL DEFAULT '0',
   `activa` tinyint(1) NOT NULL DEFAULT '1',
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -888,8 +891,8 @@ CREATE TABLE IF NOT EXISTS `zonas_mesas` (
 
 -- Volcando datos para la tabla carta_digital.zonas_mesas: ~3 rows (aproximadamente)
 INSERT INTO `zonas_mesas` (`id`, `nombre`, `ancho`, `alto`, `orden`, `activa`, `creado_en`) VALUES
-	(3, 'SALON PRINCIPAL', 1200, 700, 1, 1, '2026-08-02 05:42:33'),
-	(4, 'TERRAZA', 1200, 700, 2, 1, '2026-08-02 05:47:57'),
+	(3, 'SALON PRINCIPAL', 1000, 620, 1, 1, '2026-08-02 05:42:33'),
+	(4, 'TERRAZA', 1000, 620, 2, 1, '2026-08-02 05:47:57'),
 	(5, 'BARRA', 1200, 700, 3, 1, '2026-08-02 05:48:05');
 
 -- Volcando estructura para vista carta_digital.v_comprobantes_aceptados

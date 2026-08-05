@@ -146,6 +146,38 @@ body.modo-oscuro .pos-shell {
     margin: 10px 0;
 }
 
+.pos-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 10px;
+}
+
+.pos-leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pos-texto);
+    background: var(--pos-bg);
+    box-shadow: inset 2px 2px 6px var(--pos-sombra-oscura), inset -2px -2px 6px var(--pos-sombra-clara);
+}
+
+.pos-leyenda-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    flex: 0 0 auto;
+}
+
+.pos-leyenda-dot.libre { background: #198754; }
+.pos-leyenda-dot.ocupada { background: #dc3545; }
+.pos-leyenda-dot.proceso_pago { background: #f39c12; }
+
 .pos-zona-btn {
     border: none;
     background: var(--pos-bg);
@@ -255,34 +287,142 @@ body.modo-oscuro .pos-shell {
     min-height: 540px;
 }
 
+.pos-zona-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
 .pos-mesa {
     position: absolute;
     width: 130px;
-    min-height: 76px;
+    height: 76px;
     border-radius: 16px;
     border: none;
-    background: var(--pos-bg);
-    padding: 10px;
+    background: transparent;
+    padding: 0;
     text-align: center;
     cursor: pointer;
-    box-shadow: 5px 5px 12px var(--pos-sombra-oscura), -5px -5px 12px var(--pos-sombra-clara);
-    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: none;
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    overflow: visible;
 }
 
 .pos-mesa.redonda { border-radius: 999px; }
 
 .pos-mesa:hover { transform: translateY(-2px); }
 
+.pos-mesa-tablero {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    border: 2px solid #334155;
+    background:
+      repeating-linear-gradient(0deg, rgba(71, 85, 105, 0.2) 0 1px, rgba(255,255,255,0.94) 1px 6px),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    z-index: 1;
+}
+
+.pos-mesa.redonda .pos-mesa-tablero { border-radius: 999px; }
+
+.pos-mesa-content {
+    position: relative;
+    z-index: 4;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    flex-direction: column;
+    padding: 4px 6px;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.pos-mesa-sillas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.pos-mesa-silla {
+    position: absolute;
+    width: 14px;
+    height: 8px;
+    border-radius: 4px;
+    border: 2px solid #334155;
+    background: #ffffff;
+    transform-origin: center center;
+}
+
+.pos-mesa-silla::after {
+    content: '';
+    position: absolute;
+    width: 11px;
+    height: 8px;
+    left: 50%;
+    top: -9px;
+    transform: translateX(-50%);
+    border-radius: 8px 8px 0 0;
+    border: 2px solid #334155;
+    border-bottom: none;
+    background: transparent;
+}
+
 .pos-mesa.libre {
-    box-shadow: 5px 5px 12px var(--pos-sombra-oscura), -5px -5px 12px var(--pos-sombra-clara), inset 0 0 0 2px rgba(46,204,113,.5);
+    filter: drop-shadow(0 0 0 rgba(46, 204, 113, 0));
+}
+
+.pos-mesa.libre .pos-mesa-tablero {
+    border-color: #0d9c58;
+    background:
+      repeating-linear-gradient(0deg, rgba(13, 156, 88, 0.25) 0 1px, rgba(255,255,255,0.94) 1px 6px),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .pos-mesa.ocupada {
-    box-shadow: 5px 5px 12px var(--pos-sombra-oscura), -5px -5px 12px var(--pos-sombra-clara), inset 0 0 0 2px rgba(242,201,76,.6);
+    filter: drop-shadow(0 0 0 rgba(242, 201, 76, 0));
+}
+
+.pos-mesa.ocupada .pos-mesa-tablero {
+    border-color: #c0202f;
+    background:
+      repeating-linear-gradient(0deg, rgba(192, 32, 47, 0.28) 0 1px, rgba(255,255,255,0.94) 1px 6px),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.pos-mesa.proceso_pago {
+    filter: drop-shadow(0 0 0 rgba(242, 201, 76, 0));
+}
+
+.pos-mesa.proceso_pago .pos-mesa-tablero {
+    border-color: #d4820a;
+    background:
+      repeating-linear-gradient(0deg, rgba(212, 130, 10, 0.26) 0 1px, rgba(255,255,255,0.94) 1px 6px),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.pos-mesa.unida .pos-mesa-tablero {
+    border-color: #7c3aed;
+    border-width: 3px;
+    background:
+      repeating-linear-gradient(0deg, rgba(124, 58, 237, 0.18) 0 1px, rgba(255,255,255,0.94) 1px 6px),
+      linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%);
+}
+
+body.modo-oscuro .pos-mesa.unida .pos-mesa-tablero {
+    border-color: #a78bfa;
+    background:
+      repeating-linear-gradient(0deg, rgba(167, 139, 250, 0.18) 0 1px, rgba(30,20,50,0.94) 1px 6px),
+      linear-gradient(180deg, #1e1432 0%, #16102a 100%);
 }
 
 .pos-mesa.seleccionada {
-    box-shadow: inset 4px 4px 9px var(--pos-sombra-oscura), inset -4px -4px 9px var(--pos-sombra-clara), 0 0 0 2px var(--pos-primary);
+    box-shadow: 0 0 0 2px var(--pos-primary), 0 6px 14px rgba(15,23,42,.2);
     transform: translateY(0);
 }
 
@@ -295,9 +435,66 @@ body.modo-oscuro .pos-shell {
 
 .pos-mesa .meta {
     display: block;
-    font-size: 11px;
-    color: var(--pos-muted);
-    margin-top: 2px;
+    font-size: 12px;
+    color: #0f172a;
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+.pos-mesa-estado {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 0;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    text-shadow: 0 0 4px rgba(0,0,0,0.15);
+}
+
+.pos-mesa-estado.libre {
+    color: #0d6e3f;
+}
+
+.pos-mesa-estado.ocupada {
+    color: #a3182a;
+}
+
+.pos-mesa-estado.proceso_pago {
+    color: #a0620a;
+}
+
+.pos-mesa-decoracion {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transform-origin: center center;
+    pointer-events: none;
+}
+
+.pos-mesa-decoracion img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.pos-mesa-decoracion .txt {
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.1;
+}
+
+.pos-mesa-decoracion .ico {
+    font-size: inherit;
+    line-height: 1;
 }
 
 .pos-order-disabled {
@@ -715,6 +912,24 @@ body.modo-oscuro .pos-shell {
     gap: 10px;
 }
 
+.pos-union-help {
+    font-size: 13px;
+    color: var(--pos-muted);
+    margin-bottom: 10px;
+}
+
+.pos-union-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.pos-union-meta {
+    font-size: 12px;
+    color: var(--pos-muted);
+    margin-top: 6px;
+}
+
 @media (max-width: 680px) { .pos-modal-grid { grid-template-columns: 1fr; } }
 
 .pos-opciones-producto {
@@ -826,6 +1041,46 @@ body.modo-oscuro .pos-prod-badge {
     color: #fff !important;
     border: none !important;
 }
+
+body.modo-oscuro .pos-leyenda-item {
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .pos-leyenda-dot {
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+body.modo-oscuro .pos-mesa .meta {
+    color: #f8fafc;
+}
+
+body.modo-oscuro .pos-mesa-estado.libre,
+body.modo-oscuro .pos-mesa-estado.ocupada {
+    color: #ffffff;
+}
+
+body.modo-oscuro .pos-mesa-estado.proceso_pago {
+    color: #111827;
+}
+
+.pos-mesa-union-badge {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    color: #6d28d9;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.modo-oscuro .pos-mesa-union-badge {
+    color: #c4b5fd;
+}
 </style>
 
 <div class="pos-shell">
@@ -841,6 +1096,11 @@ body.modo-oscuro .pos-prod-badge {
         <section class="pos-card">
             <div id="mesaSelectorView">
                 <h3><i class="ti ti-layout-grid"></i> Mapa de mesas</h3>
+                <div class="pos-leyenda" aria-label="Leyenda de estados de mesa">
+                    <span class="pos-leyenda-item"><span class="pos-leyenda-dot libre"></span> Libre</span>
+                    <span class="pos-leyenda-item"><span class="pos-leyenda-dot ocupada"></span> Ocupada</span>
+                    <span class="pos-leyenda-item"><span class="pos-leyenda-dot proceso_pago"></span> En proceso de pago</span>
+                </div>
                 <div class="pos-zonas" id="posZonas"></div>
                 <div class="pos-board-wrap">
                     <div class="pos-board" id="posBoard"></div>
@@ -891,6 +1151,8 @@ body.modo-oscuro .pos-prod-badge {
                 <div class="pos-actions stack">
                     <button type="button" class="pos-btn dark full" id="btnEnviarComanda">Enviar comanda a cocina</button>
                     <button type="button" class="pos-btn warn full" id="btnAbrirFacturacion">Facturar mesa</button>
+                    <button type="button" class="pos-btn soft full" id="btnUnirMesa">Unir con otra mesa</button>
+                    <button type="button" class="pos-btn soft full" id="btnLiberarMesa">Liberar mesa</button>
                     <button type="button" class="pos-btn soft full" id="btnLimpiarCarrito">Limpiar carrito local</button>
                 </div>
 
@@ -951,6 +1213,24 @@ body.modo-oscuro .pos-prod-badge {
     </div>
 </div>
 
+<div class="pos-modal" id="modalUnirMesaPos">
+    <div class="pos-modal-box">
+        <h4><i class="ti ti-arrows-join-2"></i> Unir mesas</h4>
+        <div class="pos-union-help" id="unionMesaOrigenTexto"></div>
+        <div class="pos-union-grid">
+            <div class="pos-field">
+                <label>Mesa destino</label>
+                <select id="posUnionMesaDestino"></select>
+                <div class="pos-union-meta" id="posUnionMesaMeta"></div>
+            </div>
+        </div>
+        <div class="pos-actions" style="margin-top:12px;">
+            <button type="button" class="pos-btn dark" id="btnConfirmarUnionMesa">Confirmar unión</button>
+            <button type="button" class="pos-btn soft" id="btnCerrarUnionMesa">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 (() => {
     const API_MESAS = '../api/pos_mesas_estado.php';
@@ -958,6 +1238,8 @@ body.modo-oscuro .pos-prod-badge {
     const API_CATALOGO = '../api/pos_catalogo.php';
     const API_COMANDA = '../api/pos_comanda.php';
     const API_FACTURAR = '../api/pos_facturar_mesa.php';
+    const API_UNIR_MESAS = '../api/pos_unir_mesas.php';
+    const API_LIBERAR_MESA = '../api/pos_liberar_mesa.php';
     const API_CONSULTAR_DOCUMENTO = '../api/consultar_documento.php';
 
     let zonas = [];
@@ -969,6 +1251,8 @@ body.modo-oscuro .pos-prod-badge {
     let timerRefresh = null;
     let productoOpcionesActual = null;
     let lastPrecuenta = null;
+    let candidatas = [];
+    let mesasCandidatasUnion = [];
     const isAndroid = /Android/i.test(navigator.userAgent || '');
 
     const ui = {
@@ -996,6 +1280,10 @@ body.modo-oscuro .pos-prod-badge {
         opcionesGrupos: document.getElementById('posOpcionesGrupos'),
         opcionesTotal: document.getElementById('posOpcionesTotalTexto'),
         modalFacturacion: document.getElementById('modalFacturacionPos'),
+        modalUnionMesa: document.getElementById('modalUnirMesaPos'),
+        unionMesaOrigenTexto: document.getElementById('unionMesaOrigenTexto'),
+        selectUnionMesaDestino: document.getElementById('posUnionMesaDestino'),
+        unionMesaMeta: document.getElementById('posUnionMesaMeta'),
         btnIrCarritoAndroid: document.getElementById('btnIrCarritoAndroid'),
     };
 
@@ -1204,7 +1492,228 @@ body.modo-oscuro .pos-prod-badge {
 
     function mesaActualTexto() {
         if (!mesaSeleccionada) return 'Mesa: sin seleccionar';
-        return `Mesa: ${mesaSeleccionada.nombre} (${mesaSeleccionada.estado})`;
+        return `Mesa: ${mesaSeleccionada.nombre} (${estadoMesaLabel(mesaSeleccionada.estado)})`;
+    }
+
+    function estadoMesaLabel(estado) {
+        const key = String(estado || '').toLowerCase();
+        if (key === 'proceso_pago') return 'En proceso de pago';
+        if (key === 'ocupada') return 'Ocupada';
+        return 'Libre';
+    }
+
+    function normalizarRutaImagen(value) {
+        const ruta = String(value || '').trim();
+        if (!ruta) return '';
+        if (/^(https?:)?\/\//i.test(ruta) || ruta.startsWith('data:')) return ruta;
+        return '/' + ruta.replace(/^\.\//, '').replace(/^\/+/, '');
+    }
+
+    function sanitizeIconClass(value) {
+        return String(value || '').replace(/[^a-zA-Z0-9\-\s]/g, '').trim() || 'ti ti-star';
+    }
+
+    function parseDecoraciones(value) {
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string' && value.trim() !== '') {
+            try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                return [];
+            }
+        }
+        return [];
+    }
+
+    function normalizarElementoDecoracion(elemento) {
+        return {
+            id: String(elemento?.id || ''),
+            tipo: ['texto', 'icono', 'imagen'].includes(elemento?.tipo) ? elemento.tipo : 'texto',
+            contenido: String(elemento?.contenido ?? ''),
+            color: String(elemento?.color || '#0f172a'),
+            fondo: String(elemento?.fondo || 'transparent'),
+            fuente: Math.max(10, Math.min(48, Number(elemento?.fuente || 18))),
+            ancho: Math.max(20, Math.min(260, Number(elemento?.ancho || 48))),
+            alto: Math.max(20, Math.min(260, Number(elemento?.alto || 48))),
+            x: Math.max(0, Number(elemento?.x || 0)),
+            y: Math.max(0, Number(elemento?.y || 0)),
+            rotacion: Math.max(-180, Math.min(180, Number(elemento?.rotacion || 0))),
+            capa: Math.max(0, Math.min(9999, Number(elemento?.capa || 1))),
+            redondeo: Math.max(0, Math.min(999, Number(elemento?.redondeo || 12))),
+            scope: String(elemento?.scope || 'mesa') === 'zona' ? 'zona' : 'mesa',
+        };
+    }
+
+    function obtenerPosicionDecoracion(mesa, elemento) {
+        const item = normalizarElementoDecoracion(elemento);
+        if (item.scope === 'zona') {
+            return { x: item.x, y: item.y };
+        }
+        return {
+            x: Math.max(0, Number(mesa?.pos_x || 0) + item.x),
+            y: Math.max(0, Number(mesa?.pos_y || 0) + item.y),
+        };
+    }
+
+    function renderDecoracionNode(mesa, elemento) {
+        const item = normalizarElementoDecoracion(elemento);
+        const pos = obtenerPosicionDecoracion(mesa, item);
+        const node = document.createElement('div');
+        node.className = 'pos-mesa-decoracion';
+        node.style.left = `${pos.x}px`;
+        node.style.top = `${pos.y}px`;
+        node.style.width = `${item.ancho}px`;
+        node.style.height = `${item.alto}px`;
+        node.style.borderRadius = `${item.redondeo}px`;
+        node.style.background = item.fondo && item.fondo !== 'transparent' ? item.fondo : 'transparent';
+        node.style.color = item.color;
+        node.style.zIndex = String(200 + item.capa);
+        node.style.transform = `rotate(${item.rotacion}deg)`;
+
+        if (item.tipo === 'imagen') {
+            const img = document.createElement('img');
+            img.src = normalizarRutaImagen(item.contenido);
+            img.alt = 'Decoracion';
+            node.appendChild(img);
+        } else if (item.tipo === 'icono') {
+            const ico = document.createElement('i');
+            ico.className = `${sanitizeIconClass(item.contenido)} ico`;
+            ico.style.fontSize = `${Math.max(14, item.fuente)}px`;
+            node.appendChild(ico);
+        } else {
+            const txt = document.createElement('span');
+            txt.className = 'txt';
+            txt.style.fontSize = `${Math.max(10, item.fuente)}px`;
+            txt.textContent = item.contenido || 'Texto';
+            node.appendChild(txt);
+        }
+
+        return node;
+    }
+
+    function calcularPlantillaSillasRectangular(totalSillas, ancho, alto, separacion) {
+        const plantilla = {
+            2: [
+                { x: ancho / 2, y: -separacion, rot: 0 },
+                { x: ancho / 2, y: alto + separacion, rot: 180 },
+            ],
+            4: [
+                { x: ancho / 2, y: -separacion, rot: 0 },
+                { x: ancho + separacion, y: alto / 2, rot: 90 },
+                { x: ancho / 2, y: alto + separacion, rot: 180 },
+                { x: -separacion, y: alto / 2, rot: 270 },
+            ],
+            6: [
+                { x: ancho * 0.3, y: -separacion, rot: 0 },
+                { x: ancho * 0.7, y: -separacion, rot: 0 },
+                { x: ancho + separacion, y: alto / 2, rot: 90 },
+                { x: ancho * 0.7, y: alto + separacion, rot: 180 },
+                { x: ancho * 0.3, y: alto + separacion, rot: 180 },
+                { x: -separacion, y: alto / 2, rot: 270 },
+            ],
+            8: [
+                { x: ancho * 0.24, y: -separacion, rot: 0 },
+                { x: ancho * 0.5, y: -separacion, rot: 0 },
+                { x: ancho * 0.76, y: -separacion, rot: 0 },
+                { x: ancho + separacion, y: alto * 0.36, rot: 90 },
+                { x: ancho + separacion, y: alto * 0.7, rot: 90 },
+                { x: ancho * 0.76, y: alto + separacion, rot: 180 },
+                { x: ancho * 0.24, y: alto + separacion, rot: 180 },
+                { x: -separacion, y: alto * 0.5, rot: 270 },
+            ],
+        };
+        return plantilla[totalSillas] || null;
+    }
+
+    function calcularPlantillaSillasRedonda(totalSillas, ancho, alto, separacion) {
+        const sx = separacion;
+        const sy = Math.max(10, Math.round(separacion * 0.9));
+        const plantilla = {
+            2: [
+                { x: ancho / 2, y: -sy, rot: 0 },
+                { x: ancho / 2, y: alto + sy, rot: 180 },
+            ],
+            4: [
+                { x: ancho / 2, y: -sy, rot: 0 },
+                { x: ancho + sx, y: alto / 2, rot: 90 },
+                { x: ancho / 2, y: alto + sy, rot: 180 },
+                { x: -sx, y: alto / 2, rot: 270 },
+            ],
+            6: [
+                { x: ancho * 0.36, y: -sy, rot: -4 },
+                { x: ancho * 0.64, y: -sy, rot: 4 },
+                { x: ancho + sx * 0.75, y: alto * 0.28, rot: 55 },
+                { x: ancho * 0.64, y: alto + sy, rot: 176 },
+                { x: ancho * 0.36, y: alto + sy, rot: 184 },
+                { x: -sx * 0.75, y: alto * 0.28, rot: -55 },
+            ],
+            8: [
+                { x: -sx * 0.75, y: alto * 0.28, rot: -55 },
+                { x: ancho * 0.36, y: -sy, rot: -6 },
+                { x: ancho * 0.5, y: -sy * 1.08, rot: 0 },
+                { x: ancho * 0.64, y: -sy, rot: 6 },
+                { x: ancho + sx * 0.75, y: alto * 0.28, rot: 55 },
+                { x: ancho * 0.64, y: alto + sy, rot: 174 },
+                { x: ancho * 0.5, y: alto + sy * 1.08, rot: 180 },
+                { x: ancho * 0.36, y: alto + sy, rot: 186 },
+            ],
+        };
+        return plantilla[totalSillas] || null;
+    }
+
+    function crearSillasMesaPos(mesa, mesaNode) {
+        const totalSillas = Math.max(0, Math.min(20, Number(mesa?.sillas || 0)));
+        if (totalSillas <= 0) return;
+
+        const anchoMesa = Math.max(80, Number(mesa?.ancho) || 120);
+        const altoMesa = Math.max(60, Number(mesa?.alto) || 74);
+        const redonda = mesa?.forma === 'redonda';
+        const capa = document.createElement('div');
+        capa.className = 'pos-mesa-sillas';
+
+        const separacion = Math.max(12, Math.round(Math.min(anchoMesa, altoMesa) * 0.22));
+        const plantilla = redonda
+            ? calcularPlantillaSillasRedonda(totalSillas, anchoMesa, altoMesa, separacion)
+            : calcularPlantillaSillasRectangular(totalSillas, anchoMesa, altoMesa, separacion);
+
+        const puntos = Array.isArray(plantilla) && plantilla.length
+            ? plantilla
+            : (() => {
+                if (redonda) {
+                    const cx = anchoMesa / 2;
+                    const cy = altoMesa / 2;
+                    const rx = (anchoMesa / 2) + separacion;
+                    const ry = (altoMesa / 2) + separacion;
+                    return Array.from({ length: totalSillas }, (_, i) => {
+                        const ang = (-Math.PI / 2) + ((Math.PI * 2) * i / totalSillas);
+                        return {
+                            x: cx + Math.cos(ang) * rx,
+                            y: cy + Math.sin(ang) * ry,
+                            rot: (ang * 180 / Math.PI) + 90,
+                        };
+                    });
+                }
+
+                const perimetro = (2 * anchoMesa) + (2 * altoMesa);
+                return Array.from({ length: totalSillas }, (_, i) => {
+                    const d = ((i + 0.5) * perimetro) / totalSillas;
+                    if (d < anchoMesa) return { x: d, y: -separacion, rot: 0 };
+                    if (d < (anchoMesa + altoMesa)) return { x: anchoMesa + separacion, y: d - anchoMesa, rot: 90 };
+                    if (d < (2 * anchoMesa + altoMesa)) return { x: anchoMesa - (d - anchoMesa - altoMesa), y: altoMesa + separacion, rot: 180 };
+                    return { x: -separacion, y: altoMesa - (d - (2 * anchoMesa + altoMesa)), rot: 270 };
+                });
+            })();
+        puntos.forEach((p) => {
+            const silla = document.createElement('div');
+            silla.className = 'pos-mesa-silla';
+            silla.style.left = `${p.x}px`;
+            silla.style.top = `${p.y}px`;
+            silla.style.transform = `translate(-50%, -50%) rotate(${Number(p.rot) || 0}deg)`;
+            capa.appendChild(silla);
+        });
+
+        mesaNode.appendChild(capa);
     }
 
     function renderZonas() {
@@ -1228,25 +1737,45 @@ body.modo-oscuro .pos-prod-badge {
             return;
         }
 
-        ui.board.style.width = `${Math.max(900, Number(zona.ancho || 900))}px`;
-        ui.board.style.height = `${Math.max(540, Number(zona.alto || 540))}px`;
+        ui.board.style.width = `${Math.max(300, Number(zona.ancho || 1000))}px`;
+        ui.board.style.height = `${Math.max(240, Number(zona.alto || 620))}px`;
 
-        ui.board.innerHTML = (zona.mesas || []).map((m) => {
-            const cls = `pos-mesa ${m.forma === 'redonda' ? 'redonda' : ''} ${m.estado}${mesaSeleccionada && Number(mesaSeleccionada.id) === Number(m.id) ? ' seleccionada' : ''}`;
-            return `
-                <button type="button" class="${cls}" data-mesa="${m.id}" style="left:${Number(m.pos_x)}px; top:${Number(m.pos_y)}px;">
-                    <span class="name">${esc(m.nombre)}</span>
-                    <span class="meta">${m.sillas || m.capacidad} sillas</span>
-                    <span class="meta">${m.estado === 'ocupada' ? `Ocupada · ${fmt(m.total_activo)}` : 'Libre'}</span>
-                </button>
+        ui.board.innerHTML = '';
+
+        const mesas = Array.isArray(zona.mesas) ? zona.mesas : [];
+        mesas.forEach((m) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.dataset.mesa = String(m.id);
+            btn.className = `pos-mesa ${m.forma === 'redonda' ? 'redonda' : 'rectangular'} ${m.estado}${m.mesa_union_id ? ' unida' : ''}${mesaSeleccionada && Number(mesaSeleccionada.id) === Number(m.id) ? ' seleccionada' : ''}`;
+            btn.style.left = `${Number(m.pos_x || 0)}px`;
+            btn.style.top = `${Number(m.pos_y || 0)}px`;
+            btn.style.width = `${Math.max(80, Number(m.ancho) || 120)}px`;
+            btn.style.height = `${Math.max(60, Number(m.alto) || 74)}px`;
+
+            const tablero = document.createElement('div');
+            tablero.className = 'pos-mesa-tablero';
+            btn.appendChild(tablero);
+
+            const content = document.createElement('div');
+            content.className = 'pos-mesa-content';
+            const estadoLabel = estadoMesaLabel(m.estado);
+            const estadoClass = ['libre', 'ocupada', 'proceso_pago'].includes(String(m.estado)) ? String(m.estado) : 'libre';
+            const detalleEstado = m.estado !== 'libre' ? `<span class="meta">Consumo: ${fmt(m.total_activo)}</span>` : '';
+            const unionBadge = m.mesa_union_id ? `<span class="pos-mesa-union-badge">⛓ ${esc(m.union_nombre || '?')}</span>` : '';
+            content.innerHTML = `
+                <span class="name">${esc(m.nombre)}</span>
+                <span class="meta">${Number(m.sillas || m.capacidad || 0)} sillas</span>
+                <span class="pos-mesa-estado ${estadoClass}">${estadoLabel}</span>
+                ${unionBadge}
+                ${detalleEstado}
             `;
-        }).join('');
+            btn.appendChild(content);
 
-        ui.board.querySelectorAll('[data-mesa]').forEach((btn) => {
+            crearSillasMesaPos(m, btn);
+
             btn.addEventListener('click', () => {
-                const id = Number(btn.dataset.mesa);
-                const mesa = (zona.mesas || []).find((m) => Number(m.id) === id) || null;
-                mesaSeleccionada = mesa;
+                mesaSeleccionada = m;
                 ui.chipMesa.textContent = mesaActualTexto();
                 ui.orderDisabled.style.display = 'none';
                 ui.orderPanel.style.display = '';
@@ -1254,7 +1783,19 @@ body.modo-oscuro .pos-prod-badge {
                 renderBoard();
                 actualizarPrecuenta();
             });
+
+            ui.board.appendChild(btn);
         });
+
+        const overlay = document.createElement('div');
+        overlay.className = 'pos-zona-overlay';
+        mesas.forEach((m) => {
+            const decoraciones = parseDecoraciones(m.decoraciones);
+            decoraciones.forEach((elemento) => {
+                overlay.appendChild(renderDecoracionNode(m, elemento));
+            });
+        });
+        ui.board.appendChild(overlay);
     }
 
     function calcTotalCarrito() {
@@ -1662,6 +2203,11 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         renderBoard();
     }
 
+    // Devuelve el ID de la mesa principal: si la actual es secundaria (unida), usa mesa_union_id
+    function mesaPrincipalId() {
+        return Number(mesaSeleccionada?.mesa_union_id || mesaSeleccionada?.id || 0);
+    }
+
     async function actualizarPrecuenta() {
         if (!mesaSeleccionada) {
             ui.resumenMesa.innerHTML = '<strong>Selecciona una mesa.</strong>';
@@ -1669,14 +2215,21 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
             return;
         }
 
+        // Si la mesa seleccionada es secundaria (unida), consultar la mesa principal
+        const mesaConsultaId = Number(mesaSeleccionada.mesa_union_id || mesaSeleccionada.id);
+        const nombreMostrar = mesaSeleccionada.mesa_union_id
+            ? `${mesaSeleccionada.nombre} + ${mesaSeleccionada.union_nombre || '?'}`
+            : null;
+
         try {
-            const d = await getJson(`${API_PRECUENTA}?mesa_id=${Number(mesaSeleccionada.id)}`);
+            const d = await getJson(`${API_PRECUENTA}?mesa_id=${mesaConsultaId}`);
             lastPrecuenta = d;
             const pedidosActivos = d.pedidos_activos || [];
             const lineas = d.resumen_lineas || [];
+            const tituloMesa = nombreMostrar ? `${esc(nombreMostrar)} <span style="font-size:11px;color:#7c3aed;">(unidas)</span>` : esc(d.mesa.nombre);
 
             ui.resumenMesa.innerHTML = `
-                <div><strong>${esc(d.mesa.nombre)}</strong> · Pedidos activos: <strong>${pedidosActivos.length}</strong></div>
+                <div><strong>${tituloMesa}</strong> · Pedidos activos: <strong>${pedidosActivos.length}</strong></div>
                 <div>Total consumido (precuenta): <strong>${fmt(d.total_precuenta)}</strong></div>
                 <div class="pos-resumen-list">
                     ${lineas.length ? lineas.map((l) => `<div class="pos-resumen-item"><span>${esc(l.nombre_producto)} x${l.cantidad}</span><span>${fmt(l.subtotal)}</span></div>`).join('') : '<div style="font-size:12px;color:#64748b;">Sin consumos activos en la mesa.</div>'}
@@ -1695,12 +2248,13 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         }
 
         try {
-            const d = await getJson(`${API_PRECUENTA}?mesa_id=${Number(mesaSeleccionada.id)}`);
+            const d = await getJson(`${API_PRECUENTA}?mesa_id=${mesaPrincipalId()}`);
             const pedidosActivos = d.pedidos_activos || [];
             const lineas = d.resumen_lineas || [];
+            const tituloUnion = mesaSeleccionada?.mesa_union_id ? ` + ${mesaSeleccionada.union_nombre || '?'} <span style="font-size:10px;color:#7c3aed">(unidas)</span>` : '';
 
             ui.precuentaCont.innerHTML = `
-                <div style="font-size:13px;color:#334155;margin-bottom:8px;">Mesa: <strong>${esc(d.mesa.nombre)}</strong></div>
+                <div style="font-size:13px;color:#334155;margin-bottom:8px;">Mesa: <strong>${esc(d.mesa.nombre)}${tituloUnion}</strong></div>
                 <div style="font-size:13px;color:#334155;margin-bottom:8px;">Pedidos activos: <strong>${pedidosActivos.length}</strong></div>
                 <div style="font-size:14px;color:#0f172a;margin-bottom:8px;">Total: <strong>${fmt(d.total_precuenta)}</strong></div>
                 <div style="border-top:1px dashed #cbd5e1;padding-top:8px;">
@@ -1763,7 +2317,7 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         }
 
         try {
-            const d = await getJson(`${API_PRECUENTA}?mesa_id=${Number(mesaSeleccionada.id)}`);
+            const d = await getJson(`${API_PRECUENTA}?mesa_id=${mesaPrincipalId()}`);
             lastPrecuenta = d;
             imprimirDocumentoPos({
                 mesa: d.mesa,
@@ -1811,7 +2365,7 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
-                    mesa_id: Number(mesaSeleccionada.id),
+                    mesa_id: mesaPrincipalId(),
                     tipo_emision: tipoEmision,
                     cliente_nombre: document.getElementById('posFactNombre').value.trim() || 'Cliente POS',
                     cliente_telefono: document.getElementById('posFactTelefono').value.trim() || '999999999',
@@ -1850,6 +2404,197 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         } finally {
             btn.disabled = false;
             btn.textContent = 'Completar y facturar';
+        }
+    }
+
+    function listarMesasCandidatasUnion() {
+        const actualId = Number(mesaSeleccionada?.id || 0);
+        const candidatas = [];
+        zonas.forEach((zona) => {
+            (zona.mesas || []).forEach((mesa) => {
+                const mesaId = Number(mesa.id || 0);
+                if (mesaId <= 0 || mesaId === actualId) {
+                    return;
+                }
+                candidatas.push({
+                    id: mesaId,
+                    nombre: String(mesa.nombre || `Mesa ${mesaId}`),
+                    zona: String(zona.nombre || '-'),
+                    estado: String(mesa.estado || 'libre'),
+                    union_id: mesa.mesa_union_id || null,
+                    union_nombre: mesa.union_nombre || null,
+                });
+            });
+        });
+        return candidatas;
+    }
+
+    function actualizarMetaMesaDestinoUnion() {
+        if (!ui.selectUnionMesaDestino || !ui.unionMesaMeta) {
+            return;
+        }
+        const mesaDestinoId = Number(ui.selectUnionMesaDestino.value || 0);
+        const mesaDestino = mesasCandidatasUnion.find((m) => m.id === mesaDestinoId);
+        if (!mesaDestino) {
+            ui.unionMesaMeta.textContent = '';
+            return;
+        }
+        ui.unionMesaMeta.textContent = `Zona: ${mesaDestino.zona} · Estado: ${estadoMesaLabel(mesaDestino.estado)}`;
+    }
+
+    function abrirModalUnirMesa() {
+        if (!mesaSeleccionada) {
+            showMsg('Selecciona una mesa primero.', true);
+            return false;
+        }
+        if (carrito.length > 0) {
+            showMsg('Primero envía la comanda o limpia el carrito antes de unir mesas.', true);
+            return false;
+        }
+
+        mesasCandidatasUnion = listarMesasCandidatasUnion()
+            .filter((m) => !m.union_id);  // no mostrar mesas ya unidas a otras
+        candidatas = mesasCandidatasUnion;
+        if (!mesasCandidatasUnion.length) {
+            showMsg('No hay mesas disponibles para unir.', true);
+            return false;
+        }
+
+        const estaUnida = mesaSeleccionada.mesa_union_id ? ` (ya unida con ${esc(mesaSeleccionada.union_nombre || '?')})` : '';
+        ui.unionMesaOrigenTexto.textContent = `Mesa origen: ${mesaSeleccionada.nombre}${estaUnida}. Selecciona la mesa destino: los pedidos de esta mesa se asignarán a la destino.`;
+        ui.selectUnionMesaDestino.innerHTML = mesasCandidatasUnion
+            .map((m) => `<option value="${m.id}">${esc(m.nombre)} · ${esc(m.zona)} · ${esc(estadoMesaLabel(m.estado))}</option>`)
+            .join('');
+
+        actualizarMetaMesaDestinoUnion();
+        ui.modalUnionMesa.classList.add('show');
+        return true;
+    }
+
+    function cerrarModalUnirMesa() {
+        ui.modalUnionMesa.classList.remove('show');
+        candidatas = [];
+        mesasCandidatasUnion = [];
+    }
+
+    async function unirMesaConOtra() {
+        if (!abrirModalUnirMesa()) {
+            return;
+        }
+    }
+
+    async function confirmarUnionMesa() {
+        if (!mesaSeleccionada) {
+            showMsg('Selecciona una mesa primero.', true);
+            return;
+        }
+
+        if (!mesasCandidatasUnion.length) {
+            mesasCandidatasUnion = listarMesasCandidatasUnion();
+        }
+        if (!mesasCandidatasUnion.length) {
+            showMsg('No hay mesas disponibles para unir.', true);
+            return;
+        }
+
+        const mesaDestinoId = Number(ui.selectUnionMesaDestino?.value || 0);
+        if (!Number.isInteger(mesaDestinoId) || mesaDestinoId <= 0) {
+            showMsg('Selecciona una mesa destino válida.', true);
+            return;
+        }
+        if (mesaDestinoId === Number(mesaSeleccionada.id)) {
+            showMsg('La mesa destino debe ser distinta a la mesa actual.', true);
+            return;
+        }
+
+        const mesaDestino = mesasCandidatasUnion.find((m) => m.id === mesaDestinoId);
+        if (!mesaDestino) {
+            showMsg('La mesa destino no está disponible en el mapa.', true);
+            return;
+        }
+
+        const ok = window.confirm(
+            `¿Unir ${mesaSeleccionada.nombre} con ${mesaDestino.nombre}?\n\nLos pedidos de ${mesaSeleccionada.nombre} se asignarán a ${mesaDestino.nombre}. Al terminar la cuenta, las mesas se separan automáticamente.`
+        );
+        if (!ok) {
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmarUnionMesa');
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Uniendo...';
+
+        try {
+            const d = await getJson(API_UNIR_MESAS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    mesa_origen_id: Number(mesaSeleccionada.id),
+                    mesa_destino_id: mesaDestinoId,
+                }),
+            });
+
+            cerrarModalUnirMesa();
+            carrito = [];
+            renderCarrito();
+            renderCatalogo();
+            await cargarMesasEstado();
+            // Actualizar mesaSeleccionada a la mesa destino real
+            for (const zona of zonas) {
+                const found = (zona.mesas || []).find((mm) => Number(mm.id) === mesaDestinoId);
+                if (found) { mesaSeleccionada = found; break; }
+            }
+            ui.chipMesa.textContent = mesaActualTexto();
+            await actualizarPrecuenta();
+            showMsg(d.mensaje || 'Mesas unidas correctamente.');
+        } catch (e) {
+            showMsg(String(e?.message || 'No se pudo unir las mesas.'), true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+        }
+    }
+
+    async function liberarMesaActual() {
+        if (!mesaSeleccionada) {
+            showMsg('Selecciona una mesa primero.', true);
+            return;
+        }
+
+        const ok = window.confirm(
+            `Se liberará ${mesaSeleccionada.nombre}.\nEsto cancelará sus consumos activos no facturados.\n\n¿Deseas continuar?`
+        );
+        if (!ok) {
+            return;
+        }
+
+        const btn = document.getElementById('btnLiberarMesa');
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Liberando...';
+
+        try {
+            const d = await getJson(API_LIBERAR_MESA, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    mesa_id: mesaPrincipalId(),
+                    motivo: 'Liberación manual desde POS',
+                }),
+            });
+
+            carrito = [];
+            renderCarrito();
+            renderCatalogo();
+            await cargarMesasEstado();
+            await actualizarPrecuenta();
+            showMsg(d.mensaje || 'Mesa liberada correctamente.');
+        } catch (e) {
+            showMsg(e.message, true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
         }
     }
 
@@ -1907,6 +2652,26 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
         abrirModalFacturacion();
     });
 
+    document.getElementById('btnUnirMesa').addEventListener('click', () => {
+        unirMesaConOtra();
+    });
+
+    document.getElementById('btnConfirmarUnionMesa').addEventListener('click', () => {
+        confirmarUnionMesa();
+    });
+
+    document.getElementById('btnCerrarUnionMesa').addEventListener('click', () => {
+        cerrarModalUnirMesa();
+    });
+
+    document.getElementById('posUnionMesaDestino').addEventListener('change', () => {
+        actualizarMetaMesaDestinoUnion();
+    });
+
+    document.getElementById('btnLiberarMesa').addEventListener('click', () => {
+        liberarMesaActual();
+    });
+
     document.getElementById('btnCerrarFacturacion').addEventListener('click', () => {
         cerrarModalFacturacion();
     });
@@ -1961,6 +2726,12 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
     ui.modalFacturacion.addEventListener('click', (e) => {
         if (e.target === ui.modalFacturacion) {
             cerrarModalFacturacion();
+        }
+    });
+
+    ui.modalUnionMesa.addEventListener('click', (e) => {
+        if (e.target === ui.modalUnionMesa) {
+            cerrarModalUnirMesa();
         }
     });
 

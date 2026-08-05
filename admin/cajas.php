@@ -381,9 +381,18 @@ body.modo-oscuro .res-frame {
                     <label>Monto inicial en efectivo (S/)</label>
                     <input type="number" step="0.01" id="montoApertura" value="0.00" placeholder="Ej: 100.00" style="font-size:16px;font-weight:700;">
                 </div>
-                <div class="cj-field" style="margin-bottom:22px;">
-                    <label>Observación (opcional)</label>
-                    <textarea id="obsApertura" rows="2" placeholder="Ej: turno mañana, cajero Juan…"></textarea>
+                <div class="cj-field" style="margin-bottom:13px;">
+                    <label>Turno</label>
+                    <select id="selectTurno" style="font-size:15px;font-weight:700;">
+                        <option value="Mañana">&#127758; Mañana</option>
+                        <option value="Tarde">&#127765; Tarde</option>
+                        <option value="Noche" selected>&#127762; Noche</option>
+                        <option value="Especial">&#11088; Turno especial</option>
+                    </select>
+                </div>
+                <div class="cj-field" id="campoTurnoEspecial" style="display:none;margin-bottom:13px;">
+                    <label>Nombre del turno especial</label>
+                    <input type="text" id="obsAperturaEspecial" placeholder="Ej: Evento, Feriado..." maxlength="80">
                 </div>
                 <button class="btn btn-success" id="btnAbrirCaja" type="button" style="width:100%;justify-content:center;padding:13px 20px;font-size:14px;">
                     <i class="ti ti-lock-open"></i> Abrir caja ahora
@@ -636,15 +645,26 @@ body.modo-oscuro .res-frame {
         }
     }
 
+    document.getElementById('selectTurno').addEventListener('change', function () {
+        const especial = this.value === 'Especial';
+        document.getElementById('campoTurnoEspecial').style.display = especial ? '' : 'none';
+        if (!especial) document.getElementById('obsAperturaEspecial').value = '';
+    });
+
     // ── Abrir caja ──────────────────────────────────────────────
     document.getElementById('btnAbrirCaja').addEventListener('click', async () => {
         const btn = document.getElementById('btnAbrirCaja');
         btn.disabled = true;
+        const turnoSeleccionado = document.getElementById('selectTurno').value;
+        const turnoEspecial = document.getElementById('obsAperturaEspecial').value.trim();
+        const observacion = turnoSeleccionado === 'Especial'
+            ? (turnoEspecial !== '' ? turnoEspecial : 'Turno especial')
+            : turnoSeleccionado;
         try {
             await apiPost({
                 accion: 'abrir',
                 monto_apertura: Number(document.getElementById('montoApertura').value || 0),
-                observacion:    document.getElementById('obsApertura').value || '',
+                observacion,
             });
             await cargar();
         } catch (e) {

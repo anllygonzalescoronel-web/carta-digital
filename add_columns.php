@@ -141,8 +141,8 @@ try {
     $db->exec('CREATE TABLE IF NOT EXISTS zonas_mesas (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(80) NOT NULL,
-        ancho INT NOT NULL DEFAULT 1200,
-        alto INT NOT NULL DEFAULT 700,
+        ancho INT NOT NULL DEFAULT 1000,
+        alto INT NOT NULL DEFAULT 620,
         orden INT NOT NULL DEFAULT 0,
         activa TINYINT(1) NOT NULL DEFAULT 1,
         creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -161,9 +161,12 @@ try {
         sillas INT NOT NULL DEFAULT 4,
         pos_x INT NOT NULL DEFAULT 80,
         pos_y INT NOT NULL DEFAULT 80,
+        ancho INT NOT NULL DEFAULT 120,
+        alto INT NOT NULL DEFAULT 74,
         forma ENUM(\'rectangular\',\'redonda\') NOT NULL DEFAULT \'rectangular\',
         activa TINYINT(1) NOT NULL DEFAULT 1,
         orden INT NOT NULL DEFAULT 0,
+        decoraciones_json LONGTEXT DEFAULT NULL,
         creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         KEY idx_mesas_zona (zona_id),
@@ -175,11 +178,31 @@ try {
 }
 
 try {
+    $cols = [
+        'ancho' => 'INT NOT NULL DEFAULT 120 AFTER pos_y',
+        'alto' => 'INT NOT NULL DEFAULT 74 AFTER ancho',
+        'decoraciones_json' => 'LONGTEXT DEFAULT NULL AFTER orden',
+    ];
+    foreach ($cols as $columna => $definicion) {
+        $stmt = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'mesas' AND COLUMN_NAME = ?");
+        $stmt->execute([DB_NAME, $columna]);
+        if ((int)$stmt->fetchColumn() === 0) {
+            $db->exec("ALTER TABLE mesas ADD COLUMN $columna $definicion");
+            echo "✅ Columna $columna agregada a mesas\n";
+        } else {
+            echo "⚠️  Ya existe: $columna en mesas\n";
+        }
+    }
+} catch (Exception $e) {
+    echo "❌ Error agregando columnas a mesas: " . $e->getMessage() . "\n";
+}
+
+try {
     $countZonas = (int)$db->query('SELECT COUNT(*) FROM zonas_mesas')->fetchColumn();
     if ($countZonas === 0) {
         $db->exec("INSERT INTO zonas_mesas (nombre, ancho, alto, orden, activa) VALUES
-            ('Salon principal', 1200, 720, 1, 1),
-            ('Terraza', 1200, 720, 2, 1)");
+            ('Salon principal', 1000, 620, 1, 1),
+            ('Terraza', 1000, 620, 2, 1)");
         echo "✅ Zonas iniciales creadas\n";
     } else {
         echo "⚠️  Ya existen zonas\n";
@@ -197,8 +220,8 @@ try {
             $map[$z['nombre']] = (int)$z['id'];
         }
 
-        $stmtMesa = $db->prepare('INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, forma, activa, orden)
-            VALUES (:zona_id, :nombre, :capacidad, :sillas, :pos_x, :pos_y, :forma, 1, :orden)');
+        $stmtMesa = $db->prepare('INSERT INTO mesas (zona_id, nombre, capacidad, sillas, pos_x, pos_y, ancho, alto, forma, activa, orden, decoraciones_json)
+            VALUES (:zona_id, :nombre, :capacidad, :sillas, :pos_x, :pos_y, :ancho, :alto, :forma, 1, :orden, :decoraciones_json)');
 
         $semilla = [
             ['zona' => 'Salon principal', 'nombre' => 'Mesa 1', 'capacidad' => 4, 'sillas' => 4, 'x' => 120, 'y' => 120, 'forma' => 'rectangular', 'orden' => 1],
@@ -219,8 +242,11 @@ try {
                 'sillas' => $m['sillas'],
                 'pos_x' => $m['x'],
                 'pos_y' => $m['y'],
+                'ancho' => $m['forma'] === 'redonda' ? 110 : 150,
+                'alto' => $m['forma'] === 'redonda' ? 110 : 84,
                 'forma' => $m['forma'],
                 'orden' => $m['orden'],
+                'decoraciones_json' => null,
             ]);
         }
 
@@ -230,6 +256,21 @@ try {
     }
 } catch (Exception $e) {
     echo "❌ Error creando mesas iniciales: " . $e->getMessage() . "\n";
+}
+
+// ---------- Unión de mesas ----------
+echo "\n📝 Verificando columna mesa_union_id en mesas...\n\n";
+try {
+    $stmtU = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'mesas' AND COLUMN_NAME = 'mesa_union_id'");
+    $stmtU->execute([DB_NAME]);
+    if ((int)$stmtU->fetchColumn() === 0) {
+        $db->exec("ALTER TABLE mesas ADD COLUMN mesa_union_id INT DEFAULT NULL COMMENT 'Si no es nulo, esta mesa está unida a la mesa con ese ID (mesa principal)'");
+        echo "✅ Columna mesa_union_id agregada a mesas\n";
+    } else {
+        echo "⚠️  Ya existe: mesa_union_id en mesas\n";
+    }
+} catch (Exception $e) {
+    echo "❌ Error agregando mesa_union_id: " . $e->getMessage() . "\n";
 }
 
 echo "\n✅ Migración de mesas completada\n";

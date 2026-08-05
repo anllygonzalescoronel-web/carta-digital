@@ -259,6 +259,10 @@ try {
         ]);
     }
 
+    // Disolver unión: quitar mesa_union_id de todas las mesas secundarias que apuntan a esta
+    $db->prepare('UPDATE mesas SET mesa_union_id = NULL WHERE mesa_union_id = :mesa_id')
+       ->execute(['mesa_id' => $mesaId]);
+
     $db->commit();
 
     $pdfUrl = null;

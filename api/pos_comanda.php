@@ -33,7 +33,7 @@ try {
     }
 
     $stmtMesa = $db->prepare(
-        'SELECT m.id, m.nombre AS mesa_nombre, z.nombre AS zona_nombre
+        'SELECT m.id, m.nombre AS mesa_nombre, z.nombre AS zona_nombre, m.mesa_union_id
          FROM mesas m
          INNER JOIN zonas_mesas z ON z.id = m.zona_id
          WHERE m.id = :id AND m.activa = 1 AND z.activa = 1
@@ -43,6 +43,16 @@ try {
     $mesa = $stmtMesa->fetch();
     if (!$mesa) {
         throw new RuntimeException('La mesa seleccionada no existe o está inactiva.');
+    }
+
+    // Si la mesa está unida a otra (es secundaria), redirigir pedidos a la mesa principal
+    if (!empty($mesa['mesa_union_id'])) {
+        $stmtMesa->execute(['id' => (int)$mesa['mesa_union_id']]);
+        $mesaPrincipal = $stmtMesa->fetch();
+        if ($mesaPrincipal) {
+            $mesaId = (int)$mesaPrincipal['id'];
+            $mesa = $mesaPrincipal;
+        }
     }
 
     $stmtProd = $db->prepare(
