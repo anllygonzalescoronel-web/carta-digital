@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Nombre y usuario son obligatorios.');
             }
             if (strlen($password) < 6) {
-                throw new RuntimeException('La contraseÃ±a debe tener al menos 6 caracteres.');
+                throw new RuntimeException('La contraseña debe tener al menos 6 caracteres.');
             }
 
             $stmt = $db->prepare('INSERT INTO admin_usuarios (nombre, usuario, password_hash, rol, activo) VALUES (:nombre, :usuario, :pass, :rol, :activo)');
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Usuario invÃ¡lido.');
             }
             if (strlen($password) < 6) {
-                throw new RuntimeException('La nueva contraseÃ±a debe tener al menos 6 caracteres.');
+                throw new RuntimeException('La nueva contraseña debe tener al menos 6 caracteres.');
             }
 
             $stmt = $db->prepare('UPDATE admin_usuarios SET password_hash = :pass WHERE id = :id');
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'pass' => password_hash($password, PASSWORD_BCRYPT),
                 'id' => $id,
             ]);
-            $mensaje = 'ContraseÃ±a actualizada correctamente.';
+            $mensaje = 'Contraseña actualizada correctamente.';
             $tipoMensaje = 'ok';
         }
     } catch (PDOException $e) {
@@ -167,24 +167,24 @@ require __DIR__ . '/_layout_top.php';
         <div class="ug-header-left">
             <div class="ug-header-icon"><i class="fa-solid fa-users"></i></div>
             <div>
-                <h1>GestiÃ³n de Usuarios</h1>
+                <h1>Gestión de Usuarios</h1>
                 <p>Administra cuentas, roles y accesos del equipo</p>
             </div>
         </div>
-        <div class="ug-counters">
-            <div class="ug-counter ug-counter-total">
+<div class="ug-counters">
+            <div class="ug-counter ug-counter-total" data-filtro="total" onclick="ugFiltrar('total', this)">
                 <strong><?= $totalUsuarios ?></strong>
                 <span>Total</span>
             </div>
-            <div class="ug-counter ug-counter-admin">
+            <div class="ug-counter ug-counter-admin" data-filtro="admin" onclick="ugFiltrar('admin', this)">
                 <strong><?= $totalAdmins ?></strong>
                 <span>Admins</span>
             </div>
-            <div class="ug-counter ug-counter-cook">
+            <div class="ug-counter ug-counter-cook" data-filtro="cocinero" onclick="ugFiltrar('cocinero', this)">
                 <strong><?= $totalCocineros ?></strong>
                 <span>Cocineros</span>
             </div>
-            <div class="ug-counter ug-counter-active">
+            <div class="ug-counter ug-counter-active" data-filtro="activo" onclick="ugFiltrar('activo', this)">
                 <strong><?= $totalActivos ?></strong>
                 <span>Activos</span>
             </div>
@@ -201,7 +201,7 @@ require __DIR__ . '/_layout_top.php';
                     <div class="ug-new-card-icon"><i class="fa-solid fa-user-plus"></i></div>
                     <div>
                         <h3>Nuevo usuario</h3>
-                        <p>AÃ±ade un miembro al equipo</p>
+                        <p>Añade un miembro al equipo</p>
                     </div>
                 </div>
 
@@ -210,7 +210,7 @@ require __DIR__ . '/_layout_top.php';
 
                     <div class="ug-field">
                         <label><i class="fa-solid fa-id-card"></i> Nombre completo</label>
-                        <input type="text" name="nombre" placeholder="Ej. Carlos RamÃ­rez" required>
+                        <input type="text" name="nombre" placeholder="Ej. Carlos Ramirez" required>
                     </div>
 
                     <div class="ug-field">
@@ -222,7 +222,7 @@ require __DIR__ . '/_layout_top.php';
                     </div>
 
                     <div class="ug-field">
-                        <label><i class="fa-solid fa-lock"></i> ContraseÃ±a</label>
+                        <label><i class="fa-solid fa-lock"></i> Contraseña</label>
                         <div class="ug-input-eye">
                             <input type="password" name="password" id="newPassInput" minlength="6" placeholder="MÃ­nimo 6 caracteres" required>
                             <button type="button" class="ug-eye-btn" onclick="togglePass('newPassInput',this)"><i class="fa-solid fa-eye"></i></button>
@@ -275,7 +275,7 @@ require __DIR__ . '/_layout_top.php';
                     $esAdmin   = ($u['rol'] ?? 'admin') === 'admin';
                     $esActivo  = (int)$u['activo'] === 1;
                 ?>
-                <div class="ug-user-item" id="ug-item-<?= $uid ?>">
+                <div class="ug-user-item" id="ug-item-<?= $uid ?>" data-rol="<?= $esAdmin ? 'admin' : 'cocinero' ?>" data-activo="<?= $esActivo ? '1' : '0' ?>">
 
                     <!-- FILA RESUMEN -->
                     <div class="ug-user-row">
@@ -283,7 +283,7 @@ require __DIR__ . '/_layout_top.php';
                         <div class="ug-user-info">
                             <div class="ug-user-name">
                                 <?= limpiar($nombre) ?>
-                                <?php if ($esYo): ?><span class="ug-you-badge"><i class="fa-solid fa-star"></i> TÃº</span><?php endif; ?>
+                                <?php if ($esYo): ?><span class="ug-you-badge"><i class="fa-solid fa-star"></i> </span><?php endif; ?>
                             </div>
                             <div class="ug-user-sub">@<?= limpiar((string)$u['usuario']) ?></div>
                         </div>
@@ -346,15 +346,15 @@ require __DIR__ . '/_layout_top.php';
                                 <button type="submit" class="ug-btn-primary ug-btn-sm"><i class="fa-solid fa-check"></i> Guardar cambios</button>
                             </form>
 
-                            <!-- Form cambiar contraseÃ±a -->
+                            <!-- Form cambiar contraseña -->
                             <form method="POST" class="ug-form ug-form-edit">
                                 <input type="hidden" name="accion" value="cambiar_password">
                                 <input type="hidden" name="id" value="<?= $uid ?>">
 
-                                <div class="ug-edit-title"><i class="fa-solid fa-key"></i> Nueva contraseÃ±a</div>
+                                <div class="ug-edit-title"><i class="fa-solid fa-key"></i> Nueva contraseña</div>
 
                                 <div class="ug-field">
-                                    <label><i class="fa-solid fa-lock"></i> ContraseÃ±a</label>
+                                    <label><i class="fa-solid fa-lock"></i> Contraseña</label>
                                     <div class="ug-input-eye">
                                         <input type="password" name="password" id="pass-<?= $uid ?>" minlength="6" placeholder="MÃ­nimo 6 caracteres" required>
                                         <button type="button" class="ug-eye-btn" onclick="togglePass('pass-<?= $uid ?>',this)"><i class="fa-solid fa-eye"></i></button>
@@ -447,11 +447,14 @@ require __DIR__ . '/_layout_top.php';
 
 /* â”€â”€ Sidebar card nuevo usuario â”€â”€ */
 .ug-new-card {
-    background: #fff; border: 1px solid #e5e7eb; border-radius: 18px;
-    padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    background: var(--neu-base);
+    border: none;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: inset 6px 6px 14px var(--neu-sombra-oscura), inset -6px -6px 14px var(--neu-sombra-clara);
     position: sticky; top: 80px;
 }
-.ug-new-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; }
+.ug-new-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(0,0,0,.06); }
 .ug-new-card-icon {
     width: 40px; height: 40px; border-radius: 12px; flex: 0 0 auto;
     background: linear-gradient(135deg, #22c55e, #16a34a);
@@ -471,30 +474,39 @@ require __DIR__ . '/_layout_top.php';
 }
 .ug-field input,
 .ug-field select {
-    border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;
-    font-size: 13px; background: #fff; width: 100%;
-    transition: border-color .15s, box-shadow .15s;
+    border: none; border-radius: 10px; padding: 10px 12px;
+    font-size: 13px; background: var(--neu-base); width: 100%;
+    color: var(--pos-texto, #333);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    transition: box-shadow .15s;
 }
 .ug-field input:focus,
 .ug-field select:focus {
-    outline: none; border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    outline: none;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
 }
 
 /* â”€â”€ Prefix @ â”€â”€ */
-.ug-input-prefix { display: flex; align-items: stretch; border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #fff; }
-.ug-input-prefix span { background: #f8fafc; border-right: 1.5px solid #e2e8f0; padding: 0 12px; font-size: 13px; font-weight: 700; color: #64748b; display: flex; align-items: center; }
-.ug-input-prefix input { border: none; border-radius: 0; flex: 1; padding: 10px 12px; min-width: 0; }
+.ug-input-prefix {
+    display: flex; align-items: stretch; border: none; border-radius: 10px; overflow: hidden;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+}
+.ug-input-prefix span { background: transparent; border-right: 1px solid rgba(0,0,0,.08); padding: 0 12px; font-size: 13px; font-weight: 700; color: var(--pos-muted, #64748b); display: flex; align-items: center; }
+.ug-input-prefix input { border: none; border-radius: 0; flex: 1; padding: 10px 12px; min-width: 0; background: transparent; box-shadow: none; }
 .ug-input-prefix input:focus { outline: none; box-shadow: none; }
-.ug-input-prefix:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+.ug-input-prefix:focus-within { box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35); }
 
-/* â”€â”€ Password eye â”€â”€ */
-.ug-input-eye { display: flex; align-items: stretch; border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #fff; }
-.ug-input-eye input { border: none; border-radius: 0; flex: 1; padding: 10px 12px; min-width: 0; }
+.ug-input-eye {
+    display: flex; align-items: stretch; border: none; border-radius: 10px; overflow: hidden;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+}
+.ug-input-eye input { border: none; border-radius: 0; flex: 1; padding: 10px 12px; min-width: 0; background: transparent; box-shadow: none; }
 .ug-input-eye input:focus { outline: none; box-shadow: none; }
-.ug-input-eye:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-.ug-eye-btn { background: #f8fafc; border: none; border-left: 1.5px solid #e2e8f0; padding: 0 12px; color: #64748b; cursor: pointer; font-size: 13px; }
-.ug-eye-btn:hover { color: #374151; }
+.ug-input-eye:focus-within { box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35); }
+.ug-eye-btn { background: transparent; border: none; border-left: 1px solid rgba(0,0,0,.08); padding: 0 12px; color: var(--pos-muted, #64748b); cursor: pointer; font-size: 13px; }
+.ug-eye-btn:hover { color: var(--pos-texto, #374151); }
 
 /* â”€â”€ Role selector â”€â”€ */
 .ug-role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -502,11 +514,16 @@ require __DIR__ . '/_layout_top.php';
 .ug-role-opt input { display: none; }
 .ug-role-opt span {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-    font-size: 12px; font-weight: 700; color: #64748b; background: #fff;
-    transition: all .15s;
+    padding: 9px 12px; border-radius: 10px; border: none;
+    font-size: 12px; font-weight: 700; color: var(--pos-muted, #64748b);
+    background: var(--neu-base);
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara);
+    transition: box-shadow .15s, color .15s;
 }
-.ug-role-opt input:checked + span { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+.ug-role-opt input:checked + span {
+    color: #E8590C;
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
 
 /* â”€â”€ Toggle activo â”€â”€ */
 .ug-toggle-label { display: flex; justify-content: space-between; align-items: center; }
@@ -520,23 +537,25 @@ require __DIR__ . '/_layout_top.php';
 
 /* â”€â”€ Botones â”€â”€ */
 .ug-btn-primary {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C); color: #fff; border: none;
     border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 700;
     cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: 0 4px 12px rgba(37,99,235,.28); transition: opacity .15s, transform .1s;
+    box-shadow: 4px 4px 10px rgba(232,89,12,.4); transition: transform .15s ease, box-shadow .15s ease;
     width: 100%;
 }
+.ug-btn-primary:hover { transform: translateY(-2px); }
 .ug-btn-primary:hover { opacity: .92; }
 .ug-btn-primary:active { transform: scale(.98); }
 .ug-btn-primary.ug-btn-sm { padding: 9px 14px; font-size: 12px; }
 
 .ug-btn-secondary {
-    background: #fff; color: #374151; border: 1.5px solid #e2e8f0;
+    background: var(--neu-base); color: var(--pos-texto, #374151); border: none;
     border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 700;
     cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background .15s, border-color .15s; width: 100%;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+    transition: transform .15s ease; width: 100%;
 }
-.ug-btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
+.ug-btn-secondary:hover { transform: translateY(-2px); }
 .ug-btn-secondary.ug-btn-sm { padding: 9px 14px; font-size: 12px; }
 
 /* â”€â”€ Main lista â”€â”€ */
@@ -552,11 +571,12 @@ require __DIR__ . '/_layout_top.php';
 .ug-user-list { display: grid; gap: 10px; }
 
 .ug-user-item {
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 16px;
-    overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    background: var(--neu-base); border: none; border-radius: 18px;
+    overflow: hidden;
+    box-shadow: inset 6px 6px 14px var(--neu-sombra-oscura), inset -6px -6px 14px var(--neu-sombra-clara);
     transition: box-shadow .2s;
 }
-.ug-user-item:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.ug-user-item:hover { box-shadow: inset 8px 8px 18px var(--neu-sombra-oscura), inset -8px -8px 18px var(--neu-sombra-clara); }
 
 .ug-user-row {
     display: flex; align-items: center; gap: 14px; padding: 14px 16px;
@@ -598,13 +618,14 @@ require __DIR__ . '/_layout_top.php';
 
 /* BotÃ³n editar */
 .ug-btn-edit {
-    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
-    padding: 8px 14px; font-size: 12px; font-weight: 700; color: #374151;
+    background: var(--neu-base); border: none; border-radius: 10px;
+    padding: 8px 14px; font-size: 12px; font-weight: 700; color: #E8590C;
     cursor: pointer; white-space: nowrap; flex: 0 0 auto;
     display: inline-flex; align-items: center; gap: 6px;
-    transition: background .15s, border-color .15s;
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara);
+    transition: transform .15s ease;
 }
-.ug-btn-edit:hover { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+.ug-btn-edit:hover { transform: translateY(-2px); }
 
 /* Panel ediciÃ³n */
 .ug-edit-panel {
@@ -623,7 +644,10 @@ require __DIR__ . '/_layout_top.php';
     gap: 16px;
 }
 
-.ug-form-edit { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+.ug-form-edit {
+    background: var(--neu-base); border: none; border-radius: 14px; padding: 14px;
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
+}
 
 .ug-edit-title {
     font-size: 13px; font-weight: 800; color: #374151;
@@ -659,9 +683,118 @@ require __DIR__ . '/_layout_top.php';
     .ug-user-chips { display: none; }
     .ug-user-row { flex-wrap: wrap; }
 }
+
+
+
+
+/* ── Modo oscuro: Gestión de Usuarios ── */
+body.modo-oscuro .ug-header {
+    background: linear-gradient(135deg, #1e2535 0%, #1a1f2e 60%);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+body.modo-oscuro .ug-header h1 { color: #f1f5f9; }
+body.modo-oscuro .ug-header p  { color: #94a3b8; }
+
+body.modo-oscuro .ug-counter-total  { background: #1e2535; border-color: rgba(255,255,255,0.1); }
+body.modo-oscuro .ug-counter-total strong { color: #f1f5f9; }
+body.modo-oscuro .ug-counter-admin  { background: rgba(30,64,175,0.2); border-color: rgba(96,165,250,0.25); }
+body.modo-oscuro .ug-counter-admin strong { color: #93c5fd; } body.modo-oscuro .ug-counter-admin span { color: #93c5fd; }
+body.modo-oscuro .ug-counter-cook   { background: rgba(194,65,12,0.2); border-color: rgba(253,186,116,0.25); }
+body.modo-oscuro .ug-counter-cook strong { color: #fdba74; } body.modo-oscuro .ug-counter-cook span { color: #fdba74; }
+body.modo-oscuro .ug-counter-active { background: rgba(22,101,52,0.2); border-color: rgba(134,239,172,0.25); }
+body.modo-oscuro .ug-counter-active strong { color: #86efac; } body.modo-oscuro .ug-counter-active span { color: #86efac; }
+
+body.modo-oscuro .ug-new-card-head { border-bottom-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .ug-new-card h3 { color: #f1f5f9; }
+body.modo-oscuro .ug-new-card p  { color: #94a3b8; }
+
+body.modo-oscuro .ug-field label { color: #cbd5e1; }
+body.modo-oscuro .ug-field input,
+body.modo-oscuro .ug-field select {
+    color: #e2e8f0;
+}
+
+body.modo-oscuro .ug-input-prefix span { color: #94a3b8; border-right-color: rgba(255,255,255,0.1); }
+body.modo-oscuro .ug-eye-btn { color: #94a3b8; border-left-color: rgba(255,255,255,0.1); }
+body.modo-oscuro .ug-eye-btn:hover { color: #e2e8f0; }
+
+body.modo-oscuro .ug-role-opt span { color: #cbd5e1; }
+body.modo-oscuro .ug-role-opt input:checked + span { color: #ff8a3d; }
+
+body.modo-oscuro .ug-toggle-label > span { color: #cbd5e1; }
+
+body.modo-oscuro .ug-list-head h3 { color: #f1f5f9; }
+body.modo-oscuro .ug-list-head p  { color: #94a3b8; }
+body.modo-oscuro .ug-count-badge {
+    background: rgba(30,64,175,0.2); border-color: rgba(96,165,250,0.25); color: #93c5fd;
+}
+
+body.modo-oscuro .ug-user-name { color: #f1f5f9; }
+body.modo-oscuro .ug-user-sub  { color: #94a3b8; }
+
+body.modo-oscuro .ug-avatar-admin { background: linear-gradient(135deg, rgba(30,64,175,.35), rgba(96,165,250,.25)); color: #93c5fd; }
+body.modo-oscuro .ug-avatar-cook  { background: linear-gradient(135deg, rgba(194,65,12,.35), rgba(253,186,116,.25)); color: #fdba74; }
+
+body.modo-oscuro .ug-you-badge {
+    background: rgba(146,64,14,0.25); border-color: rgba(253,230,138,0.3); color: #fde68a;
+}
+
+body.modo-oscuro .chip-admin { background: rgba(30,64,175,0.2); border-color: rgba(96,165,250,0.25); color: #93c5fd; }
+body.modo-oscuro .chip-cook  { background: rgba(194,65,12,0.2); border-color: rgba(253,186,116,0.25); color: #fdba74; }
+body.modo-oscuro .chip-on    { background: rgba(22,101,52,0.2); border-color: rgba(134,239,172,0.25); color: #86efac; }
+body.modo-oscuro .chip-off   { background: rgba(185,28,28,0.2); border-color: rgba(252,165,165,0.25); color: #fca5a5; }
+
+body.modo-oscuro .ug-edit-panel { background: transparent; border-top-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .ug-edit-title { color: #cbd5e1; border-bottom-color: rgba(255,255,255,0.08); }
+body.modo-oscuro .ug-pass-hint { color: #94a3b8; }
+
+body.modo-oscuro .ug-edit-meta { color: #64748b; border-top-color: rgba(255,255,255,0.08); }
+
+body.modo-oscuro .ug-toast-ok  { background: rgba(30,132,73,0.2);  color: #86efac; border-color: rgba(34,197,94,0.3); }
+body.modo-oscuro .ug-toast-err { background: rgba(192,57,43,0.2);  color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+
+.ug-counter {
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.ug-counter:hover { transform: translateY(-2px); }
+
+.ug-counter-total.ug-counter-activo-filtro {
+    box-shadow: 0 0 0 2px #0f172a, 0 4px 12px rgba(15,23,42,.2);
+}
+.ug-counter-admin.ug-counter-activo-filtro {
+    box-shadow: 0 0 0 2px #3b82f6, 0 4px 12px rgba(59,130,246,.25);
+}
+.ug-counter-cook.ug-counter-activo-filtro {
+    box-shadow: 0 0 0 2px #f97316, 0 4px 12px rgba(249,115,22,.25);
+}
+.ug-counter-active.ug-counter-activo-filtro {
+    box-shadow: 0 0 0 2px #22c55e, 0 4px 12px rgba(34,197,94,.25);
+}
 </style>
 
 <script>
+
+function ugFiltrar(tipo, el) {
+    // Marcar visualmente cuál está activo
+    document.querySelectorAll('.ug-counter').forEach(c => c.classList.remove('ug-counter-activo-filtro'));
+    el.classList.add('ug-counter-activo-filtro');
+
+    document.querySelectorAll('.ug-user-item').forEach(item => {
+        const rol = item.dataset.rol;
+        const activo = item.dataset.activo;
+        let mostrar = true;
+
+        if (tipo === 'admin') mostrar = rol === 'admin';
+        else if (tipo === 'cocinero') mostrar = rol === 'cocinero';
+        else if (tipo === 'activo') mostrar = activo === '1';
+        // tipo === 'total' → mostrar todos
+
+        item.style.display = mostrar ? '' : 'none';
+    });
+}
+
 function ugToggle(id) {
     const panel = document.getElementById('ug-panel-' + id);
     if (!panel) return;
