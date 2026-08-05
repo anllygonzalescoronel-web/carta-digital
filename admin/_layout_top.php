@@ -11,6 +11,14 @@ if ($rolActual === 'cocinero' && $paginaActual !== 'cocina') {
     exit;
 }
 
+if ($rolActual === 'mesero') {
+    $paginasPermitidasMesero = ['dashboard', 'pos', 'cajas'];
+    if (!in_array($paginaActual, $paginasPermitidasMesero, true)) {
+        header('Location: index.php');
+        exit;
+    }
+}
+
 $hora = (int) date('H');
 if ($hora < 12) {
     $saludo = 'Buenos días';
@@ -333,14 +341,18 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
         <nav>
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">Inicio</div>
-                <?php if ($rolActual === 'admin'): ?>
+                <?php if ($rolActual === 'admin' || $rolActual === 'mesero'): ?>
                 <a href="index.php" class="<?= $paginaActual === 'dashboard' ? 'activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-                <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
                 <a href="pos.php" class="<?= $paginaActual === 'pos' ? 'activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS Ventas</a>
                 <a href="cajas.php" class="<?= $paginaActual === 'cajas' ? 'activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
                 <?php endif; ?>
+                <?php if ($rolActual === 'admin'): ?>
+                <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
+                <?php endif; ?>
+                <?php if ($rolActual !== 'mesero'): ?>
                 <a href="cocina.php" class="<?= $paginaActual === 'cocina' ? 'activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina en Vivo</a>
                 <a href="estaciones.php" class="<?= $paginaActual === 'estaciones' ? 'activo' : '' ?>"><i class="ti ti-layout-board"></i> Estaciones</a>
+                <?php endif; ?>
             </div>
 
             <?php if ($rolActual === 'admin'): ?>
@@ -382,7 +394,14 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                     <h1><?= limpiar($tituloPagina ?? '') ?></h1>
                 </div>
                 <div class="admin-quick-links">
+                    <?php if ($rolActual !== 'mesero'): ?>
                     <a href="cocina.php" class="admin-quick-link<?= $paginaActual === 'cocina' ? ' activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina</a>
+                    <?php endif; ?>
+                    <?php if ($rolActual === 'mesero'): ?>
+                    <a href="index.php" class="admin-quick-link<?= $paginaActual === 'dashboard' ? ' activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+                    <a href="pos.php" class="admin-quick-link<?= $paginaActual === 'pos' ? ' activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS</a>
+                    <a href="cajas.php" class="admin-quick-link<?= $paginaActual === 'cajas' ? ' activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
+                    <?php endif; ?>
                     <?php if ($rolActual === 'admin'): ?>
                     <a href="pedidos.php" class="admin-quick-link<?= $paginaActual === 'pedidos' ? ' activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
                     <a href="pos.php" class="admin-quick-link<?= $paginaActual === 'pos' ? ' activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS</a>

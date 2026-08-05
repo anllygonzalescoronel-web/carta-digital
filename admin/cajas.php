@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
-requerirRol(['admin']);
+requerirRol(['admin', 'mesero']);
 
 $tituloPagina = 'Gestión de Caja';
 $paginaActual = 'cajas';

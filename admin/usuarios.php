@@ -118,6 +118,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'ContraseÃ±a actualizada correctamente.';
             $tipoMensaje = 'ok';
         }
+
+        if ($accion === 'eliminar_usuario') {
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                throw new RuntimeException('Usuario invÃ¡lido.');
+            }
+
+            $stmtUser = $db->prepare('SELECT * FROM admin_usuarios WHERE id = :id LIMIT 1');
+            $stmtUser->execute(['id' => $id]);
+            $user = $stmtUser->fetch();
+            if (!$user) {
+                throw new RuntimeException('Usuario no encontrado.');
+            }
+
+            $esMismoUsuario = ((int)($_SESSION['admin_id']) === $id);
+            if ($esMismoUsuario) {
+                throw new RuntimeException('No puedes eliminar tu propio usuario.');
+            }
+
+            $eraAdminActivo = (($user['rol'] ?? 'admin') === 'admin' && (int)($user['activo'] ?? 1) === 1);
+            if ($eraAdminActivo && contarAdminsActivos($db, $id) <= 0) {
+                throw new RuntimeException('Debe existir al menos un administrador activo.');
+            }
+
+            $stmt = $db->prepare('DELETE FROM admin_usuarios WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+
+            if ($stmt->rowCount() <= 0) {
+                throw new RuntimeException('No se pudo eliminar el usuario.');
+            }
+
+            $mensaje = 'Usuario eliminado correctamente.';
+            $tipoMensaje = 'ok';
+        }
     } catch (PDOException $e) {
         if ((string)$e->getCode() === '23000') {
             $mensaje = 'El usuario ya existe. Elige otro nombre de usuario.';
@@ -136,10 +170,14 @@ $usuarios = $db->query('SELECT id, nombre, usuario, rol, activo, creado_en FROM 
 $totalUsuarios = count($usuarios);
 $totalAdmins = 0;
 $totalCocineros = 0;
+$totalMeseros = 0;
 $totalActivos = 0;
 foreach ($usuarios as $u) {
-    if (($u['rol'] ?? 'admin') === 'admin') {
+    $rolUsuario = (string)($u['rol'] ?? 'admin');
+    if ($rolUsuario === 'admin') {
         $totalAdmins++;
+    } elseif ($rolUsuario === 'mesero') {
+        $totalMeseros++;
     } else {
         $totalCocineros++;
     }
@@ -184,6 +222,10 @@ require __DIR__ . '/_layout_top.php';
                 <strong><?= $totalCocineros ?></strong>
                 <span>Cocineros</span>
             </div>
+                    <div class="ug-counter ug-counter-waiter">
+                        <strong><?= $totalMeseros ?></strong>
+                        <span>Meseros</span>
+                    </div>
             <div class="ug-counter ug-counter-active">
                 <strong><?= $totalActivos ?></strong>
                 <span>Activos</span>
@@ -240,6 +282,10 @@ require __DIR__ . '/_layout_top.php';
                                 <input type="radio" name="rol" value="admin">
                                 <span><i class="fa-solid fa-user-shield"></i> Admin</span>
                             </label>
+                            <label class="ug-role-opt">
+                                <input type="radio" name="rol" value="mesero">
+                                <span><i class="fa-solid fa-user-tie"></i> Mesero</span>
+                            </label>
                         </div>
                     </div>
 
@@ -272,14 +318,16 @@ require __DIR__ . '/_layout_top.php';
                     $partes    = preg_split('/\s+/', $nombre);
                     $iniciales = strtoupper(substr($partes[0] ?? 'U', 0, 1)) . strtoupper(substr($partes[1] ?? '', 0, 1));
                     $esYo      = ((int)($_SESSION['admin_id'] ?? 0)) === $uid;
-                    $esAdmin   = ($u['rol'] ?? 'admin') === 'admin';
+                    $rolUsuario = (string)($u['rol'] ?? 'admin');
+                    $esAdmin   = $rolUsuario === 'admin';
+                    $esMesero  = $rolUsuario === 'mesero';
                     $esActivo  = (int)$u['activo'] === 1;
                 ?>
                 <div class="ug-user-item" id="ug-item-<?= $uid ?>">
 
                     <!-- FILA RESUMEN -->
                     <div class="ug-user-row">
-                        <div class="ug-avatar ug-avatar-<?= $esAdmin ? 'admin' : 'cook' ?>"><?= limpiar($iniciales) ?></div>
+                        <div class="ug-avatar ug-avatar-<?= $esAdmin ? 'admin' : ($esMesero ? 'waiter' : 'cook') ?>"><?= limpiar($iniciales) ?></div>
                         <div class="ug-user-info">
                             <div class="ug-user-name">
                                 <?= limpiar($nombre) ?>
@@ -288,18 +336,28 @@ require __DIR__ . '/_layout_top.php';
                             <div class="ug-user-sub">@<?= limpiar((string)$u['usuario']) ?></div>
                         </div>
                         <div class="ug-user-chips">
-                            <span class="ug-chip <?= $esAdmin ? 'chip-admin' : 'chip-cook' ?>">
-                                <i class="fa-solid <?= $esAdmin ? 'fa-user-shield' : 'fa-fire' ?>"></i>
-                                <?= $esAdmin ? 'Admin' : 'Cocinero' ?>
+                            <span class="ug-chip <?= $esAdmin ? 'chip-admin' : ($esMesero ? 'chip-waiter' : 'chip-cook') ?>">
+                                <i class="fa-solid <?= $esAdmin ? 'fa-user-shield' : ($esMesero ? 'fa-user-tie' : 'fa-fire') ?>"></i>
+                                <?= $esAdmin ? 'Admin' : ($esMesero ? 'Mesero' : 'Cocinero') ?>
                             </span>
                             <span class="ug-chip <?= $esActivo ? 'chip-on' : 'chip-off' ?>">
                                 <i class="fa-solid <?= $esActivo ? 'fa-circle-check' : 'fa-circle-xmark' ?>"></i>
                                 <?= $esActivo ? 'Activo' : 'Inactivo' ?>
                             </span>
                         </div>
-                        <button class="ug-btn-edit" type="button" onclick="ugToggle(<?= $uid ?>)">
-                            <i class="fa-solid fa-pen-to-square"></i> Editar
-                        </button>
+                        <div class="ug-row-actions">
+                            <button class="ug-btn-edit" type="button" onclick="ugToggle(<?= $uid ?>)">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
+                            </button>
+                            <form method="POST" class="ug-inline-form" onsubmit="return confirmarEliminarUsuario(this)">
+                                <input type="hidden" name="accion" value="eliminar_usuario">
+                                <input type="hidden" name="id" value="<?= $uid ?>">
+                                <input type="hidden" name="nombre" value="<?= limpiar($nombre) ?>">
+                                <button class="ug-btn-delete-row" type="submit" <?= $esYo ? 'disabled title="No puedes eliminar tu propio usuario"' : '' ?>>
+                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- PANEL EDICIÃ“N (oculto por defecto) -->
@@ -331,7 +389,8 @@ require __DIR__ . '/_layout_top.php';
                                         <label><i class="fa-solid fa-user-shield"></i> Rol</label>
                                         <select name="rol">
                                             <option value="admin"    <?= $esAdmin ? 'selected' : '' ?>>Administrador</option>
-                                            <option value="cocinero" <?= !$esAdmin ? 'selected' : '' ?>>Cocinero</option>
+                                            <option value="cocinero" <?= (!$esAdmin && !$esMesero) ? 'selected' : '' ?>>Cocinero</option>
+                                            <option value="mesero"   <?= $esMesero ? 'selected' : '' ?>>Mesero</option>
                                         </select>
                                     </div>
                                     <div class="ug-field">
@@ -366,6 +425,24 @@ require __DIR__ . '/_layout_top.php';
                                 <button type="submit" class="ug-btn-secondary ug-btn-sm"><i class="fa-solid fa-key"></i> Actualizar clave</button>
                             </form>
 
+                            <!-- Form eliminar usuario -->
+                            <form method="POST" class="ug-form ug-form-edit ug-form-danger" onsubmit="return confirmarEliminarUsuario(this)">
+                                <input type="hidden" name="accion" value="eliminar_usuario">
+                                <input type="hidden" name="id" value="<?= $uid ?>">
+                                <input type="hidden" name="nombre" value="<?= limpiar($nombre) ?>">
+
+                                <div class="ug-edit-title"><i class="fa-solid fa-trash"></i> Eliminar cuenta</div>
+
+                                <p class="ug-pass-hint">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    Esta accion elimina el usuario de forma permanente.
+                                </p>
+
+                                <button type="submit" class="ug-btn-danger ug-btn-sm" <?= $esYo ? 'disabled title="No puedes eliminar tu propio usuario"' : '' ?>>
+                                    <i class="fa-solid fa-trash"></i> Eliminar usuario
+                                </button>
+                            </form>
+
                         </div>
 
                         <div class="ug-edit-meta">
@@ -382,6 +459,20 @@ require __DIR__ . '/_layout_top.php';
     </div><!-- /.ug-layout -->
 
 </div><!-- /.ug-shell -->
+
+<div class="ug-modal-backdrop" id="ugDeleteModal" aria-hidden="true">
+    <div class="ug-modal" role="dialog" aria-modal="true" aria-labelledby="ugDeleteModalTitle" aria-describedby="ugDeleteModalText">
+        <div class="ug-modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h4 id="ugDeleteModalTitle">Confirmar eliminacion</h4>
+        <p id="ugDeleteModalText">Esta accion no se puede deshacer.</p>
+        <div class="ug-modal-actions">
+            <button type="button" class="ug-modal-btn ug-modal-cancel" id="ugDeleteCancelBtn">Cancelar</button>
+            <button type="button" class="ug-modal-btn ug-modal-confirm" id="ugDeleteConfirmBtn">
+                <i class="fa-solid fa-trash"></i> Eliminar usuario
+            </button>
+        </div>
+    </div>
+</div>
 
 <style>
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -434,6 +525,8 @@ require __DIR__ . '/_layout_top.php';
 .ug-counter-admin strong { color: #1d4ed8; } .ug-counter-admin span { color: #3b82f6; }
 .ug-counter-cook   { background: #fff7ed; border-color: #fed7aa; }
 .ug-counter-cook strong { color: #c2410c; } .ug-counter-cook span { color: #f97316; }
+.ug-counter-waiter { background: #ecfdf5; border-color: #a7f3d0; }
+.ug-counter-waiter strong { color: #0f766e; } .ug-counter-waiter span { color: #14b8a6; }
 .ug-counter-active { background: #f0fdf4; border-color: #86efac; }
 .ug-counter-active strong { color: #15803d; } .ug-counter-active span { color: #22c55e; }
 
@@ -497,7 +590,7 @@ require __DIR__ . '/_layout_top.php';
 .ug-eye-btn:hover { color: #374151; }
 
 /* â”€â”€ Role selector â”€â”€ */
-.ug-role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ug-role-selector { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .ug-role-opt { cursor: pointer; }
 .ug-role-opt input { display: none; }
 .ug-role-opt span {
@@ -539,6 +632,24 @@ require __DIR__ . '/_layout_top.php';
 .ug-btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
 .ug-btn-secondary.ug-btn-sm { padding: 9px 14px; font-size: 12px; }
 
+.ug-btn-danger {
+    background: #fff1f2; color: #be123c; border: 1.5px solid #fecdd3;
+    border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, border-color .15s; width: 100%;
+}
+.ug-btn-danger:hover { background: #ffe4e6; border-color: #fda4af; }
+.ug-btn-danger.ug-btn-sm { padding: 9px 14px; font-size: 12px; }
+.ug-btn-danger:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.ug-form-danger {
+    background: #fff7f7;
+    border-color: #fecaca;
+}
+
 /* â”€â”€ Main lista â”€â”€ */
 .ug-list-head { margin-bottom: 12px; }
 .ug-list-head h3 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
@@ -570,6 +681,7 @@ require __DIR__ . '/_layout_top.php';
 }
 .ug-avatar-admin { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1d4ed8; }
 .ug-avatar-cook  { background: linear-gradient(135deg, #fed7aa, #fde68a); color: #c2410c; }
+.ug-avatar-waiter { background: linear-gradient(135deg, #ccfbf1, #99f6e4); color: #0f766e; }
 
 .ug-user-info { flex: 1; min-width: 0; }
 .ug-user-name {
@@ -586,6 +698,15 @@ require __DIR__ . '/_layout_top.php';
 
 .ug-user-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 
+.ug-row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.ug-inline-form { margin: 0; }
+
 /* Chips */
 .ug-chip {
     border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 700;
@@ -593,6 +714,7 @@ require __DIR__ . '/_layout_top.php';
 }
 .chip-admin { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
 .chip-cook  { background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; }
+.chip-waiter { background: #ecfeff; border: 1px solid #a5f3fc; color: #0f766e; }
 .chip-on    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
 .chip-off   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
 
@@ -605,6 +727,19 @@ require __DIR__ . '/_layout_top.php';
     transition: background .15s, border-color .15s;
 }
 .ug-btn-edit:hover { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+
+.ug-btn-delete-row {
+    background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px;
+    padding: 8px 14px; font-size: 12px; font-weight: 700; color: #be123c;
+    cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s, border-color .15s;
+}
+.ug-btn-delete-row:hover { background: #ffe4e6; border-color: #fda4af; }
+.ug-btn-delete-row:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
 
 /* Panel ediciÃ³n */
 .ug-edit-panel {
@@ -643,6 +778,110 @@ require __DIR__ . '/_layout_top.php';
 }
 .ug-edit-meta span { display: inline-flex; align-items: center; gap: 5px; }
 
+/* Modal eliminar personalizado */
+.ug-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 18px;
+}
+
+.ug-modal-backdrop.open {
+    display: flex;
+    animation: ug-modal-fade .18s ease;
+}
+
+.ug-modal {
+    width: min(460px, 100%);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
+    padding: 20px;
+    text-align: center;
+    animation: ug-modal-pop .2s ease;
+}
+
+.ug-modal-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 10px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #be123c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.ug-modal h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ug-modal p {
+    margin: 10px 0 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.ug-modal-actions {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ug-modal-btn {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+
+.ug-modal-cancel {
+    background: #f8fafc;
+    color: #334155;
+}
+
+.ug-modal-cancel:hover {
+    background: #f1f5f9;
+}
+
+.ug-modal-confirm {
+    background: linear-gradient(135deg, #e11d48, #be123c);
+    border-color: #be123c;
+    color: #fff;
+}
+
+.ug-modal-confirm:hover {
+    opacity: .92;
+}
+
+@keyframes ug-modal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ug-modal-pop {
+    from { transform: translateY(8px) scale(.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 /* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1100px) {
     .ug-layout { grid-template-columns: 280px 1fr; }
@@ -658,10 +897,13 @@ require __DIR__ . '/_layout_top.php';
     .ug-counters { width: 100%; }
     .ug-user-chips { display: none; }
     .ug-user-row { flex-wrap: wrap; }
+    .ug-modal-actions { grid-template-columns: 1fr; }
 }
 </style>
 
 <script>
+let ugDeleteFormPendiente = null;
+
 function ugToggle(id) {
     const panel = document.getElementById('ug-panel-' + id);
     if (!panel) return;
@@ -679,6 +921,74 @@ function togglePass(inputId, btn) {
     inp.type = show ? 'text' : 'password';
     btn.querySelector('i').className = 'fa-solid ' + (show ? 'fa-eye-slash' : 'fa-eye');
 }
+
+function confirmarEliminarUsuario(form) {
+    const idInput = form.querySelector('input[name="id"]');
+    const nombreInput = form.querySelector('input[name="nombre"]');
+    const userId = idInput ? idInput.value : '';
+    const nombre = nombreInput ? nombreInput.value : 'este usuario';
+
+    const modal = document.getElementById('ugDeleteModal');
+    const text = document.getElementById('ugDeleteModalText');
+    if (!modal || !text) {
+        return false;
+    }
+
+    text.textContent = 'Vas a eliminar a "' + nombre + '" (ID ' + userId + '). Esta accion no se puede deshacer.';
+    ugDeleteFormPendiente = form;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+
+    const confirmBtn = document.getElementById('ugDeleteConfirmBtn');
+    if (confirmBtn) confirmBtn.focus();
+
+    return false;
+}
+
+function cerrarModalEliminar() {
+    const modal = document.getElementById('ugDeleteModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('ugDeleteModal');
+    const cancelBtn = document.getElementById('ugDeleteCancelBtn');
+    const confirmBtn = document.getElementById('ugDeleteConfirmBtn');
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            ugDeleteFormPendiente = null;
+            cerrarModalEliminar();
+        });
+    }
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            const form = ugDeleteFormPendiente;
+            ugDeleteFormPendiente = null;
+            cerrarModalEliminar();
+            if (form) form.submit();
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                ugDeleteFormPendiente = null;
+                cerrarModalEliminar();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            ugDeleteFormPendiente = null;
+            cerrarModalEliminar();
+        }
+    });
+});
 
 <?php if ($mensaje && $tipoMensaje === 'ok'): ?>
 // Auto-hide toast after 4s

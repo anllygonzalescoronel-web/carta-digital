@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 
-requerirRol(['admin']);
+requerirRol(['admin', 'mesero']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['ok' => false, 'mensaje' => 'Metodo no permitido'], 405);

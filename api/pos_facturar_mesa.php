@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/facturacion.php';
 require_once __DIR__ . '/../includes/facturacion_nubefact_bridge.php';
 
-requerirRol(['admin']);
+requerirRol(['admin', 'mesero']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['ok' => false, 'mensaje' => 'Metodo no permitido'], 405);

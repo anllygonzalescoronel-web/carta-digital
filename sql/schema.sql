@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `admin_usuarios` (
   `usuario` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `rol` enum('admin','cocinero') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'admin',
+	`rol` enum('admin','cocinero','mesero') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'admin',
   `activo` tinyint(1) NOT NULL DEFAULT '1',
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

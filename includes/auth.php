@@ -4,7 +4,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 function normalizarRolUsuario(?string $rol): string {
-    return $rol === 'cocinero' ? 'cocinero' : 'admin';
+    $rol = strtolower(trim((string)$rol));
+    if (in_array($rol, ['admin', 'cocinero', 'mesero'], true)) {
+        return $rol;
+    }
+    return 'admin';
 }
 
 function rutaInicioPorRol(?string $rol = null): string {
@@ -22,6 +26,10 @@ function esAdmin(): bool {
 
 function esCocinero(): bool {
     return estaLogueado() && obtenerRolActual() === 'cocinero';
+}
+
+function esMesero(): bool {
+    return estaLogueado() && obtenerRolActual() === 'mesero';
 }
 
 function responderNoAutorizado(): void {
@@ -56,14 +64,16 @@ function asegurarColumnasUsuariosAuth(): void {
     require_once __DIR__ . '/db.php';
     $db = getDB();
 
-    $stmt = $db->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_usuarios'");
+    $stmt = $db->query("SELECT COLUMN_NAME, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_usuarios'");
     $columnas = [];
     foreach ($stmt->fetchAll() as $row) {
-        $columnas[$row['COLUMN_NAME']] = true;
+        $columnas[$row['COLUMN_NAME']] = (string)($row['COLUMN_TYPE'] ?? '');
     }
 
     if (!isset($columnas['rol'])) {
-        $db->exec("ALTER TABLE admin_usuarios ADD COLUMN rol ENUM('admin','cocinero') NOT NULL DEFAULT 'admin' AFTER nombre");
+        $db->exec("ALTER TABLE admin_usuarios ADD COLUMN rol ENUM('admin','cocinero','mesero') NOT NULL DEFAULT 'admin' AFTER nombre");
+    } elseif (strpos((string)$columnas['rol'], 'mesero') === false) {
+        $db->exec("ALTER TABLE admin_usuarios MODIFY COLUMN rol ENUM('admin','cocinero','mesero') NOT NULL DEFAULT 'admin'");
     }
     if (!isset($columnas['activo'])) {
         $db->exec("ALTER TABLE admin_usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1 AFTER rol");
