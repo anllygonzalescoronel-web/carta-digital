@@ -222,15 +222,11 @@ require __DIR__ . '/_layout_top.php';
                 <strong><?= $totalCocineros ?></strong>
                 <span>Cocineros</span>
             </div>
-<<<<<<< HEAD
-                    <div class="ug-counter ug-counter-waiter">
-                        <strong><?= $totalMeseros ?></strong>
-                        <span>Meseros</span>
-                    </div>
-            <div class="ug-counter ug-counter-active">
-=======
+            <div class="ug-counter ug-counter-waiter" data-filtro="mesero" onclick="ugFiltrar('mesero', this)">
+                <strong><?= $totalMeseros ?></strong>
+                <span>Meseros</span>
+            </div>
             <div class="ug-counter ug-counter-active" data-filtro="activo" onclick="ugFiltrar('activo', this)">
->>>>>>> 88a6277931d4b7ca7ba80581acee71a1c47c51dc
                 <strong><?= $totalActivos ?></strong>
                 <span>Activos</span>
             </div>
@@ -327,7 +323,7 @@ require __DIR__ . '/_layout_top.php';
                     $esMesero  = $rolUsuario === 'mesero';
                     $esActivo  = (int)$u['activo'] === 1;
                 ?>
-                <div class="ug-user-item" id="ug-item-<?= $uid ?>" data-rol="<?= $esAdmin ? 'admin' : 'cocinero' ?>" data-activo="<?= $esActivo ? '1' : '0' ?>">
+                <div class="ug-user-item" id="ug-item-<?= $uid ?>" data-rol="<?= $esAdmin ? 'admin' : ($esMesero ? 'mesero' : 'cocinero') ?>" data-activo="<?= $esActivo ? '1' : '0' ?>">
 
                     <!-- FILA RESUMEN -->
                     <div class="ug-user-row">
@@ -1013,15 +1009,16 @@ body.modo-oscuro .ug-toast-err { background: rgba(192,57,43,0.2);  color: #fca5a
 .ug-counter-cook.ug-counter-activo-filtro {
     box-shadow: 0 0 0 2px #f97316, 0 4px 12px rgba(249,115,22,.25);
 }
+.ug-counter-waiter.ug-counter-activo-filtro {
+    box-shadow: 0 0 0 2px #14b8a6, 0 4px 12px rgba(20,184,166,.25);
+}
 .ug-counter-active.ug-counter-activo-filtro {
     box-shadow: 0 0 0 2px #22c55e, 0 4px 12px rgba(34,197,94,.25);
 }
 </style>
 
 <script>
-<<<<<<< HEAD
 let ugDeleteFormPendiente = null;
-=======
 
 function ugFiltrar(tipo, el) {
     // Marcar visualmente cuál está activo
@@ -1035,13 +1032,13 @@ function ugFiltrar(tipo, el) {
 
         if (tipo === 'admin') mostrar = rol === 'admin';
         else if (tipo === 'cocinero') mostrar = rol === 'cocinero';
+        else if (tipo === 'mesero') mostrar = rol === 'mesero';
         else if (tipo === 'activo') mostrar = activo === '1';
         // tipo === 'total' → mostrar todos
 
         item.style.display = mostrar ? '' : 'none';
     });
 }
->>>>>>> 88a6277931d4b7ca7ba80581acee71a1c47c51dc
 
 function ugToggle(id) {
     const panel = document.getElementById('ug-panel-' + id);
