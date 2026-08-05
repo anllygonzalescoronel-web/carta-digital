@@ -7,30 +7,159 @@ require __DIR__ . '/_layout_top.php';
 /* ── Layout ─────────────────────────────────────────────────── */
 .ing-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
 .ing-header h2 { margin:0; font-size:1.3rem; font-weight:700; }
-.ing-search { padding:8px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.93rem; width:220px; }
-.ing-search:focus { outline:none; border-color:#6366f1; }
+.ing-search {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: .93rem;
+    width: 220px;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+}
+.ing-search:focus { outline: none; box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35); }
 
 /* ── Stats ──────────────────────────────────────────────────── */
-.ing-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
-.ing-stat { background:#fff; border-radius:10px; padding:14px 16px; border:1px solid #e2e8f0; }
-.ing-stat-val { font-size:1.7rem; font-weight:800; line-height:1; }
-.ing-stat-label { font-size:.78rem; color:#64748b; margin-top:4px; }
-.ing-stat.alerta .ing-stat-val { color:#ef4444; }
-.ing-stat.ok .ing-stat-val { color:#22c55e; }
-.ing-stat.total .ing-stat-val { color:#6366f1; }
+/* ── Stats ──────────────────────────────────────────────────── */
+.ing-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:20px; }
+
+
+
+/* El "hueco" — usa el fondo neutro y tiene la sombra hundida real */
+.ing-stat-socket {
+    background: var(--neu-base);
+    border-radius: 20px;
+    padding: 7px;
+    box-shadow:
+        inset 6px 6px 14px var(--neu-sombra-oscura),
+        inset -6px -6px 14px var(--neu-sombra-clara);
+}
+
+/* La tarjeta de color que "descansa" dentro del hueco */
+.ing-stat {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    padding: 16px 18px;
+    color: #fff;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,.25),
+        0 0 0 1px rgba(255,255,255,.12) inset;
+}
+
+
+
+/* ── Tarjetas clicleables + ripple ─────────────────────────────── */
+.ing-stat-socket {
+    cursor: pointer;
+    transition: transform .15s ease;
+}
+.ing-stat-socket:active {
+    transform: scale(.97);
+}
+
+.ing-stat {
+    position: relative; /* ya lo tenías, solo confirma que esté */
+}
+
+
+
+/* Marca visual de la tarjeta activa (filtro seleccionado) — color según tipo */
+.ing-stat-socket:has(.ing-stat.total).filtro-activo {
+    box-shadow:
+        inset 6px 6px 14px var(--neu-sombra-oscura),
+        inset -6px -6px 14px var(--neu-sombra-clara),
+        0 0 0 2px #7c3aed;
+}
+.ing-stat-socket:has(.ing-stat.alerta).filtro-activo {
+    box-shadow:
+        inset 6px 6px 14px var(--neu-sombra-oscura),
+        inset -6px -6px 14px var(--neu-sombra-clara),
+        0 0 0 2px #f97316;
+}
+.ing-stat-socket:has(.ing-stat.ok).filtro-activo {
+    box-shadow:
+        inset 6px 6px 14px var(--neu-sombra-oscura),
+        inset -6px -6px 14px var(--neu-sombra-clara),
+        0 0 0 2px #10b981;
+}
+
+
+/* Decoración tipo "onda" de fondo (igual a la imagen de referencia) */
+.ing-stat::after {
+    content: "";
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.ing-stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+
+/* ── Malla de líneas onduladas (wireframe) ─────────────────────── */
+.ing-stat-wires {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 200%;
+    height: 46px;
+    pointer-events: none;
+    opacity: .35;
+}
+.ing-stat-wires path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+.ing-stat-wires .linea1 { animation: wireMove 9s linear infinite; opacity: .8; }
+.ing-stat-wires .linea2 { animation: wireMove 13s linear infinite reverse; opacity: .5; }
+.ing-stat-wires .linea3 { animation: wireMove 17s linear infinite; opacity: .3; }
+
+@keyframes wireMove {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+/*  */
+.ing-stat-val { font-size:1.7rem; font-weight:800; line-height:1; color:#fff; }
+.ing-stat-label { font-size:.8rem; color:rgba(255,255,255,.85); margin-top:4px; }
+
+/* Gradientes por tipo, igual estilo que la imagen de ejemplo */
+/* Gradientes por tipo, igual estilo que la imagen de ejemplo */
+/* !important para que ninguna regla de modo oscuro los sobreescriba */
+.ing-stat.total  { background: linear-gradient(135deg, #7c3aed, #4c1d95) !important; }
+.ing-stat.alerta { background: linear-gradient(135deg, #f97316, #c2410c) !important; }
+.ing-stat.ok     { background: linear-gradient(135deg, #10b981, #047857) !important; }
+
+.ing-stat-val,
+.ing-stat-label { color: #fff !important; }
 
 /* ── Tabla ───────────────────────────────────────────────────── */
-.ing-table-wrap { background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; }
+.ing-table-wrap { background: var(--neu-base); border-radius: 18px; border: none; overflow: hidden; box-shadow: 8px 8px 18px var(--neu-sombra-oscura), -8px -8px 18px var(--neu-sombra-clara); }
 .ing-table { width:100%; border-collapse:collapse; font-size:.9rem; }
-.ing-table thead { background:#f8fafc; }
-.ing-table th { padding:11px 14px; text-align:left; font-weight:600; color:#475569; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; }
-.ing-table td { padding:11px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
-.ing-table tbody tr:hover { background:#fafbfc; }
+.ing-table thead { background: transparent; }
+.ing-table th { padding:12px 14px; text-align:left; font-weight:700; color:#666d7a; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:3px solid #E8590C; }
+.ing-table td { padding:11px 14px; border-bottom:1px solid rgba(0,0,0,.06); vertical-align:middle; }
+.ing-table tbody tr:hover { background: rgba(0,0,0,.02); }
 .ing-table tbody tr:last-child td { border-bottom:none; }
 
 /* ── Stock bar ───────────────────────────────────────────────── */
 .stock-bar-wrap { display:flex; align-items:center; gap:8px; min-width:140px; }
-.stock-bar { flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; }
+.stock-bar { flex:1; height:7px; background: var(--neu-base); border-radius:4px; overflow:hidden; box-shadow: inset 1px 1px 3px var(--neu-sombra-oscura); }
 .stock-bar-fill { height:100%; border-radius:3px; transition:width .3s; }
 .stock-bar-fill.ok   { background:#22c55e; }
 .stock-bar-fill.warn { background:#f59e0b; }
@@ -44,46 +173,58 @@ require __DIR__ . '/_layout_top.php';
 .badge-alerta { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:20px; font-size:.75rem; font-weight:600; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; }
 
 /* ── Botones acción ───────────────────────────────────────────── */
-.ing-actions { display:flex; gap:6px; }
-.btn-ing { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:7px; border:none; cursor:pointer; font-size:.8rem; font-weight:600; transition:opacity .15s; }
-.btn-ing:hover { opacity:.85; }
-.btn-ing-edit  { background:#6366f1; color:#fff; }
-.btn-ing-stock { background:#0ea5e9; color:#fff; }
-.btn-ing-hist  { background:#f1f5f9; color:#475569; }
-.btn-ing-del   { background:#ef4444; color:#fff; }
-.btn-ing-ing   { background:#22c55e; color:#fff; }
+.btn-ing { display:inline-flex; align-items:center; gap:4px; padding:6px 11px; border-radius:9px; border:none; cursor:pointer; font-size:.8rem; font-weight:600; transition:opacity .15s, transform .15s; }
+.btn-ing:hover { opacity:.88; transform: translateY(-1px); }
+.btn-ing i { color: inherit; font-size: .95rem; }
+.btn-ing-edit  { background: linear-gradient(135deg,#818cf8,#6366f1); color:#fff; box-shadow: 2px 2px 6px rgba(99,102,241,.35); }
+.btn-ing-stock { background: linear-gradient(135deg,#38bdf8,#0ea5e9); color:#fff; box-shadow: 2px 2px 6px rgba(14,165,233,.35); }
+.btn-ing-hist  { background: var(--neu-base); color:#475569; box-shadow: 2px 2px 5px var(--neu-sombra-oscura), -2px -2px 5px var(--neu-sombra-clara); }
+.btn-ing-del   { background: linear-gradient(135deg,#f87171,#ef4444); color:#fff; box-shadow: 2px 2px 6px rgba(239,68,68,.35); }
+.btn-ing-ing   { background: linear-gradient(135deg,#4ade80,#22c55e); color:#fff; box-shadow: 2px 2px 6px rgba(34,197,94,.35); }
 
 /* ── Modal ───────────────────────────────────────────────────── */
 .ing-modal-backdrop { display:none; position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:1000; align-items:center; justify-content:center; }
 .ing-modal-backdrop.abierto { display:flex; }
-.ing-modal { background:#fff; border-radius:14px; padding:28px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; }
+.ing-modal { background: var(--neu-base); border-radius: 22px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 14px 14px 32px rgba(0,0,0,.28), -8px -8px 24px var(--neu-sombra-clara); position: relative; }
 .ing-modal h3 { margin:0 0 18px; font-size:1.15rem; font-weight:700; }
 .ing-modal-close { position:absolute; top:14px; right:14px; background:none; border:none; cursor:pointer; color:#94a3b8; font-size:1.2rem; }
 .ing-modal-close:hover { color:#0f172a; }
 .ing-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .ing-form-grid .full { grid-column:1/-1; }
 .ing-label { display:block; font-size:.8rem; font-weight:600; color:#475569; margin-bottom:4px; }
-.ing-input { width:100%; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.93rem; box-sizing:border-box; }
-.ing-input:focus { outline:none; border-color:#6366f1; }
-.ing-select { width:100%; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.93rem; background:#fff; box-sizing:border-box; }
+.ing-input, .ing-select {
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: .93rem;
+    box-sizing: border-box;
+    background: var(--neu-base);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    color: #333;
+}
+.ing-input:focus, .ing-select:focus {
+    outline: none;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
 .ing-modal-footer { display:flex; gap:10px; margin-top:20px; }
-.ing-modal-footer .btn-save { flex:1; padding:10px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; }
-.ing-modal-footer .btn-save:hover { background:#4f46e5; }
-.ing-modal-footer .btn-cancel { padding:10px 18px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+.ing-modal-footer .btn-save { flex:1; padding:11px; background: linear-gradient(135deg,#818cf8,#6366f1); color:#fff; border:none; border-radius:12px; font-weight:700; cursor:pointer; box-shadow: 4px 4px 10px rgba(99,102,241,.35); transition: transform .15s; }
+.ing-modal-footer .btn-save:hover { transform: translateY(-2px); }
+.ing-modal-footer .btn-cancel { padding:11px 18px; background: var(--neu-base); color:#4a5160; border:none; border-radius:12px; font-weight:600; cursor:pointer; box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara); }
 
 /* ── Modal stock ─────────────────────────────────────────────── */
 .stock-tipo-tabs { display:flex; gap:8px; margin-bottom:16px; }
-.stock-tipo-btn { flex:1; padding:8px; border:2px solid #e2e8f0; border-radius:8px; background:#fff; cursor:pointer; font-weight:600; font-size:.85rem; text-align:center; transition:all .15s; }
+.stock-tipo-btn { flex:1; padding:9px; border:none; border-radius:10px; background: var(--neu-base); box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara); cursor:pointer; font-weight:600; font-size:.85rem; text-align:center; transition:all .15s; }
 .stock-tipo-btn.activo[data-tipo="entrada"] { border-color:#22c55e; background:#f0fdf4; color:#15803d; }
 .stock-tipo-btn.activo[data-tipo="salida"]  { border-color:#ef4444; background:#fef2f2; color:#b91c1c; }
 .stock-tipo-btn.activo[data-tipo="ajuste"]  { border-color:#f59e0b; background:#fffbeb; color:#b45309; }
-.stock-actual-display { background:#f8fafc; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+.stock-actual-display { background: var(--neu-base); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara); }
 .stock-actual-display .label { font-size:.8rem; color:#64748b; }
 .stock-actual-display .valor { font-size:1.2rem; font-weight:800; color:#0f172a; }
 
 /* ── Historial ───────────────────────────────────────────────── */
 .hist-list { display:flex; flex-direction:column; gap:6px; max-height:340px; overflow-y:auto; }
-.hist-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; background:#f8fafc; border-left:3px solid #e2e8f0; }
+.hist-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; background: var(--neu-base); box-shadow: inset 2px 2px 5px var(--neu-sombra-oscura), inset -2px -2px 5px var(--neu-sombra-clara); border-left: 3px solid #e2e8f0; }
 .hist-item.entrada { border-left-color:#22c55e; }
 .hist-item.salida  { border-left-color:#ef4444; }
 .hist-item.ajuste  { border-left-color:#f59e0b; }
@@ -98,6 +239,65 @@ require __DIR__ . '/_layout_top.php';
 /* ── Empty state ─────────────────────────────────────────────── */
 .ing-empty { text-align:center; padding:48px; color:#94a3b8; }
 .ing-empty i { font-size:2.5rem; display:block; margin-bottom:10px; }
+
+
+
+/* ── Stats en móvil: scroll horizontal deslizable ─────────────── */
+@media (max-width: 640px) {
+    .ing-stats {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 12px;
+        padding-bottom: 6px;
+        margin-bottom: 20px;
+    }
+
+    .ing-stat-socket {
+        flex: 0 0 78%;
+        scroll-snap-align: start;
+    }
+
+    /* Oculta la barra de scroll mientras se mantiene funcional */
+    .ing-stats::-webkit-scrollbar { height: 4px; }
+    .ing-stats::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 4px; }
+
+    /* ── Evita que TODA la página se desborde horizontalmente ── */
+    body, html {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    /* El header (búsqueda + botón) que se desbordaba */
+    .ing-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ing-header > div {
+        width: 100%;
+    }
+    .ing-search {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .btn-nuevo {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    /* La tabla, en vez de estirar la página, tiene su propio scroll interno */
+    .ing-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+    .ing-table {
+        min-width: 560px; /* fuerza el scroll interno en vez de romper el layout */
+    }
+}
 </style>
 
 <div class="ing-header">
@@ -109,10 +309,44 @@ require __DIR__ . '/_layout_top.php';
 </div>
 
 <!-- Stats -->
+<!-- Stats -->
 <div class="ing-stats" id="ingStats">
-    <div class="ing-stat total"><div class="ing-stat-val" id="statTotal">—</div><div class="ing-stat-label">Total ingredientes</div></div>
-    <div class="ing-stat alerta"><div class="ing-stat-val" id="statBajoStock">—</div><div class="ing-stat-label">Bajo stock / agotados</div></div>
-    <div class="ing-stat ok"><div class="ing-stat-val" id="statOk">—</div><div class="ing-stat-label">Stock OK</div></div>
+    <div class="ing-stat-socket" data-filtro="todos" onclick="filtrarPorTarjeta('todos', this, event)">
+        <div class="ing-stat total">
+            <svg class="ing-stat-wires" viewBox="0 0 600 46" preserveAspectRatio="none">
+                <path class="linea1" d="M0,20 Q37.5,5 75,20 T150,20 T225,20 T300,20 T375,20 T450,20 T525,20 T600,20" />
+                <path class="linea2" d="M0,30 Q37.5,42 75,30 T150,30 T225,30 T300,30 T375,30 T450,30 T525,30 T600,30" />
+                <path class="linea3" d="M0,12 Q37.5,25 75,12 T150,12 T225,12 T300,12 T375,12 T450,12 T525,12 T600,12" />
+            </svg>
+            <div class="ing-stat-icon"><i class="ti ti-packages"></i></div>
+            <div class="ing-stat-val" id="statTotal">—</div>
+            <div class="ing-stat-label">Total ingredientes</div>
+        </div>
+    </div>
+    <div class="ing-stat-socket" data-filtro="bajo" onclick="filtrarPorTarjeta('bajo', this, event)">
+        <div class="ing-stat alerta">
+            <svg class="ing-stat-wires" viewBox="0 0 600 46" preserveAspectRatio="none">
+                <path class="linea1" d="M0,20 Q37.5,5 75,20 T150,20 T225,20 T300,20 T375,20 T450,20 T525,20 T600,20" />
+                <path class="linea2" d="M0,30 Q37.5,42 75,30 T150,30 T225,30 T300,30 T375,30 T450,30 T525,30 T600,30" />
+                <path class="linea3" d="M0,12 Q37.5,25 75,12 T150,12 T225,12 T300,12 T375,12 T450,12 T525,12 T600,12" />
+            </svg>
+            <div class="ing-stat-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div class="ing-stat-val" id="statBajoStock">—</div>
+            <div class="ing-stat-label">Bajo stock / agotados</div>
+        </div>
+    </div>
+    <div class="ing-stat-socket" data-filtro="ok" onclick="filtrarPorTarjeta('ok', this, event)">
+        <div class="ing-stat ok">
+            <svg class="ing-stat-wires" viewBox="0 0 600 46" preserveAspectRatio="none">
+                <path class="linea1" d="M0,20 Q37.5,5 75,20 T150,20 T225,20 T300,20 T375,20 T450,20 T525,20 T600,20" />
+                <path class="linea2" d="M0,30 Q37.5,42 75,30 T150,30 T225,30 T300,30 T375,30 T450,30 T525,30 T600,30" />
+                <path class="linea3" d="M0,12 Q37.5,25 75,12 T150,12 T225,12 T300,12 T375,12 T450,12 T525,12 T600,12" />
+            </svg>
+            <div class="ing-stat-icon"><i class="ti ti-check"></i></div>
+            <div class="ing-stat-val" id="statOk">—</div>
+            <div class="ing-stat-label">Stock OK</div>
+        </div>
+    </div>
 </div>
 
 <!-- Tabla -->
@@ -254,7 +488,9 @@ async function cargarIngredientes() {
         if (!d.ok) throw new Error(d.mensaje);
         ingredientes = d.ingredientes || [];
         renderTabla(ingredientes);
+
         renderStats(ingredientes);
+
     } catch(e) {
         document.getElementById('ingTbody').innerHTML =
             `<tr><td colspan="6" style="text-align:center;padding:32px;color:#ef4444;">Error: ${e.message}</td></tr>`;
@@ -308,6 +544,41 @@ function renderTabla(lista) {
         </tr>`;
     }).join('');
 }
+
+
+
+// ── Filtro por tarjeta + efecto ripple ──────────────────────────
+let filtroTarjetaActivo = 'todos';
+
+function filtrarPorTarjeta(tipo, elSocket, evento) {
+    // Si haces clic en "todos" estando ya en "todos", no pasa nada (se queda igual)
+    // Si haces clic en otra tarjeta activa, vuelve a "todos"
+    if (tipo === 'todos') {
+        filtroTarjetaActivo = 'todos';
+    } else {
+        filtroTarjetaActivo = (filtroTarjetaActivo === tipo) ? 'todos' : tipo;
+    }
+
+    document.querySelectorAll('.ing-stat-socket').forEach(s => s.classList.remove('filtro-activo'));
+    elSocket.classList.add('filtro-activo');
+
+    let filtrado = ingredientes;
+    if (filtroTarjetaActivo === 'bajo') {
+        filtrado = ingredientes.filter(i => i.bajo_stock);
+    } else if (filtroTarjetaActivo === 'ok') {
+        filtrado = ingredientes.filter(i => !i.bajo_stock);
+    }
+
+    // Respeta también lo que haya en el buscador
+    const q = document.getElementById('ingSearch').value.toLowerCase();
+    if (q) {
+        filtrado = filtrado.filter(i => i.nombre.toLowerCase().includes(q) || (i.descripcion||'').toLowerCase().includes(q));
+    }
+
+    renderTabla(filtrado);
+}
+
+
 
 // ── Utilidades ────────────────────────────────────────────────────────────────
 function esc(s) { const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
