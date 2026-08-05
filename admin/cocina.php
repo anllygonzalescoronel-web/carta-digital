@@ -16,7 +16,7 @@ require __DIR__ . '/_layout_top.php';
         <div class="kn-hero-left">
             <p class="kn-kicker"><i class="fa-solid fa-fire-burner"></i> Operación en vivo</p>
             <h2>Panel de Cocina</h2>
-            <p>Los pedidos entran automaticamente· Actualiza el estado con un clic. Se refresca solo cada 8 s</p>
+            <p>Los pedidos entran automaticamente· Actualiza el estado con un click. Se refresca solo cada 8 s</p>
         </div>
         <div class="kn-hero-right">
             <div class="kn-filtros-periodo">
@@ -809,7 +809,7 @@ body.modo-oscuro .k-items-list li.otra-estacion {
             const cards = pedidos.filter(p => col.estadosIncluidos.includes(p.estado));
             const cardsHtml = cards.length
                 ? cards.map(p => renderCard(p,col)).join('')
-                : `<div class="kn-col-empty"><i class="fa-solid fa-${col.icon}"></i><span>Sin pedidos aquÃ­</span></div>`;
+                : `<div class="kn-col-empty"><i class="fa-solid fa-${col.icon}"></i><span>Sin pedidos aqui­</span></div>`;
             return `<div class="kn-col ${col.clase}">
                 <div class="kn-col-head">
                     <div class="kn-col-title"><i class="fa-solid ${col.icon}"></i> ${col.label}</div>
