@@ -16,6 +16,10 @@ require __DIR__ . '/_layout_top.php';
     gap: 16px;
 }
 
+.mesas-layout > * {
+    min-width: 0;
+}
+
 @media (max-width: 980px) {
     .mesas-layout {
         grid-template-columns: 1fr;
@@ -229,6 +233,13 @@ require __DIR__ . '/_layout_top.php';
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
+}
+
+.mesas-toolbar > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
 }
 
 .mesas-badge {
@@ -537,6 +548,69 @@ require __DIR__ . '/_layout_top.php';
     inset: 0;
     pointer-events: none;
     z-index: 30;
+}
+
+@media (max-width: 860px) {
+    .mesas-panel,
+    .mesas-canvas-wrap {
+        padding: 12px;
+    }
+
+    .mesas-row,
+    .mesa-size-grid,
+    .mesas-segment {
+        grid-template-columns: 1fr;
+    }
+
+    .mesas-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .mesas-actions .mesas-btn {
+        width: 100%;
+    }
+
+    .mesas-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mesas-toolbar > div {
+        justify-content: space-between;
+    }
+
+    .mesas-modal-body {
+        padding: 16px;
+    }
+
+    .mesas-modal-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    #mesa-board {
+        min-width: 760px;
+        min-height: 520px;
+    }
+}
+
+@media (max-width: 560px) {
+    .mesas-layout {
+        gap: 12px;
+    }
+
+    .mesas-panel,
+    .mesas-canvas-wrap {
+        border-radius: 14px;
+        padding: 10px;
+    }
+
+    #mesa-board {
+        min-width: 640px;
+        min-height: 460px;
+    }
 }
 
 body.modo-oscuro .mesas-panel,

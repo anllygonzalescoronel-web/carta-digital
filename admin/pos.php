@@ -54,6 +54,13 @@ body.modo-oscuro .pos-shell {
     box-shadow: 6px 6px 14px var(--pos-sombra-oscura), -6px -6px 14px var(--pos-sombra-clara);
 }
 
+.pos-top-status {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .pos-top h2 {
     margin: 0;
     color: var(--pos-texto);
@@ -285,6 +292,20 @@ body.modo-oscuro .pos-shell {
     position: relative;
     min-width: 900px;
     min-height: 540px;
+}
+
+@media (max-width: 860px) {
+    .pos-board {
+        min-width: 760px;
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 560px) {
+    .pos-board {
+        min-width: 640px;
+        min-height: 460px;
+    }
 }
 
 .pos-zona-overlay {
@@ -834,6 +855,10 @@ body.modo-oscuro .pos-mesa.unida .pos-mesa-tablero {
 .pos-actions.stack { flex-direction: column; }
 .pos-btn.full { width: 100%; justify-content: center; }
 
+.pos-actions .pos-btn {
+    flex: 1 1 180px;
+}
+
 .pos-msg { min-height: 20px; margin-top: 10px; font-size: 13px; font-weight: 700; }
 .pos-msg.ok { color: #1e8449; }
 .pos-msg.err { color: #b91c1c; }
@@ -1081,12 +1106,91 @@ body.modo-oscuro .pos-mesa-estado.proceso_pago {
 body.modo-oscuro .pos-mesa-union-badge {
     color: #c4b5fd;
 }
+
+@media (max-width: 860px) {
+    .pos-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pos-top-status {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .pos-card {
+        padding: 14px;
+    }
+
+    .pos-products {
+        max-height: 380px;
+    }
+
+    .pos-cart {
+        overflow-x: auto;
+    }
+
+    .pos-cart table {
+        min-width: 540px;
+    }
+}
+
+@media (max-width: 600px) {
+    .pos-shell {
+        gap: 12px;
+    }
+
+    .pos-card {
+        border-radius: 16px;
+        padding: 12px;
+    }
+
+    .pos-zonas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .pos-zona-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .pos-categorias {
+        gap: 10px;
+    }
+
+    .pos-categoria-btn {
+        width: 64px;
+    }
+
+    .pos-categoria-img-wrap {
+        width: 50px;
+        height: 50px;
+    }
+
+    .pos-opciones-producto {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pos-opciones-producto img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .pos-actions .pos-btn {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+}
 </style>
 
 <div class="pos-shell">
     <div class="pos-top">
         <h2><i class="ti ti-device-desktop"></i> POS Restaurante</h2>
-        <div>
+        <div class="pos-top-status">
             <span class="pos-chip" id="chipCajaTurno">Caja activa</span>
             <span class="pos-chip" id="chipMesaActual">Mesa: sin seleccionar</span>
         </div>

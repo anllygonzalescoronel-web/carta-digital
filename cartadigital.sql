@@ -25,19 +25,20 @@ CREATE TABLE IF NOT EXISTS `admin_usuarios` (
   `usuario` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-	`rol` enum('admin','cocinero','mesero') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'admin',
+  `rol` enum('admin','cocinero','mesero') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'admin',
   `activo` tinyint(1) NOT NULL DEFAULT '1',
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `usuario` (`usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.admin_usuarios: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.admin_usuarios: ~4 rows (aproximadamente)
 INSERT INTO `admin_usuarios` (`id`, `usuario`, `password_hash`, `nombre`, `rol`, `activo`, `creado_en`, `actualizado_en`) VALUES
-	(1, 'admin', '$2y$10$vO8.XETGJIEPqhwBxaPle.KKIRFDJm.L7xomfpbRz05ccTRHiXd2S', 'Administrador', 'admin', 1, '2026-07-21 06:08:45', '2026-07-30 18:07:40'),
+	(1, 'admin', '$2y$10$vO8.XETGJIEPqhwBxaPle.KKIRFDJm.L7xomfpbRz05ccTRHiXd2S', 'Sr Cristhian', 'admin', 1, '2026-07-21 06:08:45', '2026-08-03 05:32:23'),
 	(2, 'cocina', '$2y$10$9eMUpHAGqzweTbroLRPSzOwzWK018wOcYGqXgVlkgs5d69NBiCjq6', 'chef porkata', 'cocinero', 1, '2026-07-30 18:13:16', '2026-07-30 18:13:16'),
-	(4, 'pollero', '$2y$10$Hu09JQ84GUKIHv3bnFWVWOhZhvxzeQf.rxNccIJdACkZ9ZPpk7h8a', 'POLLERO', 'cocinero', 1, '2026-08-02 06:08:11', '2026-08-02 06:08:11');
+	(4, 'pollero', '$2y$10$Hu09JQ84GUKIHv3bnFWVWOhZhvxzeQf.rxNccIJdACkZ9ZPpk7h8a', 'POLLERO', 'cocinero', 1, '2026-08-02 06:08:11', '2026-08-02 06:08:11'),
+	(10, 'misiritu', '$2y$10$qPi/sPW0PeB5IEDD2IX2GOXQ.n2nqHjoGz9s8bbVbKpHTigbeIRBa', 'MISIRU', 'mesero', 1, '2026-08-05 04:25:06', '2026-08-05 04:25:06');
 
 -- Volcando estructura para tabla carta_digital.banners
 CREATE TABLE IF NOT EXISTS `banners` (
@@ -50,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `banners` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.banners: ~5 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.banners: ~4 rows (aproximadamente)
 INSERT INTO `banners` (`id`, `imagen`, `titulo`, `subtitulo`, `orden`, `activo`) VALUES
 	(3, 'img_6a6aa3e71a0f94.00170763.jpg', '', '', 1, 1),
 	(4, 'img_6a6aa3eea73e88.34282688.jpg', '', '', 2, 1),
@@ -74,13 +75,15 @@ CREATE TABLE IF NOT EXISTS `cajas_turnos` (
   PRIMARY KEY (`id`),
   KEY `idx_caja_turnos_estado` (`estado`),
   KEY `idx_caja_turnos_usuario` (`usuario_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.cajas_turnos: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.cajas_turnos: ~5 rows (aproximadamente)
 INSERT INTO `cajas_turnos` (`id`, `usuario_id`, `usuario_nombre`, `estado`, `monto_apertura`, `monto_cierre`, `observacion_apertura`, `observacion_cierre`, `abierta_en`, `cerrada_en`, `creado_en`) VALUES
 	(1, 1, 'Administrador', 'cerrada', 0.00, 0.00, 'DIA', NULL, '2026-08-01 23:36:02', '2026-08-02 00:25:56', '2026-08-02 04:36:02'),
 	(2, 1, 'Administrador', 'cerrada', 0.00, 36.80, NULL, 'todo bempapa', '2026-08-02 00:33:17', '2026-08-02 00:40:52', '2026-08-02 05:33:17'),
-	(3, 1, 'Administrador', 'abierta', 0.00, NULL, 'ABIERTO', NULL, '2026-08-02 00:51:49', NULL, '2026-08-02 05:51:49');
+	(3, 1, 'Administrador', 'cerrada', 0.00, 257.80, 'ABIERTO', NULL, '2026-08-02 00:51:49', '2026-08-03 23:45:41', '2026-08-02 05:51:49'),
+	(4, 1, 'Sr Cristhian', 'cerrada', 0.00, 117.40, NULL, NULL, '2026-08-04 02:01:12', '2026-08-04 14:40:39', '2026-08-04 07:01:12'),
+	(5, 1, 'Sr Cristhian', 'abierta', 0.00, NULL, 'OGETEEE', NULL, '2026-08-04 18:08:10', NULL, '2026-08-04 23:08:10');
 
 -- Volcando estructura para tabla carta_digital.caja_movimientos
 CREATE TABLE IF NOT EXISTS `caja_movimientos` (
@@ -95,16 +98,19 @@ CREATE TABLE IF NOT EXISTS `caja_movimientos` (
   PRIMARY KEY (`id`),
   KEY `idx_caja_mov_turno` (`turno_id`),
   CONSTRAINT `fk_caja_mov_turno` FOREIGN KEY (`turno_id`) REFERENCES `cajas_turnos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.caja_movimientos: ~6 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.caja_movimientos: ~9 rows (aproximadamente)
 INSERT INTO `caja_movimientos` (`id`, `turno_id`, `tipo`, `concepto`, `monto`, `referencia_tipo`, `referencia_id`, `creado_en`) VALUES
 	(1, 1, 'venta', 'Liquidación mesa Mesa 3 PED-260802-B8F78', 98.50, 'pedido', 36, '2026-08-02 05:04:49'),
 	(2, 1, 'venta', 'Liquidación mesa Mesa 1 PED-260802-22083', 52.00, 'pedido', 37, '2026-08-02 05:09:28'),
 	(3, 1, 'venta', 'Liquidación mesa mesa test PED-260802-D07E4', 14.90, 'pedido', 38, '2026-08-02 05:12:24'),
 	(4, 1, 'venta', 'Liquidación mesa mesa test PED-260802-D3F76', 56.70, 'pedido', 40, '2026-08-02 05:19:47'),
 	(5, 1, 'venta', 'Liquidación mesa Mesa 2 PED-260802-BB20D', 36.80, 'pedido', 42, '2026-08-02 05:22:49'),
-	(6, 2, 'venta', 'Liquidación mesa Mesa 1 PED-260802-8FACC', 36.80, 'pedido', 44, '2026-08-02 05:33:57');
+	(6, 2, 'venta', 'Liquidación mesa Mesa 1 PED-260802-8FACC', 36.80, 'pedido', 44, '2026-08-02 05:33:57'),
+	(7, 4, 'venta', 'Liquidación mesa M 11 PED-260804-89A4A', 77.60, 'pedido', 52, '2026-08-04 07:05:42'),
+	(8, 4, 'venta', 'Liquidación mesa M 14 PED-260804-0E6E5', 39.80, 'pedido', 56, '2026-08-04 16:45:42'),
+	(9, 5, 'venta', 'Liquidación mesa M 10 PED-260805-676FA', 155.50, 'pedido', 59, '2026-08-05 00:24:29');
 
 -- Volcando estructura para tabla carta_digital.categorias
 CREATE TABLE IF NOT EXISTS `categorias` (
@@ -116,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `categorias` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.categorias: ~8 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.categorias: ~9 rows (aproximadamente)
 INSERT INTO `categorias` (`id`, `nombre`, `imagen`, `orden`, `activo`) VALUES
 	(7, 'Combos', 'uploads/categorias/cat_1785374426_7.png', 1, 1),
 	(8, 'Promociones', 'uploads/categorias/cat_1785374884_8.png', 2, 1),
@@ -126,6 +132,30 @@ INSERT INTO `categorias` (`id`, `nombre`, `imagen`, `orden`, `activo`) VALUES
 	(12, 'Acompañamientos', 'uploads/categorias/cat_1785375117_12.png', 6, 1),
 	(14, 'Bebidas', 'uploads/categorias/cat_1785375167_14.png', 8, 1),
 	(15, 'Postres', 'uploads/categorias/cat_1785375202_15.png', 9, 1);
+
+-- Volcando estructura para tabla carta_digital.clientes_web
+CREATE TABLE IF NOT EXISTS `clientes_web` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefono` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `google_id` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatar_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `proveedor` enum('local','google') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local',
+  `email_verificado` tinyint(1) NOT NULL DEFAULT '0',
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `ultimo_login_at` datetime DEFAULT NULL,
+  `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_clientes_web_email` (`email`),
+  UNIQUE KEY `uq_clientes_web_google_id` (`google_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Volcando datos para la tabla carta_digital.clientes_web: ~0 rows (aproximadamente)
+INSERT INTO `clientes_web` (`id`, `nombre`, `email`, `telefono`, `password_hash`, `google_id`, `avatar_url`, `proveedor`, `email_verificado`, `activo`, `ultimo_login_at`, `creado_en`, `actualizado_en`) VALUES
+	(1, 'Cristhian Coronado de la cruz', 'cristhiancoronadodelacruz04@gmail.com', NULL, NULL, '115899361089485594416', 'https://lh3.googleusercontent.com/a/ACg8ocJmqGODH9ZS6lMV0c4mDuzB2SO-PGwuv03lODOpSvcJmrDHexE=s96-c', 'google', 1, 1, '2026-08-04 11:30:20', '2026-08-04 16:24:36', '2026-08-04 16:30:20');
 
 -- Volcando estructura para tabla carta_digital.comprobantes_electronicos
 CREATE TABLE IF NOT EXISTS `comprobantes_electronicos` (
@@ -158,9 +188,9 @@ CREATE TABLE IF NOT EXISTS `comprobantes_electronicos` (
   KEY `idx_comprobantes_pedido` (`pedido_id`),
   KEY `idx_comprobantes_estado` (`estado_sunat`),
   CONSTRAINT `fk_comprobantes_pedido` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.comprobantes_electronicos: ~22 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.comprobantes_electronicos: ~27 rows (aproximadamente)
 INSERT INTO `comprobantes_electronicos` (`id`, `pedido_id`, `tipo_comprobante`, `serie`, `correlativo`, `numero_comprobante`, `tipo_documento`, `numero_documento`, `estado_sunat`, `sunat_codigo`, `sunat_descripcion`, `sunat_ticket`, `xml_path`, `cdr_path`, `pdf_path`, `xml_hash`, `cdr_response_json`, `intentos_envio`, `enviado_en`, `respondido_en`, `payload_json`, `error_detalle`, `creado_en`, `actualizado_en`) VALUES
 	(1, 15, 'boleta', 'B001', 1, 'B001-00000001', 'dni', '72115227', 'aceptado', '0', 'La Boleta numero B001-1, ha sido aceptada', NULL, 'uploads/sunat/xml/B001-00000001.xml', 'uploads/sunat/cdr/R-B001-00000001.zip', 'uploads/sunat/pdf/B001-00000001.pdf', '972c9aed640f6232b1b478a48472d03805da7b171597661926dba2d71c602371', '{"id":"B001-1","code":"0","description":"La Boleta numero B001-1, ha sido aceptada","notes":[],"reference":null}', 1, '2026-07-28 20:34:07', '2026-07-28 20:34:07', '{"pedido_codigo":"PED-260729-D7830","tipo_comprobante":"boleta","numero_comprobante":"B001-00000001","emisor":{"ruc":"20123456789","razon_social":"POLLERIA OGETES CALIENTES","nombre_comercial":"OGETESSSS","direccion":"CALLE AVENIDA TEST","ubigeo":"150101","distrito":"LIMA","provincia":"LIMA","departamento":"LIMA","cod_pais":"PE"},"cliente":{"nombre":"cristhian coronado","tipo_documento":"dni","numero_documento":"72115227"},"totales":{"subtotal":18,"delivery":0,"total":18},"items":[{"producto_id":1,"nombre":"PIZCITAAA","precio_unitario":18,"cantidad":1,"subtotal":18}]}', 'La Boleta numero B001-1, ha sido aceptada', '2026-07-29 01:34:06', '2026-07-29 01:45:35'),
 	(2, 16, 'boleta', 'B001', 2, 'B001-00000002', 'dni', '12534875', 'aceptado', '0', 'La Boleta numero B001-2, ha sido aceptada', NULL, 'uploads/sunat/xml/B001-00000002.xml', 'uploads/sunat/cdr/R-B001-00000002.zip', 'uploads/sunat/pdf/B001-00000002.pdf', '5aabbeec269d1d59c89333516eee715a32c73d56322603d23bf0f70414b42a83', '{"id":"B001-2","code":"0","description":"La Boleta numero B001-2, ha sido aceptada","notes":[],"reference":null}', 1, '2026-07-28 20:47:05', '2026-07-28 20:47:05', '{"pedido_codigo":"PED-260729-D87D6","tipo_comprobante":"boleta","numero_comprobante":"B001-00000002","emisor":{"ruc":"20123456789","razon_social":"POLLERIA OGETES CALIENTES","nombre_comercial":"OGETESSSS","direccion":"CALLE AVENIDA TEST","ubigeo":"150101","distrito":"LIMA","provincia":"LIMA","departamento":"LIMA","cod_pais":"PE"},"cliente":{"nombre":"crisssthiannnnnnnnnnnnnnnnnnnnnnnnnn","tipo_documento":"dni","numero_documento":"12534875"},"totales":{"subtotal":18,"delivery":0,"total":18},"items":[{"producto_id":1,"nombre":"PIZCITAAA","precio_unitario":18,"cantidad":1,"subtotal":18}]}', 'La Boleta numero B001-2, ha sido aceptada', '2026-07-29 01:47:04', '2026-07-29 01:47:05'),
@@ -183,7 +213,12 @@ INSERT INTO `comprobantes_electronicos` (`id`, `pedido_id`, `tipo_comprobante`, 
 	(20, 42, 'boleta', 'BBB1', 15, 'BBB1-000015', 'dni', '70606878', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/2c45e1dd-bed4-465e-b325-34b21aa8b815.xml', NULL, 'https://www.nubefact.com/cpe/2c45e1dd-bed4-465e-b325-34b21aa8b815.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":15,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/2c45e1dd-bed4-465e-b325-34b21aa8b815","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000015 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 70606878 | xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w= |","codigo_hash":"xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000015 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 70606878 | xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w= |","key":"2c45e1dd-bed4-465e-b325-34b21aa8b815","digest_value":"xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/2c45e1dd-bed4-465e-b325-34b21aa8b815.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/2c45e1dd-bed4-465e-b325-34b21aa8b815.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":15,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/2c45e1dd-bed4-465e-b325-34b21aa8b815","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000015 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 70606878 | xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w= |","codigo_hash":"xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w=","digest_value":"xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000015 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 70606878 | xUap8TdVsBbRDEfQkG5MYpf2vQqEZFXm5DQQcngNo7w= |","key":"2c45e1dd-bed4-465e-b325-34b21aa8b815"}}', 1, '2026-08-02 00:22:52', '2026-08-02 00:22:52', '{"cliente_nombre":"CORONADO DE LA CRUZ JHANETH","cliente_email":"","items":[{"descripcion":"Crispy Chicken Melt","cantidad":1,"precio_unitario":"16.90"},{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":1,"precio_unitario":"19.90"}],"cliente_dni":"70606878"}', 'Este documento ya existe en NubeFacT', '2026-08-02 05:22:52', '2026-08-02 05:22:52'),
 	(21, 43, 'boleta', 'BBB1', 16, 'BBB1-000016', 'dni', '10131343', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/a910492a-2f52-4908-9fed-a72f72db9455.xml', NULL, 'https://www.nubefact.com/cpe/a910492a-2f52-4908-9fed-a72f72db9455.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":16,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/a910492a-2f52-4908-9fed-a72f72db9455","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000016 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 10131343 | maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc= |","codigo_hash":"maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000016 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 10131343 | maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc= |","key":"a910492a-2f52-4908-9fed-a72f72db9455","digest_value":"maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/a910492a-2f52-4908-9fed-a72f72db9455.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/a910492a-2f52-4908-9fed-a72f72db9455.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":16,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/a910492a-2f52-4908-9fed-a72f72db9455","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000016 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 10131343 | maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc= |","codigo_hash":"maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc=","digest_value":"maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000016 | 5.62 | 36.80 | 02\\/08\\/2026 | 1 | 10131343 | maoGKzpVVlD+8Z6LF6W6LiiRLjmj3UEfvVMcNGHefWc= |","key":"a910492a-2f52-4908-9fed-a72f72db9455"}}', 1, '2026-08-02 00:24:20', '2026-08-02 00:24:20', '{"cliente_nombre":"DE LA CRUZ GUILLEN HILDA","cliente_email":"hilda@gmail.com","items":[{"descripcion":"Crispy Chicken Melt","cantidad":1,"precio_unitario":"16.90"},{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":1,"precio_unitario":"19.90"}],"cliente_dni":"10131343"}', NULL, '2026-08-02 05:24:20', '2026-08-02 05:24:20'),
 	(22, 44, 'factura', 'FFF1', 1, 'FFF1-000001', 'ruc', '20603034873', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/09f3a307-b5fd-4668-b8ef-d630459fd25d.xml', 'https://www.nubefact.com/cpe/09f3a307-b5fd-4668-b8ef-d630459fd25d.cdr', 'https://www.nubefact.com/cpe/09f3a307-b5fd-4668-b8ef-d630459fd25d.pdf', NULL, '{"tipo_de_comprobante":1,"serie":"FFF1","numero":1,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/09f3a307-b5fd-4668-b8ef-d630459fd25d","aceptada_por_sunat":true,"sunat_description":"La Factura Electrónica FFF1-1 ha sido ACEPTADA CON OBSERVACIONES","sunat_note":null,"sunat_responsecode":"0","sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 01 | FFF1 | 000001 | 5.62 | 36.80 | 02\\/08\\/2026 | 6 | 20603034873 | uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc= |","codigo_hash":"uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc=","codigo_de_barras":"10721152273 | 01 | FFF1 | 000001 | 5.62 | 36.80 | 02\\/08\\/2026 | 6 | 20603034873 | uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc= |","key":"09f3a307-b5fd-4668-b8ef-d630459fd25d","digest_value":"uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/09f3a307-b5fd-4668-b8ef-d630459fd25d.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/09f3a307-b5fd-4668-b8ef-d630459fd25d.xml","enlace_del_cdr":"https:\\/\\/www.nubefact.com\\/cpe\\/09f3a307-b5fd-4668-b8ef-d630459fd25d.cdr","invoice":{"tipo_de_comprobante":1,"serie":"FFF1","numero":1,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/09f3a307-b5fd-4668-b8ef-d630459fd25d","aceptada_por_sunat":true,"sunat_description":"La Factura Electrónica FFF1-1 ha sido ACEPTADA CON OBSERVACIONES","sunat_note":null,"sunat_responsecode":"0","sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 01 | FFF1 | 000001 | 5.62 | 36.80 | 02\\/08\\/2026 | 6 | 20603034873 | uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc= |","codigo_hash":"uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc=","digest_value":"uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc=","codigo_de_barras":"10721152273 | 01 | FFF1 | 000001 | 5.62 | 36.80 | 02\\/08\\/2026 | 6 | 20603034873 | uOhiyBKr4rR3ybdDASZnRhA\\/cabAuVUORXa3411b4Wc= |","key":"09f3a307-b5fd-4668-b8ef-d630459fd25d"}}', 1, '2026-08-02 00:34:01', '2026-08-02 00:34:01', '{"cliente_nombre":"BEST PERUVIAN IMPORT AND EXPORT E.I.R.L.","cliente_email":"","items":[{"descripcion":"Crispy Chicken Melt","cantidad":1,"precio_unitario":"16.90"},{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":1,"precio_unitario":"19.90"}],"cliente_ruc":"20603034873"}', NULL, '2026-08-02 05:34:01', '2026-08-02 05:34:01'),
-	(23, 48, 'boleta', 'BBB1', 17, 'BBB1-000017', 'dni', '72115227', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/ce404e01-eb0c-43e5-a226-4504b6c962d5.xml', NULL, 'https://www.nubefact.com/cpe/ce404e01-eb0c-43e5-a226-4504b6c962d5.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":17,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","codigo_hash":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","key":"ce404e01-eb0c-43e5-a226-4504b6c962d5","digest_value":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":17,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","codigo_hash":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","digest_value":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","key":"ce404e01-eb0c-43e5-a226-4504b6c962d5"}}', 1, '2026-08-02 01:39:38', '2026-08-02 01:39:38', '{"cliente_nombre":"CORONADO DE LA CRUZ CRISTHIAN ADRIAN","cliente_email":"zeta72115227@gmail.com","items":[{"descripcion":"Broaster Crunch (Personal)","cantidad":1,"precio_unitario":"13.90"}],"cliente_dni":"72115227"}', NULL, '2026-08-02 06:39:38', '2026-08-02 06:39:38');
+	(23, 48, 'boleta', 'BBB1', 17, 'BBB1-000017', 'dni', '72115227', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/ce404e01-eb0c-43e5-a226-4504b6c962d5.xml', NULL, 'https://www.nubefact.com/cpe/ce404e01-eb0c-43e5-a226-4504b6c962d5.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":17,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","codigo_hash":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","key":"ce404e01-eb0c-43e5-a226-4504b6c962d5","digest_value":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":17,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/ce404e01-eb0c-43e5-a226-4504b6c962d5","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","codigo_hash":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","digest_value":"znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000017 | 2.12 | 13.90 | 02\\/08\\/2026 | 1 | 72115227 | znJnT2brpOvZ\\/JpuK1LNa\\/UyXGfq3Px9ZCgzOmFUD20= |","key":"ce404e01-eb0c-43e5-a226-4504b6c962d5"}}', 1, '2026-08-02 01:39:38', '2026-08-02 01:39:38', '{"cliente_nombre":"CORONADO DE LA CRUZ CRISTHIAN ADRIAN","cliente_email":"zeta72115227@gmail.com","items":[{"descripcion":"Broaster Crunch (Personal)","cantidad":1,"precio_unitario":"13.90"}],"cliente_dni":"72115227"}', NULL, '2026-08-02 06:39:38', '2026-08-02 06:39:38'),
+	(24, 52, 'boleta', 'BBB1', 20, 'BBB1-000020', 'dni', '00000000', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/3137209a-6fbd-4906-8a8a-aec6b56124dc.xml', NULL, 'https://www.nubefact.com/cpe/3137209a-6fbd-4906-8a8a-aec6b56124dc.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":20,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/3137209a-6fbd-4906-8a8a-aec6b56124dc","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000020 | 11.85 | 77.60 | 04\\/08\\/2026 | 0 | 00000000 | 6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac= |","codigo_hash":"6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000020 | 11.85 | 77.60 | 04\\/08\\/2026 | 0 | 00000000 | 6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac= |","key":"3137209a-6fbd-4906-8a8a-aec6b56124dc","digest_value":"6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/3137209a-6fbd-4906-8a8a-aec6b56124dc.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/3137209a-6fbd-4906-8a8a-aec6b56124dc.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":20,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/3137209a-6fbd-4906-8a8a-aec6b56124dc","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000020 | 11.85 | 77.60 | 04\\/08\\/2026 | 0 | 00000000 | 6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac= |","codigo_hash":"6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac=","digest_value":"6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000020 | 11.85 | 77.60 | 04\\/08\\/2026 | 0 | 00000000 | 6nlNTaW1GPnXUxhBHh\\/uexpzgxgV3ymj3liRPgsfMac= |","key":"3137209a-6fbd-4906-8a8a-aec6b56124dc"}}', 1, '2026-08-04 02:05:46', '2026-08-04 02:05:46', '{"cliente_nombre":"Cliente M 11AAAAAAA","cliente_email":"","items":[{"descripcion":"Crispy Chicken Melt","cantidad":2,"precio_unitario":"16.90"},{"descripcion":"La Extrema Monster","cantidad":1,"precio_unitario":"23.90"},{"descripcion":"Mega Crack Box (Individual XL)","cantidad":1,"precio_unitario":"19.90"}],"cliente_dni":""}', 'Este documento ya existe en NubeFacT', '2026-08-04 07:05:46', '2026-08-04 07:05:46'),
+	(25, 53, 'boleta', 'BBB1', 21, 'BBB1-000021', 'dni', '72115227', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/6731ed42-257e-40ee-a9bb-09835d83a6cc.xml', NULL, 'https://www.nubefact.com/cpe/6731ed42-257e-40ee-a9bb-09835d83a6cc.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":21,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/6731ed42-257e-40ee-a9bb-09835d83a6cc","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000021 | 5.62 | 36.80 | 04\\/08\\/2026 | 1 | 72115227 | Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE= |","codigo_hash":"Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000021 | 5.62 | 36.80 | 04\\/08\\/2026 | 1 | 72115227 | Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE= |","key":"6731ed42-257e-40ee-a9bb-09835d83a6cc","digest_value":"Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/6731ed42-257e-40ee-a9bb-09835d83a6cc.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/6731ed42-257e-40ee-a9bb-09835d83a6cc.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":21,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/6731ed42-257e-40ee-a9bb-09835d83a6cc","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000021 | 5.62 | 36.80 | 04\\/08\\/2026 | 1 | 72115227 | Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE= |","codigo_hash":"Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE=","digest_value":"Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000021 | 5.62 | 36.80 | 04\\/08\\/2026 | 1 | 72115227 | Z9Ok1TG1xzZFJXB58SNP+Ne5zpvw3cfJ1jbQqazzzhE= |","key":"6731ed42-257e-40ee-a9bb-09835d83a6cc"}}', 1, '2026-08-04 11:28:48', '2026-08-04 11:28:48', '{"cliente_nombre":"CORONADO DE LA CRUZ CRISTHIAN ADRIAN","cliente_email":"cristhiancoronadodelacruz04@gmail.com","items":[{"descripcion":"Crispy Chicken Melt","cantidad":1,"precio_unitario":"16.90"},{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":1,"precio_unitario":"19.90"}],"cliente_dni":"72115227"}', NULL, '2026-08-04 16:28:48', '2026-08-04 16:28:48'),
+	(26, 54, 'boleta', 'BBB1', 22, 'BBB1-000022', 'dni', '10131343', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/be0739f9-1aac-48ef-b375-92569f4dfd70.xml', NULL, 'https://www.nubefact.com/cpe/be0739f9-1aac-48ef-b375-92569f4dfd70.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":22,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/be0739f9-1aac-48ef-b375-92569f4dfd70","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000022 | 2.27 | 14.90 | 04\\/08\\/2026 | 1 | 10131343 | \\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI= |","codigo_hash":"\\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000022 | 2.27 | 14.90 | 04\\/08\\/2026 | 1 | 10131343 | \\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI= |","key":"be0739f9-1aac-48ef-b375-92569f4dfd70","digest_value":"\\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/be0739f9-1aac-48ef-b375-92569f4dfd70.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/be0739f9-1aac-48ef-b375-92569f4dfd70.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":22,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/be0739f9-1aac-48ef-b375-92569f4dfd70","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000022 | 2.27 | 14.90 | 04\\/08\\/2026 | 1 | 10131343 | \\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI= |","codigo_hash":"\\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI=","digest_value":"\\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000022 | 2.27 | 14.90 | 04\\/08\\/2026 | 1 | 10131343 | \\/ljR6mvZo1dsLrsvjspoGx8+lvodqqx+LYvFxO\\/T4pI= |","key":"be0739f9-1aac-48ef-b375-92569f4dfd70"}}', 1, '2026-08-04 11:40:52', '2026-08-04 11:40:52', '{"cliente_nombre":"DE LA CRUZ GUILLEN HILDA","cliente_email":"hilda@gmail.com","items":[{"descripcion":"La Clásica Burger","cantidad":1,"precio_unitario":"14.90"}],"cliente_dni":"10131343"}', NULL, '2026-08-04 16:40:52', '2026-08-04 16:40:52'),
+	(27, 56, 'boleta', 'BBB1', 23, 'BBB1-000023', 'dni', '00000000', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b.xml', NULL, 'https://www.nubefact.com/cpe/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":23,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000023 | 6.08 | 39.80 | 04\\/08\\/2026 | 0 | 00000000 | Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs= |","codigo_hash":"Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000023 | 6.08 | 39.80 | 04\\/08\\/2026 | 0 | 00000000 | Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs= |","key":"fd7a5894-b4dc-4da7-9b04-f3f0ed10056b","digest_value":"Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":23,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/fd7a5894-b4dc-4da7-9b04-f3f0ed10056b","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000023 | 6.08 | 39.80 | 04\\/08\\/2026 | 0 | 00000000 | Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs= |","codigo_hash":"Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs=","digest_value":"Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000023 | 6.08 | 39.80 | 04\\/08\\/2026 | 0 | 00000000 | Z7GtHrdebbueBScN+Jag5Npnn97EKjy7NHnvWQXipFs= |","key":"fd7a5894-b4dc-4da7-9b04-f3f0ed10056b"}}', 1, '2026-08-04 11:45:44', '2026-08-04 11:45:44', '{"cliente_nombre":"Cliente M 14","cliente_email":"","items":[{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":2,"precio_unitario":"19.90"}],"cliente_dni":""}', NULL, '2026-08-04 16:45:44', '2026-08-04 16:45:44'),
+	(28, 59, 'boleta', 'BBB1', 26, 'BBB1-000026', 'dni', '00000000', 'aceptado', NULL, 'Generado vía NubeFacT.', NULL, 'https://www.nubefact.com/cpe/2ce83414-1989-40f3-8c4b-d39f006944ea.xml', NULL, 'https://www.nubefact.com/cpe/2ce83414-1989-40f3-8c4b-d39f006944ea.pdf', NULL, '{"tipo_de_comprobante":2,"serie":"BBB1","numero":26,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/2ce83414-1989-40f3-8c4b-d39f006944ea","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","anulado":false,"pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000026 | 23.74 | 155.50 | 04\\/08\\/2026 | 0 | 00000000 | QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc= |","codigo_hash":"QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000026 | 23.74 | 155.50 | 04\\/08\\/2026 | 0 | 00000000 | QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc= |","key":"2ce83414-1989-40f3-8c4b-d39f006944ea","digest_value":"QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc=","enlace_del_pdf":"https:\\/\\/www.nubefact.com\\/cpe\\/2ce83414-1989-40f3-8c4b-d39f006944ea.pdf","enlace_del_xml":"https:\\/\\/www.nubefact.com\\/cpe\\/2ce83414-1989-40f3-8c4b-d39f006944ea.xml","enlace_del_cdr":null,"invoice":{"tipo_de_comprobante":2,"serie":"BBB1","numero":26,"enlace":"https:\\/\\/www.nubefact.com\\/cpe\\/2ce83414-1989-40f3-8c4b-d39f006944ea","aceptada_por_sunat":false,"sunat_description":null,"sunat_note":null,"sunat_responsecode":null,"sunat_soap_error":"","pdf_zip_base64":null,"xml_zip_base64":null,"cdr_zip_base64":null,"cadena_para_codigo_qr":"10721152273 | 03 | BBB1 | 000026 | 23.74 | 155.50 | 04\\/08\\/2026 | 0 | 00000000 | QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc= |","codigo_hash":"QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc=","digest_value":"QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc=","codigo_de_barras":"10721152273 | 03 | BBB1 | 000026 | 23.74 | 155.50 | 04\\/08\\/2026 | 0 | 00000000 | QgN1oTxLnqRsTEK\\/2GKUFZTQ4cRQ2QexNFpFtWm3kjc= |","key":"2ce83414-1989-40f3-8c4b-d39f006944ea"}}', 1, '2026-08-04 19:24:33', '2026-08-04 19:24:33', '{"cliente_nombre":"Cliente Mesa 11","cliente_email":"","items":[{"descripcion":"Crispy Chicken Melt","cantidad":1,"precio_unitario":"16.90"},{"descripcion":"Bacon Cheddar Smash (Doble)","cantidad":1,"precio_unitario":"19.90"},{"descripcion":"La Extrema Monster","cantidad":1,"precio_unitario":"23.90"},{"descripcion":"Dúo Crujiente (Para 2)","cantidad":1,"precio_unitario":"26.00"},{"descripcion":"Banquete Broastero (Familiar)","cantidad":1,"precio_unitario":"48.90"},{"descripcion":"Mega Crack Box (Individual XL)","cantidad":1,"precio_unitario":"19.90"}],"cliente_dni":""}', 'Este documento ya existe en NubeFacT', '2026-08-05 00:24:33', '2026-08-05 00:24:33');
 
 -- Volcando estructura para tabla carta_digital.comprobante_correlativo
 CREATE TABLE IF NOT EXISTS `comprobante_correlativo` (
@@ -195,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `comprobante_correlativo` (
 
 -- Volcando datos para la tabla carta_digital.comprobante_correlativo: ~3 rows (aproximadamente)
 INSERT INTO `comprobante_correlativo` (`serie`, `tipo_comprobante`, `ultimo_numero`) VALUES
-	('BBB1', 2, 17),
+	('BBB1', 2, 26),
 	('BBB9', 2, 1),
 	('FFF1', 1, 1);
 
@@ -206,10 +241,11 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
   PRIMARY KEY (`clave`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.configuracion: ~59 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.configuracion: ~57 rows (aproximadamente)
 INSERT INTO `configuracion` (`clave`, `valor`) VALUES
 	('apiperu_habilitado', '1'),
 	('apiperu_token', '4d98f77c7e1ea895a816a58ea0598d323dde32d6f9e4b069ae91d7fb52afd954'),
+	('clientes_web_activo', '1'),
 	('color_fondo', '#fff7ed'),
 	('color_primario', '#f2ad18'),
 	('color_primario_fuerte', '#f2ad18'),
@@ -220,15 +256,17 @@ INSERT INTO `configuracion` (`clave`, `valor`) VALUES
 	('culqi_public_key', 'pk_test_MPcRP4J17oj4cCNH'),
 	('culqi_secret_key', 'sk_test_6hf0Do648y4FDIft'),
 	('delivery_activo', '1'),
-	('direccion_local', 'Av. Principal 123, Lima'),
+	('direccion_local', 'Av. Lima Peru'),
 	('efectivo_activo', '1'),
 	('facturacion_driver', 'nubefact'),
 	('facturacion_modo_hibrido', '0'),
 	('facturacion_reintentos_max', '5'),
 	('facturacion_timeout_segundos', '30'),
-	('logo', ''),
+	('google_client_id', '868550508203-57jd96635qkpp7oo7bq8udhpn6kaibh3.apps.googleusercontent.com'),
+	('google_login_activo', '1'),
+	('logo', 'img_6a7217180ef559.43579368.png'),
 	('mensaje_bienvenida', '¡Bienvenido! Elige tus platos favoritos y haz tu pedido en segundos.'),
-	('nombre_negocio', 'Pollería El Sabor'),
+	('nombre_negocio', 'EMPRESA TEST SAC'),
 	('nubefact_ruta', 'https://api.nubefact.com/api/v1/26193ce4-ef37-4e90-8b44-4e5d9ff3617f'),
 	('nubefact_serie_boleta', 'BBB1'),
 	('nubefact_serie_factura', 'FFF1'),
@@ -263,7 +301,7 @@ INSERT INTO `configuracion` (`clave`, `valor`) VALUES
 	('sunat_usuario_sol', 'MODDATOS'),
 	('tarjeta_activo', '1'),
 	('url_publica', ''),
-	('whatsapp_numero', '51999999999'),
+	('whatsapp_numero', '51956761889'),
 	('yape_plin_activo', '1'),
 	('yape_plin_numero', '999999999'),
 	('yape_plin_qr', '');
@@ -316,7 +354,7 @@ CREATE TABLE IF NOT EXISTS `estacion_usuarios` (
   CONSTRAINT `fk_estacion_usr_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `admin_usuarios` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.estacion_usuarios: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.estacion_usuarios: ~2 rows (aproximadamente)
 INSERT INTO `estacion_usuarios` (`id`, `estacion_id`, `usuario_id`) VALUES
 	(1, 1, 1),
 	(2, 1, 2),
@@ -443,6 +481,27 @@ INSERT INTO `facturacion_secuencias` (`id`, `driver`, `serie`, `tipo_comprobante
 	(3, 'nubefact', 'BBB1', 2, 0, '2026-07-30 00:02:19', '2026-07-30 00:02:19'),
 	(4, 'nubefact', 'FFF1', 1, 0, '2026-07-30 00:02:19', '2026-07-30 00:02:19');
 
+-- Volcando estructura para tabla carta_digital.frontend_popups
+CREATE TABLE IF NOT EXISTS `frontend_popups` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `titulo` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tipo_contenido` enum('texto','html') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'texto',
+  `contenido` longtext COLLATE utf8mb4_unicode_ci,
+  `css_custom` longtext COLLATE utf8mb4_unicode_ci,
+  `js_custom` longtext COLLATE utf8mb4_unicode_ci,
+  `mostrar_una_vez` tinyint(1) NOT NULL DEFAULT '0',
+  `orden` int NOT NULL DEFAULT '0',
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Volcando datos para la tabla carta_digital.frontend_popups: ~2 rows (aproximadamente)
+INSERT INTO `frontend_popups` (`id`, `nombre`, `titulo`, `tipo_contenido`, `contenido`, `css_custom`, `js_custom`, `mostrar_una_vez`, `orden`, `activo`, `created_at`, `updated_at`) VALUES
+	(5, 'Bienvenida premium', 'Bienvenido a nuestra carta digital', 'html', '<div class="tpl-bienvenida-wrap"><div class="tpl-bienvenida-glow"></div><div class="tpl-bienvenida-icon"><svg id="giftSvg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;"><rect x="15" y="35" width="70" height="50" rx="8" fill="none" stroke="#fff" stroke-width="2"/><line x1="50" y1="35" x2="50" y2="85" stroke="#fff" stroke-width="2"/><line x1="15" y1="52" x2="85" y2="52" stroke="#fff" stroke-width="2"/><circle cx="50" cy="18" r="12" fill="#fff"/><rect x="42" y="25" width="16" height="10" rx="2" fill="#fff"/></svg></div><div class="tpl-bienvenida-chip">Bienvenido</div><h2>Sabores que merecen un primer vistazo inolvidable</h2><p>Inicia sesion para que accedas a promociones exclusivas</p><div class="tpl-bienvenida-actions"><a href="http://carta-digital.test/cliente-login.php" class="tpl-bienvenida-btn">Inicia Sesion y disfruta!</a><span class="tpl-bienvenida-mini">Iniciasesion para que tengas el control de tus ordenes y accedas a super descuentos semanales</span></div></div>', '.tpl-bienvenida-wrap{position:relative;overflow:hidden;padding:28px 22px;border-radius:24px;background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 45%,#22d3ee 100%);color:#fff;text-align:left}.tpl-bienvenida-icon{position:absolute;top:20px;right:20px;opacity:.2;z-index:0}.tpl-bienvenida-glow{position:absolute;top:-30px;right:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.18);filter:blur(4px);animation:tplBienvenidaFloat 4.8s ease-in-out infinite}.tpl-bienvenida-chip{display:inline-flex;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:14px;position:relative;z-index:1}.tpl-bienvenida-wrap h2{font-size:28px;line-height:1.08;margin:0 0 12px;font-weight:900;max-width:420px;position:relative;z-index:1}.tpl-bienvenida-wrap p{font-size:14px;line-height:1.65;max-width:430px;color:rgba(255,255,255,.92);margin:0 0 18px;position:relative;z-index:1}.tpl-bienvenida-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;position:relative;z-index:1}.tpl-bienvenida-btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:999px;background:#fff;color:#0f172a;font-weight:800;text-decoration:none;box-shadow:0 10px 24px rgba(15,23,42,.28);animation:tplBienvenidaBtn 1.9s ease-in-out infinite}.tpl-bienvenida-mini{font-size:12px;color:rgba(255,255,255,.8)}@keyframes tplBienvenidaFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(12px) scale(1.06)}}@keyframes tplBienvenidaBtn{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}', '(function(){let angle=0;const giftSvg=document.getElementById(\'giftSvg\');if(!giftSvg)return;setInterval(function(){angle=(angle+3)%360;giftSvg.style.transform=\'rotate(\'+angle+\'deg)\';},30);})();', 0, 1, 1, '2026-08-05 00:43:01', '2026-08-05 00:48:45');
+
 -- Volcando estructura para tabla carta_digital.ingredientes
 CREATE TABLE IF NOT EXISTS `ingredientes` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -458,7 +517,7 @@ CREATE TABLE IF NOT EXISTS `ingredientes` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.ingredientes: ~1 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.ingredientes: ~0 rows (aproximadamente)
 INSERT INTO `ingredientes` (`id`, `nombre`, `unidad`, `stock_actual`, `stock_minimo`, `costo_unitario`, `descripcion`, `activo`, `creado_en`, `actualizado_en`) VALUES
 	(1, 'POLLO', 'kg', 0.500, 1.000, 9.0000, NULL, 1, '2026-08-02 06:27:50', '2026-08-02 06:55:16');
 
@@ -494,60 +553,81 @@ CREATE TABLE IF NOT EXISTS `mesas` (
   `sillas` int NOT NULL DEFAULT '4',
   `pos_x` int NOT NULL DEFAULT '80',
   `pos_y` int NOT NULL DEFAULT '80',
-	`ancho` int NOT NULL DEFAULT '120',
-	`alto` int NOT NULL DEFAULT '74',
+  `ancho` int NOT NULL DEFAULT '120',
+  `alto` int NOT NULL DEFAULT '74',
   `forma` enum('rectangular','redonda') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'rectangular',
   `activa` tinyint(1) NOT NULL DEFAULT '1',
   `orden` int NOT NULL DEFAULT '0',
-	`decoraciones_json` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `decoraciones_json` longtext COLLATE utf8mb4_unicode_ci,
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `mesa_union_id` int DEFAULT NULL COMMENT 'Si no es nulo, esta mesa está unida a la mesa con ese ID (mesa principal)',
   PRIMARY KEY (`id`),
   KEY `idx_mesas_zona` (`zona_id`),
   CONSTRAINT `fk_mesas_zona` FOREIGN KEY (`zona_id`) REFERENCES `zonas_mesas` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.mesas: ~35 rows (aproximadamente)
-INSERT INTO `mesas` (`id`, `zona_id`, `nombre`, `capacidad`, `sillas`, `pos_x`, `pos_y`, `forma`, `activa`, `orden`, `creado_en`, `actualizado_en`) VALUES
-	(7, 3, 'M 1', 4, 4, 36, 44, 'rectangular', 1, 1, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(8, 3, 'M 2', 4, 4, 187, 45, 'rectangular', 1, 2, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(9, 3, 'M 3', 4, 4, 336, 46, 'rectangular', 1, 3, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(10, 3, 'M 4', 4, 4, 489, 48, 'rectangular', 1, 4, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(11, 3, 'M 5', 4, 4, 34, 152, 'rectangular', 1, 5, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(12, 3, 'M 6', 4, 4, 191, 146, 'rectangular', 1, 6, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(13, 3, 'M 7', 4, 4, 345, 144, 'rectangular', 1, 7, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(14, 3, 'M 8', 4, 4, 495, 146, 'rectangular', 1, 8, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(15, 3, 'M 9', 4, 4, 34, 251, 'rectangular', 1, 9, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(16, 3, 'M 10', 4, 4, 199, 250, 'rectangular', 1, 10, '2026-08-02 05:48:28', '2026-08-02 05:50:04'),
-	(17, 3, 'M 11', 4, 4, 30, 405, 'redonda', 1, 11, '2026-08-02 05:48:58', '2026-08-02 05:50:04'),
-	(18, 3, 'M 12', 4, 4, 208, 409, 'redonda', 1, 12, '2026-08-02 05:48:58', '2026-08-02 05:50:04'),
-	(19, 3, 'M 13', 4, 4, 384, 413, 'redonda', 1, 13, '2026-08-02 05:48:58', '2026-08-02 05:50:04'),
-	(20, 3, 'M 14', 4, 4, 475, 277, 'redonda', 1, 14, '2026-08-02 05:48:58', '2026-08-02 05:50:04'),
-	(21, 3, 'M 15', 4, 4, 540, 410, 'redonda', 1, 15, '2026-08-02 05:48:58', '2026-08-02 05:50:04'),
-	(22, 4, 'TERR 1', 4, 4, 59, 162, 'redonda', 1, 1, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(23, 4, 'TERR 2', 4, 4, 204, 76, 'redonda', 1, 2, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(24, 4, 'TERR 3', 4, 4, 356, 52, 'redonda', 1, 3, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(25, 4, 'TERR 4', 4, 4, 517, 84, 'redonda', 1, 4, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(26, 4, 'TERR 5', 4, 4, 650, 170, 'redonda', 1, 5, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(27, 4, 'TERR 6', 4, 4, 666, 332, 'redonda', 1, 6, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(28, 4, 'TERR 7', 4, 4, 531, 419, 'redonda', 1, 7, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(29, 4, 'TERR 8', 4, 4, 339, 461, 'redonda', 1, 8, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(30, 4, 'TERR 9', 4, 4, 134, 428, 'redonda', 1, 9, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(31, 4, 'TERR 10', 4, 4, 24, 307, 'redonda', 1, 10, '2026-08-02 05:50:17', '2026-08-02 05:50:52'),
-	(32, 5, 'BARR 1', 4, 4, 40, 40, 'redonda', 1, 1, '2026-08-02 05:51:11', '2026-08-02 05:51:11'),
-	(33, 5, 'BARR 2', 4, 4, 666, 405, 'redonda', 1, 2, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(34, 5, 'BARR 3', 4, 4, 32, 401, 'redonda', 1, 3, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(35, 5, 'BARR 4', 4, 4, 295, 310, 'redonda', 1, 4, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(36, 5, 'BARR 5', 4, 4, 294, 408, 'redonda', 1, 5, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(37, 5, 'BARR 6', 4, 4, 486, 45, 'redonda', 1, 6, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(38, 5, 'BARR 7', 4, 4, 483, 139, 'redonda', 1, 7, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(39, 5, 'BARR 8', 4, 4, 40, 140, 'redonda', 1, 8, '2026-08-02 05:51:11', '2026-08-02 05:51:11'),
-	(40, 5, 'BARR 9', 4, 4, 664, 315, 'redonda', 1, 9, '2026-08-02 05:51:11', '2026-08-02 05:51:39'),
-	(41, 5, 'BARR 10', 4, 4, 34, 309, 'redonda', 1, 10, '2026-08-02 05:51:11', '2026-08-02 05:51:39');
+-- Volcando datos para la tabla carta_digital.mesas: ~19 rows (aproximadamente)
+INSERT INTO `mesas` (`id`, `zona_id`, `nombre`, `capacidad`, `sillas`, `pos_x`, `pos_y`, `ancho`, `alto`, `forma`, `activa`, `orden`, `decoraciones_json`, `creado_en`, `actualizado_en`, `mesa_union_id`) VALUES
+	(52, 10, 'M 1', 4, 4, 229, 37, 120, 74, 'rectangular', 1, 1, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(53, 10, 'M 2', 4, 4, 230, 329, 120, 74, 'rectangular', 1, 2, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(54, 10, 'M 3', 4, 4, 434, 37, 120, 74, 'rectangular', 1, 3, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(55, 10, 'M 4', 4, 4, 627, 37, 120, 74, 'rectangular', 1, 4, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(56, 10, 'M 5', 4, 4, 36, 36, 120, 74, 'rectangular', 1, 5, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(57, 10, 'M 6', 4, 4, 36, 338, 120, 74, 'rectangular', 1, 6, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(58, 10, 'M 7', 4, 4, 230, 494, 120, 74, 'rectangular', 1, 7, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(59, 10, 'M 8', 4, 4, 36, 493, 120, 74, 'rectangular', 1, 8, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(60, 10, 'M 9', 4, 4, 37, 182, 120, 74, 'rectangular', 1, 9, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(61, 10, 'M 10', 4, 4, 231, 180, 120, 74, 'rectangular', 1, 10, '[]', '2026-08-04 22:31:55', '2026-08-04 22:59:58', NULL),
+	(62, 10, 'Mesa 11', 4, 4, 524, 235, 120, 74, 'redonda', 1, 11, '[{"id":"elem_1785884299194_ffec54","tipo":"imagen","contenido":"/uploads/mesas/img_6a726eb2dbc082.23768506.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"ancho":150,"alto":260,"x":655,"y":440,"rotacion":0,"capa":1,"borde":"0","redondeo":12,"scope":"zona","miniatura":{"tipo":"imagen","contenido":"/uploads/mesas/img_6a726eb2dbc082.23768506.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"rotacion":0,"capa":1,"imagen":"/uploads/mesas/img_6a726eb2dbc082.23768506.jpg","icono":null,"texto":"Imagen"}}]', '2026-08-04 22:52:46', '2026-08-05 00:24:29', NULL),
+	(63, 11, 'T 1', 6, 4, 41, 43, 120, 74, 'redonda', 1, 1, '[]', '2026-08-04 23:00:56', '2026-08-05 00:40:10', NULL),
+	(64, 11, 'T 2', 6, 4, 237, 44, 120, 74, 'redonda', 1, 2, '[]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL),
+	(65, 11, 'T 3', 6, 4, 466, 44, 120, 74, 'redonda', 1, 3, '[]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL),
+	(66, 11, 'T 4', 6, 4, 680, 45, 120, 74, 'redonda', 1, 4, '[]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL),
+	(67, 11, 'T 5', 6, 12, 369, 215, 120, 74, 'redonda', 1, 5, '[{"id":"elem_1785884844036_71b8df","tipo":"imagen","contenido":"/uploads/mesas/img_6a7270ba7cc8d1.50673525.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"ancho":112,"alto":64,"x":671,"y":467,"rotacion":0,"capa":1,"borde":"0","redondeo":12,"scope":"zona","miniatura":{"tipo":"imagen","contenido":"/uploads/mesas/img_6a7270ba7cc8d1.50673525.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"rotacion":0,"capa":1,"imagen":"/uploads/mesas/img_6a7270ba7cc8d1.50673525.jpg","icono":null,"texto":"Imagen"}}]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL),
+	(68, 11, 'T 6', 6, 4, 68, 195, 120, 74, 'redonda', 1, 6, '[]', '2026-08-04 23:00:56', '2026-08-04 23:07:56', NULL),
+	(69, 11, 'T 7', 6, 4, 24, 344, 120, 74, 'redonda', 1, 7, '[]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL),
+	(70, 11, 'T 8', 6, 4, 680, 212, 120, 74, 'redonda', 1, 8, '[{"id":"elem_1785884634173_2d5ae4","tipo":"imagen","contenido":"/uploads/mesas/img_6a726fe9dc82f5.54736574.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"ancho":106,"alto":64,"x":181,"y":432,"rotacion":0,"capa":1,"borde":"0","redondeo":12,"scope":"zona","miniatura":{"tipo":"imagen","contenido":"/uploads/mesas/img_6a726fe9dc82f5.54736574.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"rotacion":0,"capa":1,"imagen":"/uploads/mesas/img_6a726fe9dc82f5.54736574.jpg","icono":null,"texto":"Imagen"}},{"id":"elem_1785884694742_aec902","tipo":"imagen","contenido":"/uploads/mesas/img_6a72702186c871.26529441.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"ancho":200,"alto":150,"x":171,"y":428,"rotacion":0,"capa":1,"borde":"0","redondeo":12,"scope":"zona","miniatura":{"tipo":"imagen","contenido":"/uploads/mesas/img_6a72702186c871.26529441.jpg","color":"#0f172a","fondo":"#ffffff","fuente":18,"rotacion":0,"capa":1,"imagen":"/uploads/mesas/img_6a72702186c871.26529441.jpg","icono":null,"texto":"Imagen"}}]', '2026-08-04 23:00:56', '2026-08-04 23:07:45', NULL);
+
+-- Volcando estructura para tabla carta_digital.ofertas_web
+CREATE TABLE IF NOT EXISTS `ofertas_web` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(120) NOT NULL,
+  `color_fondo` varchar(30) NOT NULL DEFAULT 'rgba(255,80,0,0.18)',
+  `tipo_descuento` enum('porcentaje','plano') NOT NULL DEFAULT 'porcentaje',
+  `valor_descuento` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `orden` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla carta_digital.ofertas_web: ~1 rows (aproximadamente)
+INSERT INTO `ofertas_web` (`id`, `titulo`, `color_fondo`, `tipo_descuento`, `valor_descuento`, `activo`, `orden`, `created_at`) VALUES
+	(3, 'SUPER DESCUENTOS', 'rgba(255,200,0,0.22)', 'porcentaje', 10.00, 1, 1, '2026-08-05 00:40:50');
+
+-- Volcando estructura para tabla carta_digital.oferta_web_productos
+CREATE TABLE IF NOT EXISTS `oferta_web_productos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `oferta_id` int unsigned NOT NULL,
+  `producto_id` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_oferta_producto` (`oferta_id`,`producto_id`),
+  KEY `idx_oferta` (`oferta_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla carta_digital.oferta_web_productos: ~4 rows (aproximadamente)
+INSERT INTO `oferta_web_productos` (`id`, `oferta_id`, `producto_id`) VALUES
+	(20, 3, 7),
+	(19, 3, 8),
+	(17, 3, 11),
+	(18, 3, 13);
 
 -- Volcando estructura para tabla carta_digital.pedidos
 CREATE TABLE IF NOT EXISTS `pedidos` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `cliente_id` int unsigned DEFAULT NULL,
+  `origen_cliente` enum('anonimo','cuenta','google') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'anonimo',
   `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `cliente_nombre` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `cliente_telefono` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -585,59 +665,68 @@ CREATE TABLE IF NOT EXISTS `pedidos` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `codigo` (`codigo`),
   KEY `idx_pedidos_comprobante_id` (`comprobante_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.pedidos: ~49 rows (aproximadamente)
-INSERT INTO `pedidos` (`id`, `codigo`, `cliente_nombre`, `cliente_telefono`, `tipo_comprobante`, `tipo_documento`, `numero_documento`, `comprobante_serie`, `comprobante_correlativo`, `comprobante_numero`, `comprobante_id`, `sunat_estado`, `sunat_mensaje`, `tipo_entrega`, `direccion`, `referencia`, `metodo_pago`, `estado`, `subtotal`, `costo_delivery`, `total`, `notas`, `culqi_charge_id`, `creado_en`, `facturacion_driver`, `facturacion_estado`, `facturacion_error`, `facturacion_fecha`, `facturacion_intento`, `cliente_email`, `cliente_dni`, `mesa_id`, `mesa_nombre`, `zona_nombre`, `caja_turno_id`) VALUES
-	(1, 'PED-260721-076DC', 'sadasdasdasdas', '956464555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'efectivo', 'pagado', 50.00, 0.00, 50.00, 'asdasd', NULL, '2026-07-21 06:11:42', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(2, 'PED-260721-46041', 'juancito el cachero', '999555888', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 12.00, 0.00, 12.00, 'sin nada', NULL, '2026-07-21 06:15:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(3, 'PED-260721-5C8ED', 'cristhian matador', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pendiente', 60.00, 0.00, 60.00, 'nada', NULL, '2026-07-21 06:29:03', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(4, 'PED-260721-BA53D', 'aaaaaaaaaaaa', '999888555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pendiente', 12.00, 0.00, 12.00, 'sa', NULL, '2026-07-21 06:32:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(5, 'PED-260721-180DA', 'aaaaaaaaaaaaaaaaaaaaaaaaa', '999888555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'cancelado', 78.00, 0.00, 78.00, NULL, 'chr_test_BUu2cBudZazrmbmy', '2026-07-21 06:55:30', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(6, 'PED-260721-0E9BA', 'cristhian', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 60.00, 0.00, 60.00, 'asd', 'chr_test_zlS7U87Jb4hWdQD8', '2026-07-21 07:05:26', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(7, 'PED-260721-08487', 'asdasd', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 32.00, 0.00, 32.00, 'asd', 'chr_test_mo9iGsYb5xtnGqLF', '2026-07-21 07:07:27', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(8, 'PED-260721-01ECB', 'dasdas', '156156', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'sad', 'chr_test_99GDFAqBCaJp0WHV', '2026-07-21 17:30:47', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(9, 'PED-260729-71ABE', 'cristhian', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 110.00, 0.00, 110.00, NULL, 'chr_test_S7AzNysunRJTqwGC', '2026-07-29 00:06:36', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(10, 'PED-260729-3B50E', 'tester miñl', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 54.00, 0.00, 54.00, NULL, 'chr_test_8hkoXMEzzwJfaNAo', '2026-07-29 00:12:08', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(11, 'PED-260729-D98F7', 'yoo', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 36.00, 0.00, 36.00, NULL, 'chr_test_n73gcG1GtoEL5eR8', '2026-07-29 00:16:00', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(12, 'PED-260729-8F80D', 'crisssthiannn', '987548657', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_v2lBkSDAgSnOZjCg', '2026-07-29 00:53:50', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(13, 'PED-260729-7BE6B', 'crisssthiannn', '987548657', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 72.00, 0.00, 72.00, NULL, 'chr_test_Ik0DwLBV5p7k6rXQ', '2026-07-29 00:57:26', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(14, 'PED-260729-D40B7', 'crissss', '999555444', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'a', 'chr_test_7tnTfUGgCy6YkBNI', '2026-07-29 00:59:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(15, 'PED-260729-D7830', 'cristhian coronado', '956761889', 'boleta', 'dni', '72115227', 'B001', 1, 'B001-00000001', 1, 'aceptado', 'La Boleta numero B001-1, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'aaaa', 'chr_test_9ar6vf8j9eBsopJr', '2026-07-29 01:34:06', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(16, 'PED-260729-D87D6', 'crisssthiannnnnnnnnnnnnnnnnnnnnnnnnn', '999555888', 'boleta', 'dni', '12534875', 'B001', 2, 'B001-00000002', 2, 'aceptado', 'La Boleta numero B001-2, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_EYkeibycLhqwA1WW', '2026-07-29 01:47:04', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(17, 'PED-260729-38538', 'cristhiancitoi boleteado', '956761889', 'boleta', 'dni', '72115227', 'B001', 3, 'B001-00000003', 3, 'aceptado', 'La Boleta numero B001-3, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_O764RjZYFX8luADa', '2026-07-29 02:09:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
-	(19, 'PED-260730-02F60', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51999999999', 'boleta', 'dni', '72115227', 'B001', 7, 'B001-00000007', 5, 'aceptado', 'La Boleta numero B001-7, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 36.00, 0.00, 36.00, NULL, 'chr_test_BFLERXWId6AW87Vx', '2026-07-30 00:58:12', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
-	(20, 'PED-260730-3ABCE', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51956761889', 'boleta', 'dni', '72115227', 'B001', 8, 'B001-00000008', 6, 'aceptado', 'La Boleta numero B001-8, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'en_preparacion', 72.00, 0.00, 72.00, NULL, 'chr_test_zwzXvADz4xwx53eJ', '2026-07-30 01:02:01', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
-	(21, 'PED-260730-851A2', 'JHANETH CORONADO', '+51954654888', 'boleta', 'dni', '70606878', 'B001', 9, 'B001-00000009', 7, 'aceptado', 'La Boleta numero B001-9, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'entregado', 14.90, 0.00, 14.90, NULL, 'chr_test_KqiJOEmlFGsWWqNz', '2026-07-30 04:43:10', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
-	(22, 'PED-260730-4E404', 'JHANETH CORONADO', '956761889', 'boleta', 'dni', '70606878', 'B001', 10, 'B001-00000010', 8, 'aceptado', 'La Boleta numero B001-10, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'entregado', 40.80, 0.00, 40.80, NULL, 'chr_test_EpJQAYOF4PKnLRal', '2026-07-30 04:49:10', 'native', 'pendiente', NULL, NULL, 0, 'ojtej@gmail.com', '70606878', NULL, NULL, NULL, NULL),
-	(23, 'PED-260730-54A0E', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', 'B001', 11, 'B001-00000011', 9, 'aceptado', 'La Boleta numero B001-11, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 14.90, 0.00, 14.90, NULL, 'chr_test_nYIkKQxxXBfdN7MO', '2026-07-30 19:58:29', 'native', 'pendiente', NULL, NULL, 0, 'admin@admin.com', '70606878', NULL, NULL, NULL, NULL),
-	(24, 'PED-260730-68406', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'B001', 12, 'B001-00000012', 10, 'aceptado', 'La Boleta numero B001-12, ha sido aceptada', 'delivery', 'calle numero blaaa', 'aqui loco', 'yape_plin', 'pagado', 19.90, 5.00, 24.90, NULL, 'chr_test_LA8Z2ulet5U0MMgq', '2026-07-30 20:10:23', 'native', 'pendiente', NULL, NULL, 0, 'hilda@gmail.com', '10131343', NULL, NULL, NULL, NULL),
-	(25, 'PED-260730-B26E4', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+5195761889', 'boleta', 'dni', '72115227', 'B001', 13, 'B001-00000013', 11, 'aceptado', 'La Boleta numero B001-13, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 14.90, 0.00, 14.90, NULL, 'chr_test_HiwBA9FDINTBRWuA', '2026-07-30 20:40:19', 'native', 'pendiente', NULL, NULL, 0, 'cristhiandesnukador@gmail.com', '72115227', NULL, NULL, NULL, NULL),
-	(26, 'PED-260730-98E5E', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_HHbrQuNCs2pWExmp', '2026-07-30 20:47:22', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '70606878', NULL, NULL, NULL, NULL),
-	(27, 'PED-260730-D1679', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'BBB1', 1, 'BBB1-000001', 12, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_WV9WJdyCYIo03YDy', '2026-07-30 20:50:10', 'native', 'pendiente', NULL, NULL, 0, 'CARLITOS@GMAIL.COM', '10131343', NULL, NULL, NULL, NULL),
-	(28, 'PED-260730-5F7AD', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 2, 'BBB1-000002', 13, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'tarjeta', 'pagado', 39.80, 0.00, 39.80, NULL, 'chr_test_sBtifMEZ2NVIarm6', '2026-07-30 21:30:30', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
-	(29, 'PED-260730-EAE9B', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 3, 'BBB1-000003', 14, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'tarjeta', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_7uxm2IUl9LdnNtti', '2026-07-30 21:33:58', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
-	(30, 'PED-260730-97578', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 4, 'BBB1-000004', 15, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 63.70, 0.00, 63.70, NULL, 'chr_test_9hXes9KIv6ETf3XI', '2026-07-30 23:50:18', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
-	(31, 'PED-260802-A1E96', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', 'BBB1', 7, 'BBB1-000007', 16, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 14.90, 0.00, 14.90, ' | Facturado en PED-260802-D07E4', NULL, '2026-08-02 04:23:07', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '70606878', 6, 'mesa test', 'Salon principal', NULL),
-	(32, 'PED-260802-F38DB', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 58.70, 0.00, 58.70, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:01:57', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
-	(33, 'PED-260802-653A8', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 19.90, 0.00, 19.90, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:02:54', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
-	(34, 'PED-260802-7DD51', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 19.90, 0.00, 19.90, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:03:02', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
-	(35, 'PED-260802-BDE9C', 'Mesa Mesa 1', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 52.00, 0.00, 52.00, 'Comanda POS | Facturado en PED-260802-22083', NULL, '2026-08-02 05:03:36', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 1, 'Mesa 1', 'Salon principal', 1),
-	(36, 'PED-260802-B8F78', 'CLIENTINN', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 98.50, 0.00, 98.50, 'NO9TAS DEL CLINETE', NULL, '2026-08-02 05:04:49', 'native', 'pendiente', NULL, NULL, 0, '', '00000000', 3, 'Mesa 3', 'Salon principal', 1),
-	(37, 'PED-260802-22083', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '956761889', 'boleta', 'dni', '72115227', 'BBB1', 10, 'BBB1-000010', 17, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 52.00, 0.00, 52.00, 'TUDUBEMM', NULL, '2026-08-02 05:09:28', 'native', 'pendiente', NULL, NULL, 0, '', '72115227', 1, 'Mesa 1', 'Salon principal', 1),
-	(38, 'PED-260802-D07E4', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB1', 13, 'BBB1-000013', 18, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 14.90, 0.00, 14.90, 'Liquidación POS de mesa', NULL, '2026-08-02 05:12:24', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 6, 'mesa test', 'Salon principal', 1),
-	(39, 'PED-260802-C5524', 'Mesa mesa test', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 56.70, 0.00, 56.70, 'Comanda POS | Facturado en PED-260802-D3F76', NULL, '2026-08-02 05:19:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 6, 'mesa test', 'Salon principal', 1),
-	(40, 'PED-260802-D3F76', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB9', 1, 'BBB9-000001', 19, 'error', 'Serie No puedes emitir comprobantes con esta serie\'', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 56.70, 0.00, 56.70, 'Liquidación POS de mesa', NULL, '2026-08-02 05:19:47', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 6, 'mesa test', 'Salon principal', 1),
-	(41, 'PED-260802-AD321', 'Mesa Mesa 2', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 36.80, 0.00, 36.80, 'Comanda POS | Facturado en PED-260802-BB20D', NULL, '2026-08-02 05:22:37', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 2, 'Mesa 2', 'Salon principal', 1),
-	(42, 'PED-260802-BB20D', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB1', 15, 'BBB1-000015', 20, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 36.80, 0.00, 36.80, 'Liquidación POS de mesa', NULL, '2026-08-02 05:22:49', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 2, 'Mesa 2', 'Salon principal', 1),
-	(43, 'PED-260802-679E3', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'BBB1', 16, 'BBB1-000016', 21, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 36.80, 0.00, 36.80, ' | Facturado en PED-260802-8FACC', NULL, '2026-08-02 05:24:18', 'native', 'pendiente', NULL, NULL, 0, 'hilda@gmail.com', '10131343', 1, 'Mesa 1', 'Salon principal', NULL),
-	(44, 'PED-260802-8FACC', 'BEST PERUVIAN IMPORT AND EXPORT E.I.R.L.', '999999999', 'factura', 'ruc', '20603034873', 'FFF1', 1, 'FFF1-000001', 22, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 36.80, 0.00, 36.80, 'Liquidación POS de mesa', NULL, '2026-08-02 05:33:57', 'native', 'pendiente', NULL, NULL, 0, '', NULL, 1, 'Mesa 1', 'Salon principal', 2),
-	(45, 'PED-260802-0EA76', 'Mesa M 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'pendiente', 33.80, 0.00, 33.80, 'Comanda POS', NULL, '2026-08-02 06:10:13', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 17, 'M 11', 'SALON PRINCIPAL', 3),
-	(46, 'PED-260802-AE9AF', 'Mesa M 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 41.70, 0.00, 41.70, 'Comanda POS', NULL, '2026-08-02 06:10:23', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 17, 'M 11', 'SALON PRINCIPAL', 3),
-	(47, 'PED-260802-E0130', 'Mesa M 14', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 137.60, 0.00, 137.60, 'Comanda POS', NULL, '2026-08-02 06:15:32', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 20, 'M 14', 'SALON PRINCIPAL', 3),
-	(48, 'PED-260802-5A683', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51956761889', 'boleta', 'dni', '72115227', 'BBB1', 17, 'BBB1-000017', 23, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'efectivo', 'entregado', 13.90, 0.00, 13.90, NULL, NULL, '2026-08-02 06:39:36', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
-	(49, 'PED-260802-AE59F', 'Mesa M 6', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 16.90, 0.00, 16.90, 'Comanda POS', NULL, '2026-08-02 06:53:38', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 12, 'M 6', 'SALON PRINCIPAL', 3),
-	(50, 'PED-260802-AE2F5', 'Mesa M 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 27.80, 0.00, 27.80, 'Comanda POS', NULL, '2026-08-02 06:55:11', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 9, 'M 3', 'SALON PRINCIPAL', 3);
+-- Volcando datos para la tabla carta_digital.pedidos: ~58 rows (aproximadamente)
+INSERT INTO `pedidos` (`id`, `cliente_id`, `origen_cliente`, `codigo`, `cliente_nombre`, `cliente_telefono`, `tipo_comprobante`, `tipo_documento`, `numero_documento`, `comprobante_serie`, `comprobante_correlativo`, `comprobante_numero`, `comprobante_id`, `sunat_estado`, `sunat_mensaje`, `tipo_entrega`, `direccion`, `referencia`, `metodo_pago`, `estado`, `subtotal`, `costo_delivery`, `total`, `notas`, `culqi_charge_id`, `creado_en`, `facturacion_driver`, `facturacion_estado`, `facturacion_error`, `facturacion_fecha`, `facturacion_intento`, `cliente_email`, `cliente_dni`, `mesa_id`, `mesa_nombre`, `zona_nombre`, `caja_turno_id`) VALUES
+	(1, NULL, 'anonimo', 'PED-260721-076DC', 'sadasdasdasdas', '956464555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'efectivo', 'pagado', 50.00, 0.00, 50.00, 'asdasd', NULL, '2026-07-21 06:11:42', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(2, NULL, 'anonimo', 'PED-260721-46041', 'juancito el cachero', '999555888', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 12.00, 0.00, 12.00, 'sin nada', NULL, '2026-07-21 06:15:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(3, NULL, 'anonimo', 'PED-260721-5C8ED', 'cristhian matador', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pendiente', 60.00, 0.00, 60.00, 'nada', NULL, '2026-07-21 06:29:03', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(4, NULL, 'anonimo', 'PED-260721-BA53D', 'aaaaaaaaaaaa', '999888555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pendiente', 12.00, 0.00, 12.00, 'sa', NULL, '2026-07-21 06:32:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(5, NULL, 'anonimo', 'PED-260721-180DA', 'aaaaaaaaaaaaaaaaaaaaaaaaa', '999888555', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'cancelado', 78.00, 0.00, 78.00, NULL, 'chr_test_BUu2cBudZazrmbmy', '2026-07-21 06:55:30', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(6, NULL, 'anonimo', 'PED-260721-0E9BA', 'cristhian', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 60.00, 0.00, 60.00, 'asd', 'chr_test_zlS7U87Jb4hWdQD8', '2026-07-21 07:05:26', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(7, NULL, 'anonimo', 'PED-260721-08487', 'asdasd', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'tarjeta', 'pagado', 32.00, 0.00, 32.00, 'asd', 'chr_test_mo9iGsYb5xtnGqLF', '2026-07-21 07:07:27', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(8, NULL, 'anonimo', 'PED-260721-01ECB', 'dasdas', '156156', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'sad', 'chr_test_99GDFAqBCaJp0WHV', '2026-07-21 17:30:47', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(9, NULL, 'anonimo', 'PED-260729-71ABE', 'cristhian', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 110.00, 0.00, 110.00, NULL, 'chr_test_S7AzNysunRJTqwGC', '2026-07-29 00:06:36', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(10, NULL, 'anonimo', 'PED-260729-3B50E', 'tester miñl', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 54.00, 0.00, 54.00, NULL, 'chr_test_8hkoXMEzzwJfaNAo', '2026-07-29 00:12:08', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(11, NULL, 'anonimo', 'PED-260729-D98F7', 'yoo', '956761889', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 36.00, 0.00, 36.00, NULL, 'chr_test_n73gcG1GtoEL5eR8', '2026-07-29 00:16:00', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(12, NULL, 'anonimo', 'PED-260729-8F80D', 'crisssthiannn', '987548657', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_v2lBkSDAgSnOZjCg', '2026-07-29 00:53:50', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(13, NULL, 'anonimo', 'PED-260729-7BE6B', 'crisssthiannn', '987548657', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 72.00, 0.00, 72.00, NULL, 'chr_test_Ik0DwLBV5p7k6rXQ', '2026-07-29 00:57:26', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(14, NULL, 'anonimo', 'PED-260729-D40B7', 'crissss', '999555444', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'a', 'chr_test_7tnTfUGgCy6YkBNI', '2026-07-29 00:59:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(15, NULL, 'anonimo', 'PED-260729-D7830', 'cristhian coronado', '956761889', 'boleta', 'dni', '72115227', 'B001', 1, 'B001-00000001', 1, 'aceptado', 'La Boleta numero B001-1, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, 'aaaa', 'chr_test_9ar6vf8j9eBsopJr', '2026-07-29 01:34:06', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(16, NULL, 'anonimo', 'PED-260729-D87D6', 'crisssthiannnnnnnnnnnnnnnnnnnnnnnnnn', '999555888', 'boleta', 'dni', '12534875', 'B001', 2, 'B001-00000002', 2, 'aceptado', 'La Boleta numero B001-2, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_EYkeibycLhqwA1WW', '2026-07-29 01:47:04', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(17, NULL, 'anonimo', 'PED-260729-38538', 'cristhiancitoi boleteado', '956761889', 'boleta', 'dni', '72115227', 'B001', 3, 'B001-00000003', 3, 'aceptado', 'La Boleta numero B001-3, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 18.00, 0.00, 18.00, NULL, 'chr_test_O764RjZYFX8luADa', '2026-07-29 02:09:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL),
+	(19, NULL, 'anonimo', 'PED-260730-02F60', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51999999999', 'boleta', 'dni', '72115227', 'B001', 7, 'B001-00000007', 5, 'aceptado', 'La Boleta numero B001-7, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 36.00, 0.00, 36.00, NULL, 'chr_test_BFLERXWId6AW87Vx', '2026-07-30 00:58:12', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
+	(20, NULL, 'anonimo', 'PED-260730-3ABCE', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51956761889', 'boleta', 'dni', '72115227', 'B001', 8, 'B001-00000008', 6, 'aceptado', 'La Boleta numero B001-8, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'en_preparacion', 72.00, 0.00, 72.00, NULL, 'chr_test_zwzXvADz4xwx53eJ', '2026-07-30 01:02:01', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
+	(21, NULL, 'anonimo', 'PED-260730-851A2', 'JHANETH CORONADO', '+51954654888', 'boleta', 'dni', '70606878', 'B001', 9, 'B001-00000009', 7, 'aceptado', 'La Boleta numero B001-9, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'entregado', 14.90, 0.00, 14.90, NULL, 'chr_test_KqiJOEmlFGsWWqNz', '2026-07-30 04:43:10', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
+	(22, NULL, 'anonimo', 'PED-260730-4E404', 'JHANETH CORONADO', '956761889', 'boleta', 'dni', '70606878', 'B001', 10, 'B001-00000010', 8, 'aceptado', 'La Boleta numero B001-10, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'entregado', 40.80, 0.00, 40.80, NULL, 'chr_test_EpJQAYOF4PKnLRal', '2026-07-30 04:49:10', 'native', 'pendiente', NULL, NULL, 0, 'ojtej@gmail.com', '70606878', NULL, NULL, NULL, NULL),
+	(23, NULL, 'anonimo', 'PED-260730-54A0E', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', 'B001', 11, 'B001-00000011', 9, 'aceptado', 'La Boleta numero B001-11, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 14.90, 0.00, 14.90, NULL, 'chr_test_nYIkKQxxXBfdN7MO', '2026-07-30 19:58:29', 'native', 'pendiente', NULL, NULL, 0, 'admin@admin.com', '70606878', NULL, NULL, NULL, NULL),
+	(24, NULL, 'anonimo', 'PED-260730-68406', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'B001', 12, 'B001-00000012', 10, 'aceptado', 'La Boleta numero B001-12, ha sido aceptada', 'delivery', 'calle numero blaaa', 'aqui loco', 'yape_plin', 'pagado', 19.90, 5.00, 24.90, NULL, 'chr_test_LA8Z2ulet5U0MMgq', '2026-07-30 20:10:23', 'native', 'pendiente', NULL, NULL, 0, 'hilda@gmail.com', '10131343', NULL, NULL, NULL, NULL),
+	(25, NULL, 'anonimo', 'PED-260730-B26E4', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+5195761889', 'boleta', 'dni', '72115227', 'B001', 13, 'B001-00000013', 11, 'aceptado', 'La Boleta numero B001-13, ha sido aceptada', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 14.90, 0.00, 14.90, NULL, 'chr_test_HiwBA9FDINTBRWuA', '2026-07-30 20:40:19', 'native', 'pendiente', NULL, NULL, 0, 'cristhiandesnukador@gmail.com', '72115227', NULL, NULL, NULL, NULL),
+	(26, NULL, 'anonimo', 'PED-260730-98E5E', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', NULL, NULL, NULL, NULL, NULL, NULL, 'recojo', NULL, NULL, 'yape_plin', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_HHbrQuNCs2pWExmp', '2026-07-30 20:47:22', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '70606878', NULL, NULL, NULL, NULL),
+	(27, NULL, 'anonimo', 'PED-260730-D1679', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'BBB1', 1, 'BBB1-000001', 12, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_WV9WJdyCYIo03YDy', '2026-07-30 20:50:10', 'native', 'pendiente', NULL, NULL, 0, 'CARLITOS@GMAIL.COM', '10131343', NULL, NULL, NULL, NULL),
+	(28, 1, 'google', 'PED-260730-5F7AD', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 2, 'BBB1-000002', 13, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'tarjeta', 'pagado', 39.80, 0.00, 39.80, NULL, 'chr_test_sBtifMEZ2NVIarm6', '2026-07-30 21:30:30', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
+	(29, 1, 'google', 'PED-260730-EAE9B', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 3, 'BBB1-000003', 14, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'tarjeta', 'pagado', 43.80, 0.00, 43.80, NULL, 'chr_test_7uxm2IUl9LdnNtti', '2026-07-30 21:33:58', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
+	(30, 1, 'google', 'PED-260730-97578', 'CORONADO DE LA CRUZ JHANETH', '+51989464654', 'boleta', 'dni', '70606878', 'BBB1', 4, 'BBB1-000004', 15, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'yape_plin', 'pagado', 63.70, 0.00, 63.70, NULL, 'chr_test_9hXes9KIv6ETf3XI', '2026-07-30 23:50:18', 'native', 'pendiente', NULL, NULL, 0, 'ZEAS@GMAIL.COM', '70606878', NULL, NULL, NULL, NULL),
+	(31, NULL, 'anonimo', 'PED-260802-A1E96', 'CORONADO DE LA CRUZ JHANETH', '+51956761889', 'boleta', 'dni', '70606878', 'BBB1', 7, 'BBB1-000007', 16, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 14.90, 0.00, 14.90, ' | Facturado en PED-260802-D07E4', NULL, '2026-08-02 04:23:07', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '70606878', 6, 'mesa test', 'Salon principal', NULL),
+	(32, NULL, 'anonimo', 'PED-260802-F38DB', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 58.70, 0.00, 58.70, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:01:57', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
+	(33, NULL, 'anonimo', 'PED-260802-653A8', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 19.90, 0.00, 19.90, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:02:54', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
+	(34, NULL, 'anonimo', 'PED-260802-7DD51', 'Mesa Mesa 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 19.90, 0.00, 19.90, 'Comanda POS | Facturado en PED-260802-B8F78', NULL, '2026-08-02 05:03:02', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 3, 'Mesa 3', 'Salon principal', 1),
+	(35, NULL, 'anonimo', 'PED-260802-BDE9C', 'Mesa Mesa 1', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 52.00, 0.00, 52.00, 'Comanda POS | Facturado en PED-260802-22083', NULL, '2026-08-02 05:03:36', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 1, 'Mesa 1', 'Salon principal', 1),
+	(36, NULL, 'anonimo', 'PED-260802-B8F78', 'CLIENTINN', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 98.50, 0.00, 98.50, 'NO9TAS DEL CLINETE', NULL, '2026-08-02 05:04:49', 'native', 'pendiente', NULL, NULL, 0, '', '00000000', 3, 'Mesa 3', 'Salon principal', 1),
+	(37, NULL, 'anonimo', 'PED-260802-22083', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '956761889', 'boleta', 'dni', '72115227', 'BBB1', 10, 'BBB1-000010', 17, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 52.00, 0.00, 52.00, 'TUDUBEMM', NULL, '2026-08-02 05:09:28', 'native', 'pendiente', NULL, NULL, 0, '', '72115227', 1, 'Mesa 1', 'Salon principal', 1),
+	(38, NULL, 'anonimo', 'PED-260802-D07E4', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB1', 13, 'BBB1-000013', 18, 'error', 'Este documento ya existe en NubeFacT', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 14.90, 0.00, 14.90, 'Liquidación POS de mesa', NULL, '2026-08-02 05:12:24', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 6, 'mesa test', 'Salon principal', 1),
+	(39, NULL, 'anonimo', 'PED-260802-C5524', 'Mesa mesa test', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 56.70, 0.00, 56.70, 'Comanda POS | Facturado en PED-260802-D3F76', NULL, '2026-08-02 05:19:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 6, 'mesa test', 'Salon principal', 1),
+	(40, NULL, 'anonimo', 'PED-260802-D3F76', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB9', 1, 'BBB9-000001', 19, 'error', 'Serie No puedes emitir comprobantes con esta serie\'', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 56.70, 0.00, 56.70, 'Liquidación POS de mesa', NULL, '2026-08-02 05:19:47', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 6, 'mesa test', 'Salon principal', 1),
+	(41, NULL, 'anonimo', 'PED-260802-AD321', 'Mesa Mesa 2', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 36.80, 0.00, 36.80, 'Comanda POS | Facturado en PED-260802-BB20D', NULL, '2026-08-02 05:22:37', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 2, 'Mesa 2', 'Salon principal', 1),
+	(42, NULL, 'anonimo', 'PED-260802-BB20D', 'CORONADO DE LA CRUZ JHANETH', '999999999', 'boleta', 'dni', '70606878', 'BBB1', 15, 'BBB1-000015', 20, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 36.80, 0.00, 36.80, 'Liquidación POS de mesa', NULL, '2026-08-02 05:22:49', 'native', 'pendiente', NULL, NULL, 0, '', '70606878', 2, 'Mesa 2', 'Salon principal', 1),
+	(43, NULL, 'anonimo', 'PED-260802-679E3', 'DE LA CRUZ GUILLEN HILDA', '+51956761889', 'boleta', 'dni', '10131343', 'BBB1', 16, 'BBB1-000016', 21, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 36.80, 0.00, 36.80, ' | Facturado en PED-260802-8FACC', NULL, '2026-08-02 05:24:18', 'native', 'pendiente', NULL, NULL, 0, 'hilda@gmail.com', '10131343', 1, 'Mesa 1', 'Salon principal', NULL),
+	(44, NULL, 'anonimo', 'PED-260802-8FACC', 'BEST PERUVIAN IMPORT AND EXPORT E.I.R.L.', '999999999', 'factura', 'ruc', '20603034873', 'FFF1', 1, 'FFF1-000001', 22, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 36.80, 0.00, 36.80, 'Liquidación POS de mesa', NULL, '2026-08-02 05:33:57', 'native', 'pendiente', NULL, NULL, 0, '', NULL, 1, 'Mesa 1', 'Salon principal', 2),
+	(45, NULL, 'anonimo', 'PED-260802-0EA76', 'Mesa M 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 33.80, 0.00, 33.80, 'Comanda POS | Facturado en PED-260804-89A4A', NULL, '2026-08-02 06:10:13', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 17, 'M 11', 'SALON PRINCIPAL', 3),
+	(46, NULL, 'anonimo', 'PED-260802-AE9AF', 'Mesa M 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 41.70, 0.00, 41.70, 'Comanda POS', NULL, '2026-08-02 06:10:23', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 17, 'M 11', 'SALON PRINCIPAL', 3),
+	(47, NULL, 'anonimo', 'PED-260802-E0130', 'Mesa M 14', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 137.60, 0.00, 137.60, 'Comanda POS', NULL, '2026-08-02 06:15:32', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 20, 'M 14', 'SALON PRINCIPAL', 3),
+	(48, NULL, 'anonimo', 'PED-260802-5A683', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51956761889', 'boleta', 'dni', '72115227', 'BBB1', 17, 'BBB1-000017', 23, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'efectivo', 'entregado', 13.90, 0.00, 13.90, NULL, NULL, '2026-08-02 06:39:36', 'native', 'pendiente', NULL, NULL, 0, 'zeta72115227@gmail.com', '72115227', NULL, NULL, NULL, NULL),
+	(49, NULL, 'anonimo', 'PED-260802-AE59F', 'Mesa M 6', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 16.90, 0.00, 16.90, 'Comanda POS', NULL, '2026-08-02 06:53:38', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 12, 'M 6', 'SALON PRINCIPAL', 3),
+	(50, NULL, 'anonimo', 'PED-260802-AE2F5', 'Mesa M 3', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 27.80, 0.00, 27.80, 'Comanda POS', NULL, '2026-08-02 06:55:11', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 9, 'M 3', 'SALON PRINCIPAL', 3),
+	(51, NULL, 'anonimo', 'PED-260804-E43E7', 'Mesa M 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 43.80, 0.00, 43.80, 'Comanda POS | Facturado en PED-260804-89A4A', NULL, '2026-08-04 07:05:21', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 17, 'M 11', 'SALON PRINCIPAL', 4),
+	(52, NULL, 'anonimo', 'PED-260804-89A4A', 'Cliente M 11AAAAAAA', '999999999', 'boleta', 'dni', '00000000', 'BBB1', 20, 'BBB1-000020', 24, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 77.60, 0.00, 77.60, 'Liquidación POS de mesa', NULL, '2026-08-04 07:05:42', 'native', 'pendiente', NULL, NULL, 0, '', '00000000', 17, 'M 11', 'SALON PRINCIPAL', 4),
+	(53, 1, 'google', 'PED-260804-50543', 'CORONADO DE LA CRUZ CRISTHIAN ADRIAN', '+51989464654', 'boleta', 'dni', '72115227', 'BBB1', 21, 'BBB1-000021', 25, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'efectivo', 'pendiente', 36.80, 0.00, 36.80, NULL, NULL, '2026-08-04 16:28:46', 'native', 'pendiente', NULL, NULL, 0, 'cristhiancoronadodelacruz04@gmail.com', '72115227', NULL, NULL, NULL, NULL),
+	(54, NULL, 'anonimo', 'PED-260804-06042', 'DE LA CRUZ GUILLEN HILDA', '956761889', 'boleta', 'dni', '10131343', 'BBB1', 22, 'BBB1-000022', 26, 'aceptado', 'Comprobante generado vía NubeFacT.', 'recojo', NULL, NULL, 'efectivo', 'entregado', 14.90, 0.00, 14.90, NULL, NULL, '2026-08-04 16:40:50', 'native', 'pendiente', NULL, NULL, 0, 'hilda@gmail.com', '10131343', NULL, NULL, NULL, NULL),
+	(55, NULL, 'anonimo', 'PED-260804-0256F', 'Mesa M 14', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 39.80, 0.00, 39.80, 'Comanda POS | Facturado en PED-260804-0E6E5', NULL, '2026-08-04 16:45:25', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 20, 'M 14', 'SALON PRINCIPAL', 4),
+	(56, NULL, 'anonimo', 'PED-260804-0E6E5', 'Cliente M 14', '999999999', 'boleta', 'dni', '00000000', 'BBB1', 23, 'BBB1-000023', 27, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 39.80, 0.00, 39.80, 'Liquidación POS de mesa', NULL, '2026-08-04 16:45:42', 'native', 'pendiente', NULL, NULL, 0, '', '00000000', 20, 'M 14', 'SALON PRINCIPAL', 4),
+	(57, NULL, 'anonimo', 'PED-260804-3C85B', 'Mesa Mesa 11', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 36.80, 0.00, 36.80, 'Comanda POS | Liberación manual desde POS', NULL, '2026-08-04 23:17:37', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 62, 'Mesa 11', 'PISO 1', 5),
+	(58, NULL, 'anonimo', 'PED-260805-5FEDC', 'Mesa M 10', '999999999', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'comer_aqui', NULL, NULL, 'efectivo', 'cancelado', 155.50, 0.00, 155.50, 'Comanda POS | Facturado en PED-260805-676FA', NULL, '2026-08-05 00:18:40', 'native', 'pendiente', NULL, NULL, 0, NULL, NULL, 61, 'M 10', 'PISO 1', 5),
+	(59, NULL, 'anonimo', 'PED-260805-676FA', 'Cliente Mesa 11', '999999999', 'boleta', 'dni', '00000000', 'BBB1', 26, 'BBB1-000026', 28, 'aceptado', 'Comprobante generado vía NubeFacT.', 'comer_aqui', NULL, NULL, 'efectivo', 'entregado', 155.50, 0.00, 155.50, 'Liquidación POS de mesa', NULL, '2026-08-05 00:24:29', 'native', 'pendiente', NULL, NULL, 0, '', '00000000', 61, 'M 10', 'PISO 1', 5);
 
 -- Volcando estructura para tabla carta_digital.pedido_detalle
 CREATE TABLE IF NOT EXISTS `pedido_detalle` (
@@ -652,9 +741,9 @@ CREATE TABLE IF NOT EXISTS `pedido_detalle` (
   PRIMARY KEY (`id`),
   KEY `pedido_id` (`pedido_id`),
   CONSTRAINT `pedido_detalle_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.pedido_detalle: ~73 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.pedido_detalle: ~97 rows (aproximadamente)
 INSERT INTO `pedido_detalle` (`id`, `pedido_id`, `producto_id`, `nombre_producto`, `precio_unitario`, `cantidad`, `subtotal`, `opciones_json`) VALUES
 	(1, 1, 1, '1/4 de pollo + papas', 18.00, 1, 18.00, NULL),
 	(2, 1, 2, '1/2 pollo + papas', 32.00, 1, 32.00, NULL),
@@ -728,7 +817,31 @@ INSERT INTO `pedido_detalle` (`id`, `pedido_id`, `producto_id`, `nombre_producto
 	(71, 47, 12, 'Banquete Broastero (Familiar)', 48.90, 2, 97.80, NULL),
 	(72, 48, 10, 'Broaster Crunch (Personal)', 13.90, 1, 13.90, NULL),
 	(73, 49, 7, 'Crispy Chicken Melt', 16.90, 1, 16.90, NULL),
-	(74, 50, 10, 'Broaster Crunch (Personal)', 13.90, 2, 27.80, NULL);
+	(74, 50, 10, 'Broaster Crunch (Personal)', 13.90, 2, 27.80, NULL),
+	(75, 51, 9, 'La Extrema Monster', 23.90, 1, 23.90, NULL),
+	(76, 51, 13, 'Mega Crack Box (Individual XL)', 19.90, 1, 19.90, NULL),
+	(77, 52, 7, 'Crispy Chicken Melt', 16.90, 2, 33.80, NULL),
+	(78, 52, 9, 'La Extrema Monster', 23.90, 1, 23.90, NULL),
+	(79, 52, 13, 'Mega Crack Box (Individual XL)', 19.90, 1, 19.90, NULL),
+	(80, 53, 7, 'Crispy Chicken Melt', 16.90, 1, 16.90, NULL),
+	(81, 53, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 1, 19.90, NULL),
+	(82, 54, 6, 'La Clásica Burger', 14.90, 1, 14.90, '[{"grupo_id":1,"grupo_nombre":"Elije tus Cremas","opcion_id":1,"opcion_nombre":"MAYONESA","precio_extra":0},{"grupo_id":1,"grupo_nombre":"Elije tus Cremas","opcion_id":2,"opcion_nombre":"MOSTAZA","precio_extra":0}]'),
+	(83, 55, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 2, 39.80, NULL),
+	(84, 56, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 2, 39.80, NULL),
+	(85, 57, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 1, 19.90, NULL),
+	(86, 57, 7, 'Crispy Chicken Melt', 16.90, 1, 16.90, NULL),
+	(87, 58, 7, 'Crispy Chicken Melt', 16.90, 1, 16.90, NULL),
+	(88, 58, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 1, 19.90, NULL),
+	(89, 58, 9, 'La Extrema Monster', 23.90, 1, 23.90, NULL),
+	(90, 58, 11, 'Dúo Crujiente (Para 2)', 26.00, 1, 26.00, NULL),
+	(91, 58, 12, 'Banquete Broastero (Familiar)', 48.90, 1, 48.90, NULL),
+	(92, 58, 13, 'Mega Crack Box (Individual XL)', 19.90, 1, 19.90, NULL),
+	(93, 59, 7, 'Crispy Chicken Melt', 16.90, 1, 16.90, NULL),
+	(94, 59, 8, 'Bacon Cheddar Smash (Doble)', 19.90, 1, 19.90, NULL),
+	(95, 59, 9, 'La Extrema Monster', 23.90, 1, 23.90, NULL),
+	(96, 59, 11, 'Dúo Crujiente (Para 2)', 26.00, 1, 26.00, NULL),
+	(97, 59, 12, 'Banquete Broastero (Familiar)', 48.90, 1, 48.90, NULL),
+	(98, 59, 13, 'Mega Crack Box (Individual XL)', 19.90, 1, 19.90, NULL);
 
 -- Volcando estructura para tabla carta_digital.productos
 CREATE TABLE IF NOT EXISTS `productos` (
@@ -771,11 +884,12 @@ CREATE TABLE IF NOT EXISTS `producto_grupos` (
   PRIMARY KEY (`id`),
   KEY `producto_id` (`producto_id`),
   CONSTRAINT `producto_grupos_ibfk_1` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.producto_grupos: ~1 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.producto_grupos: ~3 rows (aproximadamente)
 INSERT INTO `producto_grupos` (`id`, `producto_id`, `nombre`, `tipo`, `requerido`, `min_opciones`, `max_opciones`, `orden`) VALUES
-	(1, 6, 'Elije tus Cremas', 'checkbox', 0, 2, 5, 0);
+	(1, 6, 'Elije tus Cremas', 'checkbox', 0, 2, 5, 0),
+	(3, 6, 'TAMAÑO', 'radio', 1, 0, 1, 0);
 
 -- Volcando estructura para tabla carta_digital.producto_ingredientes
 CREATE TABLE IF NOT EXISTS `producto_ingredientes` (
@@ -787,7 +901,7 @@ CREATE TABLE IF NOT EXISTS `producto_ingredientes` (
   UNIQUE KEY `uq_prod_ing` (`producto_id`,`ingrediente_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.producto_ingredientes: ~1 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.producto_ingredientes: ~0 rows (aproximadamente)
 INSERT INTO `producto_ingredientes` (`id`, `producto_id`, `ingrediente_id`, `cantidad`) VALUES
 	(1, 10, 1, 0.250);
 
@@ -802,16 +916,19 @@ CREATE TABLE IF NOT EXISTS `producto_opciones` (
   PRIMARY KEY (`id`),
   KEY `grupo_id` (`grupo_id`),
   CONSTRAINT `producto_opciones_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `producto_grupos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.producto_opciones: ~6 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.producto_opciones: ~8 rows (aproximadamente)
 INSERT INTO `producto_opciones` (`id`, `grupo_id`, `nombre`, `precio_extra`, `disponible`, `orden`) VALUES
 	(1, 1, 'MAYONESA', 0.00, 1, 0),
 	(2, 1, 'MOSTAZA', 0.00, 1, 0),
 	(3, 1, 'AJI', 0.00, 1, 0),
 	(4, 1, 'KETCHUP', 0.00, 1, 0),
 	(5, 1, 'ENSALADA', 0.00, 1, 0),
-	(6, 1, 'CEBOLLA', 0.00, 1, 0);
+	(6, 1, 'CEBOLLA', 0.00, 1, 0),
+	(7, 3, 'GRANDE', 5.00, 1, 0),
+	(8, 3, 'NORMAL', 0.00, 1, 0),
+	(9, 3, 'SUPOER GIGANTE XD', 10.00, 1, 0);
 
 -- Volcando estructura para procedimiento carta_digital.sp_obtener_siguiente_correlativo
 DELIMITER //
@@ -881,19 +998,18 @@ CREATE TABLE `v_comprobantes_pendientes` (
 CREATE TABLE IF NOT EXISTS `zonas_mesas` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
-	`ancho` int NOT NULL DEFAULT '1000',
-	`alto` int NOT NULL DEFAULT '620',
+  `ancho` int NOT NULL DEFAULT '1200',
+  `alto` int NOT NULL DEFAULT '700',
   `orden` int NOT NULL DEFAULT '0',
   `activa` tinyint(1) NOT NULL DEFAULT '1',
   `creado_en` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla carta_digital.zonas_mesas: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla carta_digital.zonas_mesas: ~2 rows (aproximadamente)
 INSERT INTO `zonas_mesas` (`id`, `nombre`, `ancho`, `alto`, `orden`, `activa`, `creado_en`) VALUES
-	(3, 'SALON PRINCIPAL', 1000, 620, 1, 1, '2026-08-02 05:42:33'),
-	(4, 'TERRAZA', 1000, 620, 2, 1, '2026-08-02 05:47:57'),
-	(5, 'BARRA', 1200, 700, 3, 1, '2026-08-02 05:48:05');
+	(10, 'PISO 1', 800, 700, 1, 1, '2026-08-04 22:31:14'),
+	(11, 'TERRAZA', 800, 620, 2, 1, '2026-08-04 23:00:30');
 
 -- Volcando estructura para vista carta_digital.v_comprobantes_aceptados
 -- Eliminando tabla temporal y crear estructura final de VIEW
