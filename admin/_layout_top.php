@@ -12,7 +12,7 @@ if ($rolActual === 'cocinero' && $paginaActual !== 'cocina') {
 }
 
 if ($rolActual === 'mesero') {
-    $paginasPermitidasMesero = ['dashboard', 'pos', 'cajas'];
+    $paginasPermitidasMesero = ['dashboard', 'pos', 'cajas', 'pedidos', 'comprobantes'];
     if (!in_array($paginaActual, $paginasPermitidasMesero, true)) {
         header('Location: index.php');
         exit;
@@ -345,9 +345,8 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                 <a href="index.php" class="<?= $paginaActual === 'dashboard' ? 'activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
                 <a href="pos.php" class="<?= $paginaActual === 'pos' ? 'activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS Ventas</a>
                 <a href="cajas.php" class="<?= $paginaActual === 'cajas' ? 'activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
-                <?php endif; ?>
-                <?php if ($rolActual === 'admin'): ?>
-                <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>
+                <a href="pedidos.php" class="<?= $paginaActual === 'pedidos' ? 'activo' : '' ?>"><i class="ti ti-receipt"></i> Ordenes</a>
+                <a href="comprobantes.php" class="<?= $paginaActual === 'comprobantes' ? 'activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
                 <?php endif; ?>
                 <?php if ($rolActual !== 'mesero'): ?>
                 <a href="cocina.php" class="<?= $paginaActual === 'cocina' ? 'activo' : '' ?>"><i class="ti ti-chef-hat"></i> Cocina en Vivo</a>
@@ -401,6 +400,8 @@ $inicialAdmin = strtoupper(substr($nombreAdmin, 0, 1));
                     <a href="index.php" class="admin-quick-link<?= $paginaActual === 'dashboard' ? ' activo' : '' ?>"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
                     <a href="pos.php" class="admin-quick-link<?= $paginaActual === 'pos' ? ' activo' : '' ?>"><i class="ti ti-device-desktop"></i> POS</a>
                     <a href="cajas.php" class="admin-quick-link<?= $paginaActual === 'cajas' ? ' activo' : '' ?>"><i class="ti ti-cash-banknote"></i> Cajas</a>
+                    <a href="pedidos.php" class="admin-quick-link<?= $paginaActual === 'pedidos' ? ' activo' : '' ?>"><i class="ti ti-receipt"></i> Ordenes</a>
+                    <a href="comprobantes.php" class="admin-quick-link<?= $paginaActual === 'comprobantes' ? ' activo' : '' ?>"><i class="ti ti-file-invoice"></i> Comprobantes</a>
                     <?php endif; ?>
                     <?php if ($rolActual === 'admin'): ?>
                     <a href="pedidos.php" class="admin-quick-link<?= $paginaActual === 'pedidos' ? ' activo' : '' ?>"><i class="ti ti-receipt"></i> Pedidos</a>

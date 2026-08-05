@@ -55,7 +55,7 @@ $clienteSesionId = clienteActualId();
 $clienteSesion = $clienteSesionId ? obtenerClienteWebPorId($clienteSesionId) : null;
 
 if ($origen === 'pos') {
-    requerirRol(['admin']);
+    requerirRol(['admin', 'mesero']);
 }
 
 // ---------- Validaciones básicas ----------
