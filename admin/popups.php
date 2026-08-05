@@ -263,7 +263,8 @@ body.modo-oscuro .popup-template-help {
                     <td><?= (int)$popup['mostrar_una_vez'] === 1 ? 'Una vez' : 'Siempre' ?></td>
                     <td><?= (int)$popup['activo'] === 1 ? '<span class="badge badge-pagado">Activo</span>' : '<span class="badge badge-cancelado">Oculto</span>' ?></td>
                     <td>
-                        <button type="button" class="btn-icono-accion btn-icono-editar" title="Editar" aria-label="Editar popup" onclick='abrirModalPopup(<?= json_encode($popup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>)'>
+                        <button type="button" class="btn-icono-accion btn-icono-editar btn-editar-popup" title="Editar" aria-label="Editar popup"
+                            data-popup="<?= htmlspecialchars(json_encode($popup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES) ?>">
                             <svg class="icono-accion-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M14 6l4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -502,6 +503,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnCancelarEliminar = document.getElementById('btnCancelarEliminarPopup');
     const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminarPopup');
     let formPendiente = null;
+
+    document.querySelectorAll('.btn-editar-popup').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            try {
+                const popup = JSON.parse(this.dataset.popup);
+                abrirModalPopup(popup);
+            } catch (e) {
+                console.error('Error al parsear popup', e);
+            }
+        });
+    });
 
     document.querySelectorAll('.form-eliminar-popup').forEach(function (form) {
         form.addEventListener('submit', function (e) {

@@ -1,22 +1,12 @@
 <?php
-$tituloPagina = 'Opciones / Toppings';
-$paginaActual = 'opciones';
-require __DIR__ . '/_layout_top.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+requerirRol(['admin']);
 
 $db = getDB();
-$mensaje = '';
-$error = '';
 
 $productoId = (int)($_GET['producto'] ?? 0);
 $grupoId    = (int)($_GET['grupo'] ?? 0);
-
-function rutaImagenProductoAdmin(?string $imagen): string {
-    $nombre = trim((string)$imagen);
-    if ($nombre === '') return '';
-    if (str_starts_with($nombre, 'http://') || str_starts_with($nombre, 'https://')) return $nombre;
-    if (str_contains($nombre, 'uploads/')) return $nombre;
-    return '../uploads/productos/' . $nombre;
-}
 
 // ─────────────── Procesar acciones POST ───────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,14 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db->prepare('INSERT INTO producto_grupos (producto_id,nombre,tipo,requerido,min_opciones,max_opciones,orden) VALUES (:p,:n,:t,:r,:mi,:ma,:o)')
                        ->execute(['p'=>$pid,'n'=>$nom,'t'=>$tipo,'r'=>$req,'mi'=>$minOp,'ma'=>$maxOp,'o'=>$ord]);
                 }
-                $mensaje = 'Grupo guardado.';
                 $productoId = $pid;
                 break;
 
             case 'eliminar_grupo':
                 $gid = (int)$_POST['id'];
                 $db->prepare('DELETE FROM producto_grupos WHERE id=:id')->execute(['id'=>$gid]);
-                $mensaje = 'Grupo eliminado.';
                 $productoId = $backProducto;
                 break;
 
@@ -68,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db->prepare('INSERT INTO producto_opciones (grupo_id,nombre,precio_extra,disponible,orden) VALUES (:g,:n,:p,:d,:o)')
                        ->execute(['g'=>$gid,'n'=>$nom,'p'=>$prEx,'d'=>$disp,'o'=>$ord]);
                 }
-                $mensaje = 'Opción guardada.';
                 $productoId = $backProducto;
                 $grupoId    = $gid;
                 break;
@@ -76,18 +63,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'eliminar_opcion':
                 $oid = (int)$_POST['id'];
                 $db->prepare('DELETE FROM producto_opciones WHERE id=:id')->execute(['id'=>$oid]);
-                $mensaje = 'Opción eliminada.';
                 $productoId = $backProducto;
                 $grupoId    = $backGrupo;
                 break;
         }
     } catch (Throwable $e) {
-        $error = 'Error: ' . $e->getMessage();
+        // Guardar error en sesión para mostrarlo después del redirect
+        $_SESSION['opciones_error'] = 'Error: ' . $e->getMessage();
     }
-    // Redirigir para evitar reenvío del formulario
     $qs = 'producto=' . $productoId . ($grupoId ? '&grupo=' . $grupoId : '');
     header('Location: opciones_producto.php?' . $qs);
     exit;
+}
+
+$tituloPagina = 'Opciones / Toppings';
+$paginaActual = 'opciones';
+require __DIR__ . '/_layout_top.php';
+
+$mensaje = '';
+$error   = '';
+
+// Recuperar error de sesión si existe
+if (!empty($_SESSION['opciones_error'])) {
+    $error = $_SESSION['opciones_error'];
+    unset($_SESSION['opciones_error']);
+}
+
+function rutaImagenProductoAdmin(?string $imagen): string {
+    $nombre = trim((string)$imagen);
+    if ($nombre === '') return '';
+    if (str_starts_with($nombre, 'http://') || str_starts_with($nombre, 'https://')) return $nombre;
+    if (str_contains($nombre, 'uploads/')) return $nombre;
+    return '../uploads/productos/' . $nombre;
 }
 
 // ─────────────── Datos ───────────────
