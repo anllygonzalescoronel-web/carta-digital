@@ -743,11 +743,16 @@ body.modo-oscuro .pos-mesa.unida .pos-mesa-tablero {
 /* ----- Botones generales ----- */
 .pos-btn {
     border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 1.3;
     font-weight: 700;
     cursor: pointer;
     transition: transform .15s ease, box-shadow .15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pos-btn:hover { transform: translateY(-2px); }
@@ -851,12 +856,22 @@ body.modo-oscuro .pos-mesa.unida .pos-mesa-tablero {
     margin-bottom: 12px;
 }
 
-.pos-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.pos-actions.stack { flex-direction: column; }
-.pos-btn.full { width: 100%; justify-content: center; }
+.pos-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pos-actions.stack { flex-direction: column; gap: 8px; }
+.pos-btn.full {
+    width: 100%;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+}
 
 .pos-actions .pos-btn {
     flex: 1 1 180px;
+
+}
+.pos-actions.stack .pos-btn {
+    flex: 0 0 auto !important;
+    width: 100%;
 }
 
 .pos-msg { min-height: 20px; margin-top: 10px; font-size: 13px; font-weight: 700; }
@@ -1335,6 +1350,22 @@ body.modo-oscuro .pos-mesa-union-badge {
     </div>
 </div>
 
+
+<div class="pos-modal" id="modalConfirmarLiberarMesa">
+    <div class="pos-modal-box" style="max-width:420px;text-align:center;">
+        <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:rgba(220,53,69,.12);color:#dc3545;font-size:26px;display:flex;align-items:center;justify-content:center;">
+            <i class="ti ti-alert-triangle"></i>
+        </div>
+        <h4 style="justify-content:center;">¿Liberar esta mesa?</h4>
+        <p id="textoConfirmarLiberarMesa" style="color:var(--pos-muted);font-size:13.5px;margin-bottom:20px;"></p>
+        <div class="pos-actions" style="justify-content:center;">
+            <button type="button" class="pos-btn soft" id="btnCancelarLiberarMesa">Cancelar</button>
+            <button type="button" class="pos-btn" id="btnConfirmarLiberarMesaModal" style="background:linear-gradient(135deg,#ff5c6c,#dc3545);color:#fff;box-shadow:4px 4px 10px rgba(220,53,69,.35);">
+                <i class="ti ti-lock-open"></i> Sí, liberar
+            </button>
+        </div>
+    </div>
+</div>
 <script>
 (() => {
     const API_MESAS = '../api/pos_mesas_estado.php';
@@ -2659,48 +2690,55 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
             btn.textContent = textoOriginal;
         }
     }
-
-    async function liberarMesaActual() {
-        if (!mesaSeleccionada) {
-            showMsg('Selecciona una mesa primero.', true);
-            return;
-        }
-
-        const ok = window.confirm(
-            `Se liberará ${mesaSeleccionada.nombre}.\nEsto cancelará sus consumos activos no facturados.\n\n¿Deseas continuar?`
-        );
-        if (!ok) {
-            return;
-        }
-
-        const btn = document.getElementById('btnLiberarMesa');
-        btn.disabled = true;
-        const textoOriginal = btn.textContent;
-        btn.textContent = 'Liberando...';
-
-        try {
-            const d = await getJson(API_LIBERAR_MESA, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    mesa_id: mesaPrincipalId(),
-                    motivo: 'Liberación manual desde POS',
-                }),
-            });
-
-            carrito = [];
-            renderCarrito();
-            renderCatalogo();
-            await cargarMesasEstado();
-            await actualizarPrecuenta();
-            showMsg(d.mensaje || 'Mesa liberada correctamente.');
-        } catch (e) {
-            showMsg(e.message, true);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = textoOriginal;
-        }
+function abrirModalLiberarMesa() {
+    if (!mesaSeleccionada) {
+        showMsg('Selecciona una mesa primero.', true);
+        return;
     }
+    document.getElementById('textoConfirmarLiberarMesa').textContent =
+        `Se liberará ${mesaSeleccionada.nombre}. Esto cancelará sus consumos activos no facturados.`;
+    document.getElementById('modalConfirmarLiberarMesa').classList.add('show');
+}
+
+function cerrarModalLiberarMesa() {
+    document.getElementById('modalConfirmarLiberarMesa').classList.remove('show');
+}
+
+async function liberarMesaActual() {
+    if (!mesaSeleccionada) {
+        showMsg('Selecciona una mesa primero.', true);
+        return;
+    }
+
+    const btn = document.getElementById('btnConfirmarLiberarMesaModal');
+    btn.disabled = true;
+    const textoOriginal = btn.innerHTML;
+    btn.textContent = 'Liberando...';
+
+    try {
+        const d = await getJson(API_LIBERAR_MESA, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                mesa_id: mesaPrincipalId(),
+                motivo: 'Liberación manual desde POS',
+            }),
+        });
+
+        cerrarModalLiberarMesa();
+        carrito = [];
+        renderCarrito();
+        renderCatalogo();
+        await cargarMesasEstado();
+        await actualizarPrecuenta();
+        showMsg(d.mensaje || 'Mesa liberada correctamente.');
+    } catch (e) {
+        showMsg(e.message, true);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+    }
+}
 
     function iniciarRefresh() {
         if (timerRefresh) {
@@ -2773,8 +2811,22 @@ ui.catalogo.querySelectorAll('[data-plus]').forEach((btn) => {
     });
 
     document.getElementById('btnLiberarMesa').addEventListener('click', () => {
-        liberarMesaActual();
-    });
+    abrirModalLiberarMesa();
+});
+
+document.getElementById('btnConfirmarLiberarMesaModal').addEventListener('click', () => {
+    liberarMesaActual();
+});
+
+document.getElementById('btnCancelarLiberarMesa').addEventListener('click', () => {
+    cerrarModalLiberarMesa();
+});
+
+document.getElementById('modalConfirmarLiberarMesa').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        cerrarModalLiberarMesa();
+    }
+});
 
     document.getElementById('btnCerrarFacturacion').addEventListener('click', () => {
         cerrarModalFacturacion();
