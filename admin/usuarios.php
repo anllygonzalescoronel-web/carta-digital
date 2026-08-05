@@ -266,7 +266,7 @@ require __DIR__ . '/_layout_top.php';
                     <div class="ug-field">
                         <label><i class="fa-solid fa-lock"></i> Contraseña</label>
                         <div class="ug-input-eye">
-                            <input type="password" name="password" id="newPassInput" minlength="6" placeholder="MÃ­nimo 6 caracteres" required>
+                            <input type="password" name="password" id="newPassInput" minlength="6" placeholder="Maximo 6 caracteres" required>
                             <button type="button" class="ug-eye-btn" onclick="togglePass('newPassInput',this)"><i class="fa-solid fa-eye"></i></button>
                         </div>
                     </div>
