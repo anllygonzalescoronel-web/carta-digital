@@ -28,17 +28,30 @@ require __DIR__ . '/_layout_top.php';
 
 .mesas-panel,
 .mesas-canvas-wrap {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-    padding: 14px;
+    background: var(--neu-base);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 8px 8px 18px var(--neu-sombra-oscura), -8px -8px 18px var(--neu-sombra-clara);
+    padding: 16px;
 }
 
 .mesas-panel h3,
 .mesas-canvas-wrap h3 {
-    margin: 0 0 10px;
-    color: #0f172a;
+    margin: 0 0 12px;
+    color: var(--pos-texto, #0f172a);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mesas-panel h3 i,
+.mesas-canvas-wrap h3 i {
+    color: #E8590C;
+}
+
+body.modo-oscuro .mesas-panel h3,
+body.modo-oscuro .mesas-canvas-wrap h3 {
+    color: #f2f2f4;
 }
 
 .mesas-field {
@@ -56,12 +69,21 @@ require __DIR__ . '/_layout_top.php';
 .mesas-field input,
 .mesas-field select {
     width: 100%;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    padding: 8px 10px;
+    border: none;
+    border-radius: 12px;
+    padding: 9px 11px;
     font-size: 13px;
+    background: var(--neu-base);
+    color: var(--pos-texto, #0f172a);
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    transition: box-shadow .15s ease;
 }
 
+.mesas-field input:focus,
+.mesas-field select:focus {
+    outline: none;
+    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara), 0 0 0 2px rgba(232,89,12,.35);
+}
 .mesas-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -70,25 +92,39 @@ require __DIR__ . '/_layout_top.php';
 
 .mesas-btn {
     border: none;
-    border-radius: 10px;
-    padding: 9px 12px;
+    border-radius: 12px;
+    padding: 10px 16px;
     font-weight: 700;
+    font-size: 13px;
     cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
+
+.mesas-btn:hover { transform: translateY(-2px); }
+.mesas-btn:active { transform: translateY(0); }
 
 .mesas-btn-primary {
-    background: #0f172a;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
     color: #fff;
+    box-shadow: 4px 4px 10px rgba(232,89,12,.4);
 }
 
+.mesas-btn-primary:hover { box-shadow: 6px 8px 16px rgba(232,89,12,.45); }
+
 .mesas-btn-soft {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--neu-base);
+    color: var(--pos-texto, #4a5160);
+    box-shadow: 4px 4px 10px var(--neu-sombra-oscura), -4px -4px 10px var(--neu-sombra-clara);
 }
 
 .mesas-btn-danger {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: linear-gradient(135deg, #ff5c6c, #dc3545);
+    color: #fff;
+    box-shadow: 4px 4px 10px rgba(220,53,69,.35);
+}
+
+body.modo-oscuro .mesas-btn-soft {
+    color: #d8dae0;
 }
 
 .mesas-actions {
@@ -159,13 +195,14 @@ require __DIR__ . '/_layout_top.php';
     font-weight: 700;
 }
 
+/* mesas colores  */
 .mesa-tablero {
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    border: 2px solid #334155;
+    border: 2px solid #039ec5;
     background:
-      repeating-linear-gradient(0deg, rgba(71, 85, 105, 0.22) 0 1px, rgba(255,255,255,0.95) 1px 6px),
+      repeating-linear-gradient(0deg, rgba(54, 171, 175, 0.85) 0 1px, rgba(255, 255, 255, 0.95) 1px 6px),
       linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
     box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     z-index: 2;
@@ -191,8 +228,10 @@ require __DIR__ . '/_layout_top.php';
     width: 15px;
     height: 9px;
     border-radius: 4px;
-    border: 2px solid #334155;
-    background: #ffffff;
+    border: 2px solid #000000;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0 1px, rgba(255,255,255,0.95) 1px 4px),
+      linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
     box-shadow: none;
     transform-origin: center center;
 }
@@ -206,9 +245,11 @@ require __DIR__ . '/_layout_top.php';
     top: -10px;
     transform: translateX(-50%);
     border-radius: 8px 8px 0 0;
-    border: 2px solid #334155;
+    border: 2px solid #000000;
     border-bottom: none;
-    background: transparent;
+    background:
+      repeating-linear-gradient(0deg, rgba(37, 99, 235, 0.3) 0 1px, rgba(255,255,255,0.95) 1px 4px),
+      linear-gradient(180deg, #effff0 0%, #dbeafe 100%);
 }
 
 .mesa-silla::before {
@@ -247,11 +288,16 @@ require __DIR__ . '/_layout_top.php';
     align-items: center;
     gap: 6px;
     border-radius: 999px;
-    padding: 6px 10px;
+    padding: 7px 14px;
     font-size: 12px;
     font-weight: 700;
-    background: #e2e8f0;
-    color: #1e293b;
+    background: var(--neu-base);
+    color: var(--pos-texto, #1e293b);
+    box-shadow: inset 3px 3px 6px var(--neu-sombra-oscura), inset -3px -3px 6px var(--neu-sombra-clara);
+}
+
+body.modo-oscuro .mesas-badge {
+    color: #e8e8ec;
 }
 
 .mesas-toast {
@@ -283,17 +329,17 @@ require __DIR__ . '/_layout_top.php';
 .mesas-modal {
     width: 100%;
     max-width: 520px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.24);
+    background: var(--neu-base);
+    border: none;
+    border-radius: 22px;
+    box-shadow: 0 28px 70px rgba(0,0,0,.35);
     overflow: hidden;
 }
 
 .mesas-modal-head {
-    padding: 18px 20px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: #f8fafc;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -341,13 +387,18 @@ require __DIR__ . '/_layout_top.php';
 }
 
 .mesas-danger-box {
-    border: 1px solid #fecaca;
-    background: #fef2f2;
-    color: #991b1b;
+    border: none;
+    background: rgba(220,53,69,.1);
+    color: #dc3545;
     border-radius: 14px;
     padding: 14px;
     font-size: 13px;
     line-height: 1.5;
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+}
+
+body.modo-oscuro .mesas-danger-box {
+    color: #ff8a8a;
 }
 
 .mesas-segment {
@@ -358,20 +409,26 @@ require __DIR__ . '/_layout_top.php';
 }
 
 .mesas-segment button {
-    border: 1px solid #cbd5e1;
+    border: none;
     border-radius: 12px;
-    background: #f8fafc;
-    color: #334155;
+    background: var(--neu-base);
+    color: var(--pos-texto, #334155);
     font-weight: 800;
     font-size: 12px;
     padding: 11px 12px;
     cursor: pointer;
+    box-shadow: inset 3px 3px 7px var(--neu-sombra-oscura), inset -3px -3px 7px var(--neu-sombra-clara);
+    transition: box-shadow .15s ease, background .15s ease, color .15s ease;
 }
 
 .mesas-segment button.active {
-    background: #0f172a;
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
     color: #fff;
-    border-color: #0f172a;
+    box-shadow: 3px 3px 8px rgba(232,89,12,.4);
+}
+
+body.modo-oscuro .mesas-segment button {
+    color: #d8dae0;
 }
 
 .mesa-mode-panel {
@@ -389,10 +446,11 @@ require __DIR__ . '/_layout_top.php';
 }
 
 .mesa-elementos-box {
-    border: 1px solid #dbe3ef;
-    border-radius: 14px;
-    padding: 10px;
-    background: #f8fbff;
+    border: none;
+    border-radius: 16px;
+    padding: 12px;
+    background: var(--neu-base);
+    box-shadow: inset 4px 4px 10px var(--neu-sombra-oscura), inset -4px -4px 10px var(--neu-sombra-clara);
 }
 
 .mesa-elementos-head {
@@ -421,9 +479,10 @@ require __DIR__ . '/_layout_top.php';
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid #dbe3ef;
+    border-radius: 14px;
+    background: var(--neu-base);
+    border: none;
+    box-shadow: 3px 3px 8px var(--neu-sombra-oscura), -3px -3px 8px var(--neu-sombra-clara);
 }
 
 .mesa-elemento-miniatura {
@@ -484,16 +543,25 @@ require __DIR__ . '/_layout_top.php';
     width: 32px;
     height: 32px;
     cursor: pointer;
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--neu-base);
+    color: var(--pos-texto, #0f172a);
+    box-shadow: 2px 2px 6px var(--neu-sombra-oscura), -2px -2px 6px var(--neu-sombra-clara);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: transform .15s ease;
 }
 
+.mesa-elemento-btn:hover { transform: translateY(-1px); }
+
 .mesa-elemento-btn.danger {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: linear-gradient(135deg, #ff5c6c, #dc3545);
+    color: #fff;
+    box-shadow: 2px 2px 6px rgba(220,53,69,.35);
+}
+
+body.modo-oscuro .mesa-elemento-btn {
+    color: #d8dae0;
 }
 
 .mesa-overlay-layer {
@@ -638,13 +706,17 @@ body.modo-oscuro .mesa-tablero {
 }
 
 body.modo-oscuro .mesa-silla {
-        background: #1e293b;
-    border-color: #cbd5e1;
+    border-color: #60a5fa;
+    background:
+      repeating-linear-gradient(0deg, rgba(96, 165, 250, 0.28) 0 1px, rgba(30, 41, 59, 0.94) 1px 4px),
+      linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
 }
 
 body.modo-oscuro .mesa-silla::after {
-    border-color: #cbd5e1;
-    background: transparent;
+    border-color: #60a5fa;
+    background:
+      repeating-linear-gradient(0deg, rgba(96, 165, 250, 0.28) 0 1px, rgba(30, 41, 59, 0.94) 1px 4px),
+      linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
 }
 
 body.modo-oscuro .mesas-field label,
