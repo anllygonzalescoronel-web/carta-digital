@@ -189,9 +189,27 @@ foreach ($grupos as $grupoTmp) {
 // ───── Fragmento: KPIs ─────
 ob_start();
 ?>
-<div class="tp-kpi"><strong><?= (int)$productoId > 0 ? 1 : 0 ?></strong><span>Producto</span></div>
-<div class="tp-kpi"><strong><?= $totalGrupos ?></strong><span>Grupos</span></div>
-<div class="tp-kpi"><strong><?= $totalOpciones ?></strong><span>Opciones</span></div>
+<div class="tp-kpi-marco">
+    <div class="tp-kpi tp-kpi-morado">
+        <div class="tp-kpi-icono"><i class="ti ti-shopping-bag"></i></div>
+        <span>Producto</span>
+        <strong><?= (int)$productoId > 0 ? 1 : 0 ?></strong>
+    </div>
+</div>
+<div class="tp-kpi-marco">
+    <div class="tp-kpi tp-kpi-verde">
+        <div class="tp-kpi-icono"><i class="ti ti-layout-grid"></i></div>
+        <span>Grupos</span>
+        <strong><?= $totalGrupos ?></strong>
+    </div>
+</div>
+<div class="tp-kpi-marco">
+    <div class="tp-kpi tp-kpi-naranja">
+        <div class="tp-kpi-icono"><i class="ti ti-list-details"></i></div>
+        <span>Opciones</span>
+        <strong><?= $totalOpciones ?></strong>
+    </div>
+</div>
 <?php
 $htmlKpis = ob_get_clean();
 
@@ -498,18 +516,51 @@ if ($esAjax) {
 .tp-header h2 { margin: 0; font-size: 22px; color: #0f172a; }
 .tp-header p { margin: 5px 0 0; font-size: 12px; color: #64748b; }
 
-.tp-kpis { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.tp-kpis { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.tp-kpi-marco {
+    border-radius: 20px;
+    background: var(--neu-base);
+    box-shadow:
+        inset 3px 3px 7px var(--neu-sombra-oscura),
+        inset -3px -3px 7px var(--neu-sombra-clara);
+    padding: 8px;
+}
+body.modo-oscuro .tp-kpi-marco {
+    background: rgba(0,0,0,.18);
+    box-shadow:
+        inset 2px 2px 5px rgba(0,0,0,.45),
+        inset -2px -2px 5px rgba(255,255,255,.04);
+}
 .tp-kpi {
+    position: relative;
+    overflow: hidden;
     border-radius: 14px;
     border: none;
-    background: var(--neu-base);
-    box-shadow: inset 4px 4px 9px var(--neu-sombra-oscura), inset -4px -4px 9px var(--neu-sombra-clara);
-    min-width: 76px;
-    text-align: center;
-    padding: 10px 10px;
+    min-width: 110px;
+    text-align: left;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 4px 6px 14px rgba(0,0,0,.18);
 }
-.tp-kpi strong { display: block; font-size: 20px; color: #1d4ed8; line-height: 1; }
-.tp-kpi span { font-size: 11px; color: #475569; font-weight: 700; }
+.tp-kpi-icono {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff !important;
+    font-size: 14px;
+}
+.tp-kpi span { font-size: 11px; color: rgba(255,255,255,.85) !important; font-weight: 700; letter-spacing: .2px; }
+.tp-kpi strong { display: block; font-size: 19px; color: #fff !important; line-height: 1; font-weight: 800; }
+
+.tp-kpi.tp-kpi-morado  { background: linear-gradient(135deg, #7c3aed, #4c1d95) !important; }
+.tp-kpi.tp-kpi-verde   { background: linear-gradient(135deg, #34d399, #059669) !important; }
+.tp-kpi.tp-kpi-naranja { background: linear-gradient(135deg, #fb923c, #c2410c) !important; }
 
 .tp-layout {
     display: grid;
@@ -541,11 +592,35 @@ if ($esAjax) {
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    padding-bottom: 6px;
+    padding-bottom: 12px;
     scroll-snap-type: x proximity;
+    scroll-behavior: smooth;
+    scrollbar-width: auto;
+    scrollbar-color: #e07f23 transparent;
 }
-.tp-product-scroll::-webkit-scrollbar { height: 7px; }
-.tp-product-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.tp-product-scroll::-webkit-scrollbar {
+    height: 14px;
+}
+.tp-product-scroll::-webkit-scrollbar-track {
+    background: var(--neu-base);
+    box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura);
+    border-radius: 999px;
+    margin: 0 4px;
+}
+.tp-product-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff8a3d, #E8590C);
+    border-radius: 999px;
+    border: 1.5px solid var(--neu-base);
+    background-clip: padding-box;
+}
+.tp-product-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #ffa15c, #f2660e);
+    background-clip: padding-box;
+}
+
+body.modo-oscuro .tp-product-scroll {
+    scrollbar-color: #E8590C transparent;
+}
 .tp-product-card {
     min-width: 180px;
     max-width: 180px;
@@ -626,10 +701,57 @@ if ($esAjax) {
 }
 .tp-btn-main { background: linear-gradient(135deg, #ff8a3d, #E8590C); color: #fff; box-shadow: 4px 4px 10px rgba(232,89,12,.35); transition: transform .15s; }
 .tp-btn-main:hover { transform: translateY(-2px); }
-.tp-btn-soft { background: var(--neu-base); color: #3730a3; box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara); }
-.tp-btn-warn { background: var(--neu-base); color: #c2410c; box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara); }
-.tp-btn-danger { background: var(--neu-base); color: #b91c1c; box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara); }
+button.tp-btn.tp-btn-soft {
+    background: #ffba26 !important;
+    color: #fff !important;
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara) !important;
+}
+button.tp-btn.tp-btn-soft:hover { background: #f78b43 !important; }
+
+button.tp-btn.tp-btn-warn {
+    background: #f59e0b !important;
+    color: #fff !important;
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara) !important;
+}
+button.tp-btn.tp-btn-warn:hover { background: #d97706 !important; }
+
+button.tp-btn.tp-btn-danger {
+    background: #ef4444 !important;
+    color: #fff !important;
+    box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara) !important;
+}
+button.tp-btn.tp-btn-danger:hover { background: #dc2626 !important; }
+
 .tp-btn-gray { background: var(--neu-base); color: #4a5160; box-shadow: 3px 3px 7px var(--neu-sombra-oscura), -3px -3px 7px var(--neu-sombra-clara); }
+
+/* ===== Modo oscuro: botones editar/eliminar sólidos, sin resplandor ===== */
+body.modo-oscuro .tp-btn-soft {
+    background: #f59e0b !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+body.modo-oscuro .tp-btn-soft:hover { background: #f59e0b !important; }
+
+body.modo-oscuro .tp-btn-warn {
+    background: #d97706 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+body.modo-oscuro .tp-btn-warn:hover { background: #b45309 !important; }
+
+body.modo-oscuro .tp-btn-danger {
+    background: #dc2626 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+body.modo-oscuro .tp-btn-danger:hover { background: #b91c1c !important; }
+
+body.modo-oscuro .tp-btn-gray {
+    background: #374151 !important;
+    color: #f1f5f9 !important;
+    box-shadow: none !important;
+}
+body.modo-oscuro .tp-btn-gray:hover { background: #1f2937 !important; }
 
 .tp-form-grid {
     display: grid;
@@ -698,6 +820,26 @@ if ($esAjax) {
 .tp-pill-type { background: var(--neu-base); box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura); color: #3730a3; border-color: transparent; }
 .tp-pill-required { background: var(--neu-base); box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura); color: #92400e; border-color: transparent; }
 .tp-pill-count { background: var(--neu-base); box-shadow: inset 2px 2px 4px var(--neu-sombra-oscura); color: #0f766e; border-color: transparent; }
+
+/* ===== Modo oscuro: píldoras con efecto fluorescente ===== */
+body.modo-oscuro .tp-pill-type {
+    background: rgba(99,102,241,.15);
+    box-shadow: 0 0 8px rgba(129,140,248,.5), inset 0 0 0 1px rgba(129,140,248,.4);
+    color: #a5b4fc !important;
+    text-shadow: 0 0 6px rgba(129,140,248,.6);
+}
+body.modo-oscuro .tp-pill-required {
+    background: rgba(251,146,60,.15);
+    box-shadow: 0 0 8px rgba(251,146,60,.5), inset 0 0 0 1px rgba(251,146,60,.4);
+    color: #fdba74 !important;
+    text-shadow: 0 0 6px rgba(251,146,60,.6);
+}
+body.modo-oscuro .tp-pill-count {
+    background: rgba(45,212,191,.15);
+    box-shadow: 0 0 8px rgba(45,212,191,.5), inset 0 0 0 1px rgba(45,212,191,.4);
+    color: #5eead4 !important;
+    text-shadow: 0 0 6px rgba(45,212,191,.6);
+}
 
 .tp-group-body { padding: 12px 14px 14px; display: grid; gap: 12px; }
 .tp-edit-panel,
@@ -871,13 +1013,11 @@ body.modo-oscuro .tp-header p,
 body.modo-oscuro .tp-picker-count,
 body.modo-oscuro .tp-product-meta,
 body.modo-oscuro .tp-option-sub,
-body.modo-oscuro .tp-kpi span,
 body.modo-oscuro .tp-empty { color: #9aa0ac; }
 body.modo-oscuro .tp-field label,
 body.modo-oscuro .tp-check { color: #cfd3dc; }
 body.modo-oscuro .tp-field input,
 body.modo-oscuro .tp-field select { color: #ececed; }
-body.modo-oscuro .tp-kpi strong { color: #ff8a3d; }
 
 
 
